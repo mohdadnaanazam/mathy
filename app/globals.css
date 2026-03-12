@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/* ═══ CSS VARIABLES ═══════════════════════════════════════════════════════ */
+:root {
+  --bg-dark:      #030014;
+  --bg-card:      rgba(20, 15, 45, 0.4);
+  --bg-card-glow: rgba(100, 50, 255, 0.08);
+  --border-subtle:rgba(255, 255, 255, 0.06);
+  --border-bright:rgba(255, 255, 255, 0.2);
+  
+  --accent-cyan:  #00f0ff;
+  --accent-pink:  #ff007f;
+  --accent-purple:#7000ff;
+  --text-main:    #ffffff;
+  --text-dim:     rgba(255, 255, 255, 0.5);
+  
+  /* Next.js Space Grotesk/Space Mono variables */
+  --font-sans: var(--font-sans, 'system-ui', sans-serif);
+  --font-mono: var(--font-mono, 'monospace');
+}
+
+/* ═══ RESET ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-dark);
+  background-image: radial-gradient(circle at 50% 0%, var(--bg-card-glow) 0%, transparent 70%);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::selection { background: var(--accent-purple); color: #fff; }
+a { text-decoration: none; }
+
+/* ═══ TYPOGRAPHY HELPERS ═════════════════════════════════════════════════ */
+.font-mono     { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.section-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-purple {
+  background: linear-gradient(135deg, #a88bff 0%, var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══ CARD ════════════════════════════════════════════════════════════════ */
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+.card:hover {
+  border-color: var(--border-bright);
+  box-shadow: 0 0 32px rgba(112, 0, 255, 0.15), 0 8px 32px rgba(0,0,0,0.4);
+  transform: translateY(-4px);
+}
+
+/* ═══ BUTTONS ════════════════════════════════════════════════════════════ */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-pink) 100%);
+  color: #fff; font-family: var(--font-sans);
+  font-weight: 700; font-size: 16px; padding: 16px 32px;
+  border-radius: 100px; border: none; cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(255, 0, 127, 0.25);
+  letter-spacing: 0.02em;
+}
+.btn-primary:hover {
+  box-shadow: 0 12px 32px rgba(255, 0, 127, 0.4);
+  transform: translateY(-2px) scale(1.02);
+}
+.btn-primary:active { transform: translateY(1px) scale(0.98); }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(255,255,255,0.03); color: #fff;
+  font-family: var(--font-sans); font-weight: 600; font-size: 16px;
+  padding: 16px 32px; border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer; transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.25);
+  transform: translateY(-2px);
+}
+
+/* ═══ LAYOUT ════════════════════════════════════════════════════════════ */
+.container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+
+/* ═══ PATTERNS ════════════════════════════════════════════════════════════ */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+}
+
+/* ═══ ANIMATIONS ══════════════════════════════════════════════════════════ */
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ═══ 3D FLIP ════════════════════════════════════════════════════════════ */
+.backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.rotate-y-180    { transform: rotateY(180deg); }
+
+/* Custom game buttons toggle */
+.toggle-btn {
+  padding: 10px 24px; border-radius: 100px; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 700; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-sans);
+}
+.toggle-active {
+  background: #fff; color: #000;
+  box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+}
+.toggle-inactive {
+  background: transparent; color: var(--text-dim);
+}
+.toggle-inactive:hover {
+  color: #fff; background: rgba(255,255,255,0.05);
+}
