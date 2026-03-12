@@ -51,19 +51,21 @@ export default function Navbar() {
         </div>
 
         {/* Right: attempts + timer + CTA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.25)' }}>
-            {remaining}/{max}
-          </span>
-          <span style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.08)' }} />
-          <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'none', '@media (minWidth: 480px)': { display: 'flex' }, alignItems: 'center', gap: '8px' } as any}>
+            <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)' }}>
+              {remaining}/{max}
+            </span>
+            <span style={{ width: '1px', height: '12px', background: 'rgba(255,255,255,0.1)' }} />
+          </div>
+          <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>
             {formatTime(timeToReset)}
           </span>
           <Link href='/game' style={{
-            padding: '7px 14px', borderRadius: '8px',
+            padding: '6px 12px', borderRadius: '6px',
             background: '#fff', color: '#000',
-            fontSize: '12px', fontWeight: 700, textDecoration: 'none',
-            transition: 'background 0.2s',
+            fontSize: '11px', fontWeight: 700, textDecoration: 'none',
+            marginLeft: '4px', whiteSpace: 'nowrap'
           }}>
             Play →
           </Link>

@@ -8,9 +8,9 @@
   --border-subtle:rgba(255, 255, 255, 0.06);
   --border-bright:rgba(255, 255, 255, 0.2);
   
-  --accent-cyan:  #00f0ff;
-  --accent-pink:  #ff007f;
-  --accent-purple:#7000ff;
+  --accent-cyan:  #00f5ff;
+  --accent-pink:  #ff4b8b; /* A more lovable rose/sunset pink instead of neon magenta */
+  --accent-purple:#8b3dff;
   --text-main:    #ffffff;
   --text-dim:     rgba(255, 255, 255, 0.5);
   
