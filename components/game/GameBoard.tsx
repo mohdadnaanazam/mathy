@@ -59,7 +59,7 @@ export default function GameBoard() {
       style={{
         minHeight: '100vh',
         paddingTop: '56px',
-        paddingBottom: '80px', // space for bottom nav
+        paddingBottom: '64px', // space for bottom nav
         position: 'relative',
       }}
     >
@@ -299,8 +299,7 @@ export default function GameBoard() {
             style={{
               display: 'flex',
               gap: '10px',
-              overflowX: 'auto',
-              paddingBottom: '2px',
+              flexWrap: 'wrap',
             }}
           >
             {[
@@ -343,7 +342,7 @@ export default function GameBoard() {
         </div>
 
         {/* Primary duel card (mobile focus) */}
-        <div className="space-y-3">
+        <div className="space-y-3" style={{ marginBottom: '16px' }}>
           <div
             style={{
               fontSize: '11px',
@@ -433,12 +432,12 @@ export default function GameBoard() {
       <div
         style={{
           borderBottom: '1px solid var(--border-subtle)',
-          background: 'rgba(3, 0, 20, 0.85)',
-          backdropFilter: 'blur(20px)',
+          background: 'rgba(3, 0, 20, 0.9)',
+          backdropFilter: 'blur(18px)',
           position: 'sticky',
           top: '56px',
           zIndex: 40,
-          boxShadow: '0 4px 30px rgba(0,0,0,0.5)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
         }}
       >
         <div
@@ -450,7 +449,7 @@ export default function GameBoard() {
       </div>
 
       {/* Main layout */}
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 md:gap-8 md:py-12 lg:flex-row lg:px-8">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-6 sm:px-6 md:gap-7 md:py-10 lg:flex-row lg:px-8">
 
         {/* Left: game area */}
         <main id="live-game-area" className="flex-1 min-w-0">
@@ -495,12 +494,13 @@ export default function GameBoard() {
             )}
           </div>
 
-          {/* Game canvas (slightly smaller than before) */}
+          {/* Game canvas (smaller, especially on mobile) */}
           <div
             className="card relative mx-auto"
             style={{
-              padding: '20px 16px',
-              maxWidth: '520px',
+              padding: '12px 8px',
+              maxWidth: '340px',
+              marginTop: '4px',
               boxShadow:
                 gameType === 'math'
                   ? '0 0 60px rgba(0, 240, 255, 0.06) inset, 0 6px 24px rgba(0,0,0,0.4)'
@@ -517,16 +517,16 @@ export default function GameBoard() {
         </main>
 
         {/* Right: sidebar */}
-        <aside className="w-full lg:w-[280px] shrink-0 flex flex-col gap-6">
+        <aside className="w-full lg:w-[260px] shrink-0 flex flex-col gap-4 md:gap-5">
 
           {/* Score */}
-          <div className='card' style={{ padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+          <div className='card' style={{ padding: '22px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
             <ScoreDisplay />
           </div>
 
           {/* Instructions */}
-          <div className='card' style={{ padding: '32px' }}>
-            <div className='section-label' style={{ marginBottom: '20px' }}>How to play</div>
+          <div className='card' style={{ padding: '22px 20px' }}>
+            <div className='section-label' style={{ marginBottom: '12px' }}>How to play</div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {(gameType === 'math'
                 ? ['Select the correct answer', 'Build streaks for point multipliers', 'Beat the 90s countdown timer']
@@ -540,9 +540,9 @@ export default function GameBoard() {
           </div>
 
           {/* Session info */}
-          <div className='card' style={{ padding: '32px' }}>
-            <div className='section-label' style={{ marginBottom: '20px' }}>Session Status</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className='card' style={{ padding: '22px 20px' }}>
+            <div className='section-label' style={{ marginBottom: '12px' }}>Session Status</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
                 ['Active Mode',  gameType],
                 ['Difficulty', difficulty],

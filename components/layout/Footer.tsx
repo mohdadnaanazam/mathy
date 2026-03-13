@@ -7,11 +7,14 @@ export default function Footer() {
   const { timeToReset } = useAttempts()
 
   return (
-    <footer style={{
-      borderTop: '1px solid rgba(255,255,255,0.06)',
-      padding: '28px 24px',
-      background: '#000',
-    }}>
+    <footer
+      style={{
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        padding: '14px 24px 64px',
+        background: '#000',
+        marginBottom: 0,
+      }}
+    >
       <div className='container' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '16px' }}>🧠</span>
