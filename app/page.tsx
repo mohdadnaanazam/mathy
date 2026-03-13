@@ -1,53 +1,16 @@
 'use client'
+
 import { useRef } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import { motion } from 'framer-motion'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { GameType } from '@/types'
-import GamePreviewWindow from '@/components/home/GamePreviewWindow'
 import MobileArenaFooter from '@/components/layout/MobileArenaFooter'
-
-const ParticleBackground = dynamic(() => import('@/components/three/ParticleBackground'), {
-  ssr: false,
-  loading: () => null,
-})
-
-const GAME_CARDS = [
-  { tag: '01', icon: '➕', title: 'Basic Math',    desc: 'Addition & subtraction puzzles', diff: 'Easy',   time: '90s', type: 'math'   as GameType, color: 'var(--accent-cyan)' },
-  { tag: '02', icon: '🧩', title: 'Memory Match',  desc: 'Flip & pair emoji cards',        diff: 'Medium', time: '2m',  type: 'memory' as GameType, color: 'var(--accent-pink)' },
-  { tag: '03', icon: '✖️', title: 'Multiply',      desc: 'Times tables speed challenge',   diff: 'Medium', time: '90s', type: 'math'   as GameType, color: 'var(--accent-purple)' },
-  { tag: '04', icon: '⚡', title: 'Speed Math',    desc: '60-second arithmetic sprint',    diff: 'Hard',   time: '60s', type: 'math'   as GameType, color: '#FFB800' },
-]
-
-const STEPS = [
-  { n: '01', title: 'Instant Access', body: 'No account, no onboarding. Open the site and start playing immediately.' },
-  { n: '02', title: 'Pick a Challenge', body: 'Train your brain with math puzzles or visual memory matching games.' },
-  { n: '03', title: 'Daily Limits', body: 'Play up to 15 games per hour. Your attempts reset automatically.' },
-]
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16,1,0.3,1] as [number,number,number,number] } },
-}
 
 export default function LandingPage() {
   const heroRef = useRef<HTMLElement>(null)
-  const router  = useRouter()
+  const router = useRouter()
   const setType = useGameStore(s => s.setGameType)
-
-  useGSAP(() => {
-    if (!heroRef.current) return
-    gsap.timeline({ delay: 0.1 })
-      .from('.h-tag',  { y: 20, opacity: 0, duration: 0.6, ease: 'power3.out' })
-      .from('.h-h1',   { y: 40, opacity: 0, duration: 0.8, ease: 'power3.out' }, '-=0.4')
-      .from('.h-sub',  { y: 20, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.5')
-      .from('.h-ctas', { y: 20, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.4')
-      .from('.h-stat', { y: 20, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out' }, '-=0.4')
-  }, { scope: heroRef })
 
   function play(type: GameType) {
     setType(type)
@@ -56,248 +19,211 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden relative pb-24 md:pb-0">
+      {/* HERO */}
+      <section
+        ref={heroRef}
+        className="relative flex items-center pt-20 pb-16 px-4"
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 lg:flex-row lg:items-center">
+          {/* Left: copy */}
+          <div className="flex-1 space-y-8 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-4 py-1.5">
+              <span
+                style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '999px',
+                  backgroundColor: '#22c55e',
+                  boxShadow: '0 0 12px rgba(34,197,94,0.9)',
+                }}
+              />
+              <span className="text-[11px] font-mono tracking-[0.18em] uppercase text-slate-300">
+                Practice math & memory
+              </span>
+            </div>
 
-      {/* Grid background base */}
-      <div className='grid-bg absolute inset-0 opacity-100 pointer-events-none -z-10' />
+            <div className="space-y-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-white">
+                Train your brain with
+                <br />
+                quick daily games.
+              </h1>
+              <p className="max-w-xl text-[15px] leading-relaxed text-slate-300">
+                Mathy gives you short, focused sessions for arithmetic and
+                memory. Open the site, tap play, and finish a round in under
+                two minutes.
+              </p>
+            </div>
 
-      {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-      <section ref={heroRef} className="relative min-h-[100svh] flex items-center pt-24 pb-16 px-4">
+            <div className="flex flex-wrap items-center justify-center gap-4 md:justify-start">
+              <button
+                className="btn-primary"
+                style={{
+                  backgroundColor: '#f97316',
+                  boxShadow: '0 10px 30px rgba(248,113,113,0.35)',
+                }}
+                onClick={() => play('math')}
+              >
+                Get started now
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => play('memory')}
+              >
+                Try memory cards
+              </button>
+            </div>
 
-        {/* Three.js particles */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.6, pointerEvents: 'none' }}>
-          <ParticleBackground />
-        </div>
+            <div className="flex flex-wrap justify-center gap-8 text-sm text-slate-300 md:justify-start">
+              <div>
+                <div className="font-mono text-lg text-white">2</div>
+                <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                  Game modes
+                </div>
+              </div>
+              <div>
+                <div className="font-mono text-lg text-white">90s</div>
+                <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                  Average round
+                </div>
+              </div>
+              <div>
+                <div className="font-mono text-lg text-white">0</div>
+                <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                  Sign-ups needed
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Center Glow */}
-        <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] md:w-[800px] md:h-[800px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(112,0,255,0.15) 0%, transparent 60%)' }} />
-
-        {/* Content Container */}
-        <div className="mx-auto w-full max-w-7xl relative z-10 mt-12 lg:mt-0">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            
-            {/* Left Column */}
-            <div className="text-left w-full pl-0 sm:pl-4">
-
-              {/* Tag */}
-              <div className='h-tag' style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '32px' }}>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  padding: '8px 20px', borderRadius: '100px',
-                  border: '1px solid rgba(0, 240, 255, 0.3)',
-                  background: 'rgba(0, 240, 255, 0.05)',
-                  boxShadow: '0 0 20px rgba(0, 240, 255, 0.1) inset'
-                }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block', boxShadow: '0 0 10px var(--accent-cyan)', animation: 'pulse 2s infinite' }} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-cyan)', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 700 }}>
-                    Instant browser play
+          {/* Right: simple preview card */}
+          <div className="flex-1">
+            <div
+              className="card"
+              style={{
+                padding: '24px',
+                maxWidth: '420px',
+                margin: '0 auto',
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      width: '9px',
+                      height: '9px',
+                      borderRadius: '999px',
+                      backgroundColor: '#22c55e',
+                    }}
+                  />
+                  <span className="text-xs font-mono uppercase tracking-[0.18em] text-slate-400">
+                    Next round
                   </span>
+                </div>
+                <span className="text-xs font-mono text-slate-400">
+                  01:30
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-slate-900/80 border border-slate-800 px-4 py-6 mb-4">
+                <div className="mb-2 text-xs font-mono uppercase tracking-[0.16em] text-slate-500">
+                  Example question
+                </div>
+                <div className="text-3xl font-semibold text-white">
+                  7 × 8 = <span className="text-gradient">?</span>
                 </div>
               </div>
 
-              {/* H1 */}
-              <h1 className='h-h1' style={{
-                fontSize: 'clamp(48px, 8vw, 84px)',
-                fontWeight: 700,
-                lineHeight: 1.05,
-                letterSpacing: '-0.04em',
-                color: '#fff',
-                marginBottom: '24px',
-              }}>
-                Train Your
-                <br /><span className='text-gradient'>Brain.</span>
-              </h1>
-
-              {/* Sub */}
-              <p className='h-sub' style={{
-                fontSize: '18px',
-                color: 'rgba(255,255,255,0.6)',
-                maxWidth: '520px',
-                marginBottom: '40px',
-                lineHeight: 1.6,
-                fontWeight: 400,
-              }}>
-                AI-powered math equations and memory challenges.
-                <br />No sign-up. Just open and start playing.
-              </p>
-
-              {/* CTAs */}
-              <div className='h-ctas' style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap', marginBottom: '60px' }}>
-                <button className='btn-primary' onClick={() => play('math')}>
-                  ✦ Play Now
-                </button>
-                <button className='btn-secondary' onClick={() => play('memory')}>
-                  🧩 Memory Challenge
-                </button>
-              </div>
-
-              {/* Stats row */}
-              <div style={{
-                display: 'flex',
-                gap: '40px',
-                justifyContent: 'flex-start',
-                flexWrap: 'wrap',
-              }}>
-                {[
-                  { val: '2',    lbl: 'Modes', color: 'var(--accent-cyan)'  },
-                  { val: '15',   lbl: 'Per Hr', color: 'var(--accent-pink)'    },
-                  { val: '0',    lbl: 'Signups', color: 'var(--accent-purple)'  },
-                ].map(({ val, lbl, color }) => (
-                  <div key={lbl} className='h-stat' style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '36px', fontWeight: 700, color: '#fff', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
-                      {val}<span style={{ color }}>.</span>
-                    </div>
-                    <div className='section-label' style={{ marginTop: '8px', justifyContent: 'flex-start', color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{lbl}</div>
-                  </div>
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                {['52', '54', '56', '60'].map((opt, idx) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className="rounded-lg border border-slate-700 bg-slate-900/70 py-2 text-center text-sm font-mono text-slate-200"
+                    style={
+                      idx === 2
+                        ? {
+                            borderColor: '#22c55e',
+                            color: '#bbf7d0',
+                          }
+                        : undefined
+                    }
+                  >
+                    {opt}
+                  </button>
                 ))}
               </div>
-            </div>
 
-            {/* Right Column: Game Preview Window */}
-            <div className="relative mt-12 lg:mt-0 w-full max-w-[600px] mx-auto lg:max-w-none">
-              <GamePreviewWindow />
+              <button
+                type="button"
+                className="w-full rounded-full bg-slate-100 py-2.5 text-sm font-semibold tracking-[0.14em] uppercase text-slate-900"
+                onClick={() => play('math')}
+              >
+                Play a quick round
+              </button>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* ══ GAME MODES ═══════════════════════════════════════════════════ */}
-      <section className="py-20 md:py-32 relative">
-        <div style={{ position: 'absolute', top: 0, left: '20%', width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-cyan), transparent)', opacity: 0.3 }} />
-        
-        <div className='container'>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '64px', flexWrap: 'wrap', gap: '24px' }}>
+      {/* SIMPLE SECTIONS */}
+      <section className="border-t border-slate-800 bg-[#050816] py-12">
+        <div className="container">
+          <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <div className='section-label' style={{ marginBottom: '16px' }}>/ Game Modes</div>
-              <h2 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                Choose your <span className='text-gradient-purple'>challenge.</span>
+              <div className="section-label mb-2">/ Modes</div>
+              <h2 className="text-2xl font-semibold text-white">
+                Two simple ways to play.
               </h2>
             </div>
-            <Link href='/game' style={{
-              color: 'var(--accent-pink)', textDecoration: 'none', fontSize: '14px', fontFamily: 'var(--font-mono)',
-              letterSpacing: '0.05em', fontWeight: 700, background: 'rgba(255,0,127,0.1)', padding: '8px 16px', borderRadius: '100px'
-            }}>
-              View All ↗
+            <Link
+              href="/game"
+              className="text-xs font-mono uppercase tracking-[0.18em] text-slate-300"
+            >
+              Open game &rarr;
             </Link>
           </div>
 
-          {/* Cards grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
-            {GAME_CARDS.map((c, i) => (
-              <motion.div
-                key={c.tag}
-                initial='hidden'
-                whileInView='show'
-                viewport={{ once: true, margin: '-80px' }}
-                variants={itemVariants}
-                style={{ transitionDelay: `${i * 0.1}s`, height: '100%' }}
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="card p-5">
+              <div className="text-sm font-mono uppercase tracking-[0.18em] text-slate-400 mb-2">
+                Math
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-white">
+                Timed arithmetic drills
+              </h3>
+              <p className="text-sm text-slate-300 mb-3">
+                Practice addition, subtraction, multiplication, and division
+                with a 90-second timer.
+              </p>
+              <button
+                type="button"
+                className="text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
+                onClick={() => play('math')}
               >
-                <div
-                  className='card'
-                  onClick={() => play(c.type)}
-                  style={{
-                    padding: '32px',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: `radial-gradient(circle at top right, ${c.color}20, transparent 70%)`, pointerEvents: 'none' }} />
-                  
-                  <div>
-                    {/* Top row */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-                      <div style={{ fontSize: '40px', lineHeight: 1, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>{c.icon}</div>
-                      <span className='section-label' style={{ color: 'rgba(255,255,255,0.2)' }}>{c.tag}</span>
-                    </div>
+                Start math mode &rarr;
+              </button>
+            </div>
 
-                    {/* Title + desc */}
-                    <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>{c.title}</h3>
-                    <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, marginBottom: '32px' }}>{c.desc}</p>
-                  </div>
-
-                  {/* Meta + CTA row */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: c.color }}>{c.diff}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: '14px' }}>·</span>
-                      <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>{c.time}</span>
-                    </div>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', transition: 'transform 0.2s', background: 'rgba(255,255,255,0.1)', padding: '6px 14px', borderRadius: '100px' }}>Play ↗</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ HOW IT WORKS ════════════════════════════════════════════════ */}
-      <section className="py-20 md:py-32 relative">
-        <div style={{ position: 'absolute', top: 0, left: '20%', width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-purple), transparent)', opacity: 0.3 }} />
-        
-        <div className='container'>
-          <div style={{ marginBottom: '64px' }}>
-            <div className='section-label' style={{ marginBottom: '16px' }}>/ How it works</div>
-            <h2 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-              Three steps.<br /><span className='text-gradient'>Zero friction.</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {STEPS.map((s, i) => (
-              <motion.div
-                key={s.n}
-                initial='hidden'
-                whileInView='show'
-                viewport={{ once: true }}
-                variants={itemVariants}
-                style={{ transitionDelay: `${i * 0.15}s` }}
+            <div className="card p-5">
+              <div className="text-sm font-mono uppercase tracking-[0.18em] text-slate-400 mb-2">
+                Memory
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-white">
+                Flip-and-match cards
+              </h3>
+              <p className="text-sm text-slate-300 mb-3">
+                Strengthen short-term memory with quick emoji matching
+                rounds.
+              </p>
+              <button
+                type="button"
+                className="text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
+                onClick={() => play('memory')}
               >
-                <div className='card' style={{ padding: '40px', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', bottom: -20, right: -20, fontSize: '120px', fontWeight: 700, color: 'rgba(255,255,255,0.02)', fontFamily: 'var(--font-sans)', lineHeight: 1, pointerEvents: 'none' }}>{s.n}</div>
-                  
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--accent-purple)', fontFamily: 'var(--font-mono)', marginBottom: '24px' }}>STEP {s.n}</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>{s.title}</h3>
-                  <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>{s.body}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ CTA BAND ════════════════════════════════════════════════════ */}
-      <section className="py-24 md:py-40 relative overflow-hidden">
-        <div style={{ position: 'absolute', top: 0, left: '20%', width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-pink), transparent)', opacity: 0.5 }} />
-        
-        {/* Massive background glow for CTA */}
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', background: 'radial-gradient(ellipse at center, rgba(255,0,127,0.1) 0%, transparent 60%)', zIndex: -1, pointerEvents: 'none' }} />
-        
-        <div className="text-center w-full max-w-[640px] mx-auto px-6">
-          <div className='section-label mb-6 justify-center'>/ Ready?</div>
-          <h2 style={{
-            fontSize: 'clamp(36px, 8vw, 80px)',
-            fontWeight: 700,
-            color: '#fff',
-            letterSpacing: '-0.04em',
-            lineHeight: 0.95,
-            marginBottom: '32px',
-          }}>
-            Ready to <span className='text-gradient'>play?</span>
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '18px', marginBottom: '48px', lineHeight: 1.6 }}>
-            No downloads, no sign-up, no waiting. Experience the next generation of brain training instantly.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <button className='btn-primary' onClick={() => play('math')} style={{ padding: '20px 48px', fontSize: '18px' }}>
-              ✦ Jump Right In
-            </button>
+                Start memory mode &rarr;
+              </button>
+            </div>
           </div>
         </div>
       </section>

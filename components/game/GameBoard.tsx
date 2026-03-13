@@ -59,18 +59,12 @@ export default function GameBoard() {
       style={{
         minHeight: '100vh',
         paddingTop: '56px',
-        paddingBottom: '80px', // space for mobile bottom nav
+        paddingBottom: '80px', // space for bottom nav
         position: 'relative',
       }}
     >
-      
-      {/* Background radial glow specific to the game view */}
-      <div className="absolute top-[20%] left-[30%] w-[300px] h-[300px] md:w-[800px] md:h-[800px] rounded-full pointer-events-none -z-10"
-        style={{ background: 'radial-gradient(circle, rgba(0, 240, 255, 0.05) 0%, transparent 70%)' }}
-      />
-
-      {/* Mobile "arena" header */}
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 md:hidden mt-4 space-y-6">
+      {/* Arena header (visible on phone and desktop) */}
+      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-0 mt-4 space-y-6">
         {/* Top timer pill with Play button */}
         <div
           style={{
