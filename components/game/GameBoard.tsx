@@ -115,13 +115,9 @@ export default function GameBoard() {
         </div>
 
         {/* Duels header and game type tabs */}
-        <div className="space-y-3">
+        <div className="space-y-3 w-full min-w-0">
           <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
+            className="flex flex-wrap items-center justify-between gap-2"
           >
             <div
               style={{
@@ -148,11 +144,7 @@ export default function GameBoard() {
           </div>
 
           <div
-            style={{
-              display: 'flex',
-              gap: '10px',
-              flexWrap: 'wrap',
-            }}
+            className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 w-full"
           >
             {[
               { label: 'Addition', value: 'addition' as OperationMode },
@@ -166,9 +158,8 @@ export default function GameBoard() {
                 <button
                   key={tab.label}
                   onClick={() => setOperation(tab.value)}
-                  className="text-[10px] sm:text-xs"
+                  className="text-[9px] sm:text-xs shrink-0 px-2 py-1 sm:px-2 sm:py-1.5"
                   style={{
-                    padding: '8px 10px',
                     borderRadius: '999px',
                     border: isActive
                       ? '1px solid rgba(249,115,22,0.5)'

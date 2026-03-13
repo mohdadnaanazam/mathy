@@ -154,9 +154,9 @@ export default function LandingPage() {
 
           {/* Duels tabs row */}
           <div className="flex items-center justify-between pt-2">
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="section-label">Duels</div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap sm:gap-2 w-full">
                 {(['Addition', 'Subtraction', 'Multiplication', 'Division', 'Mixture'] as ModeLabel[]).map(mode => {
                   const active = activeMode === mode
                   return (
@@ -164,7 +164,7 @@ export default function LandingPage() {
                       key={mode}
                       type="button"
                   onClick={() => setActiveMode(mode)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-colors duration-200 ${
+                      className={`flex items-center gap-2 rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-semibold transition-colors duration-200 shrink-0 ${
                         active
                           ? 'bg-[var(--accent-orange-muted)] text-[var(--accent-orange)] border border-[rgba(249,115,22,0.4)]'
                           : 'bg-zinc-900/80 text-zinc-400 border border-transparent hover:text-zinc-300'
