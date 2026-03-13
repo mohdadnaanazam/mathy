@@ -15,43 +15,49 @@ export default function Timer({ seconds, onTimeUp, type = 'math' }: Props) {
   const s = remaining % 60
   const timeStr = `${m}:${s.toString().padStart(2, '0')}`
 
-  const baseColor = type === 'math' ? 'var(--accent-cyan)' : 'var(--accent-pink)'
-  const color = isLow ? '#ff3333' : baseColor
+  const color = isLow ? '#ef4444' : '#94a3b8'
+  const fillBg = isLow ? '#ef4444' : '#64748b'
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-      
-      {/* Icon + Time */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '8px',
-        fontFamily: 'var(--font-mono)', fontSize: '24px', fontWeight: 700,
-        color: isLow ? '#ff3333' : '#fff',
-        textShadow: isLow ? '0 0 20px rgba(255, 51, 51, 0.5)' : `0 0 10px ${color}`,
-        transition: 'color 0.3s'
-      }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '14px',
+          fontWeight: 600,
+          color,
+          letterSpacing: '0.05em',
+        }}
+      >
         <motion.span
           animate={{ opacity: isLow ? [1, 0.5, 1] : 1 }}
           transition={isLow ? { duration: 0.5, repeat: Infinity } : {}}
-          style={{ fontSize: '20px', color }}
+          style={{ fontSize: '14px' }}
         >
-          {isLow ? '⚠️' : '⏱'}
+          {isLow ? '⚠' : '⏱'}
         </motion.span>
         {timeStr}
       </div>
-
-      {/* Progress Bar Container */}
-      <div style={{
-        width: '120px', height: '6px',
-        background: 'rgba(255,255,255,0.05)',
-        borderRadius: '100px',
-        overflow: 'hidden',
-        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)'
-      }}>
-        {/* Fill */}
+      <div
+        style={{
+          width: '80px',
+          height: '4px',
+          background: '#27272a',
+          borderRadius: '999px',
+          overflow: 'hidden',
+        }}
+      >
         <motion.div
-          animate={{ width: `${pct}%`, backgroundColor: color }}
-          transition={{ duration: 0.5, ease: 'linear' }}
-          style={{ height: '100%', borderRadius: '100px', boxShadow: `0 0 10px ${color}` }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.4, ease: 'linear' }}
+          style={{
+            height: '100%',
+            borderRadius: '999px',
+            backgroundColor: fillBg,
+          }}
         />
       </div>
     </div>

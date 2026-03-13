@@ -56,17 +56,19 @@ export default function Navbar() {
             <span>{formatTime(timeToReset)}</span>
             <Link
               href="/game"
-              className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-900"
+              className="rounded-full px-3 py-1.5 font-semibold text-[11px] transition-all duration-200 hover:shadow-[0_0_16px_rgba(249,115,22,0.3)]"
+              style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
             >
               Play →
             </Link>
           </div>
         </div>
 
-        {/* Mobile: simple Play button */}
+        {/* Mobile: Play button */}
         <Link
           href="/game"
-          className="inline-flex md:hidden items-center justify-center rounded-full border border-slate-500 px-3 py-1 text-xs font-semibold text-slate-100"
+          className="inline-flex md:hidden items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200"
+          style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
         >
           Play
         </Link>

@@ -6,13 +6,17 @@ import gsap from 'gsap'
 import { generateMathQuestion } from '@/lib/mathGenerator'
 import { useGameStore } from '@/store/gameStore'
 import { useAttempts } from '@/hooks/useAttempts'
-import { MathQuestion } from '@/types'
+import { MathQuestion, OperationMode } from '@/types'
 import Timer from './Timer'
 
 export default function MathGame() {
-  const [question, setQuestion] = useState<MathQuestion>(() => generateMathQuestion('medium'))
+  const operation = useGameStore(s => s.operation)
+  const [question, setQuestion] = useState<MathQuestion>(() =>
+    generateMathQuestion('medium', operation),
+  )
   const [selected, setSelected] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
+  const [typed, setTyped] = useState('')
   const [streak,   setStreak]   = useState(0)
   const [timerKey, setTimerKey] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -29,17 +33,18 @@ export default function MathGame() {
     })
   }, [])
 
-  function nextQuestion() {
-    setQuestion(generateMathQuestion(difficulty))
+  function nextQuestion(currentMode?: OperationMode) {
+    const mode = currentMode ?? operation
+    setQuestion(generateMathQuestion(difficulty, mode))
     setSelected(null)
     setFeedback(null)
+    setTyped('')
     setTimerKey(k => k + 1)
   }
 
-  const handleAnswer = useCallback((opt: number) => {
-    if (selected !== null || feedback !== null) return
-    setSelected(opt)
-    const correct = opt === question.answer
+  const handleAnswer = useCallback((answer: number) => {
+    if (feedback !== null) return
+    const correct = answer === question.answer
     setFeedback(correct ? 'correct' : 'wrong')
     if (correct) {
       addScore(streak >= 2 ? 150 : 100)
@@ -48,8 +53,26 @@ export default function MathGame() {
       setStreak(0)
     }
     recordAttempt()
-    setTimeout(nextQuestion, 1000)
-  }, [selected, feedback, question, streak, addScore, difficulty])
+    setTimeout(() => nextQuestion(), 800)
+  }, [feedback, question, streak, addScore, difficulty, operation])
+
+  const handleDigit = (d: string) => {
+    if (feedback !== null) return
+    if (typed.length >= 6) return
+    setTyped(prev => (prev === '0' && d !== '.' ? d : prev + d))
+  }
+
+  const handleBackspace = () => {
+    if (feedback !== null) return
+    setTyped(prev => prev.slice(0, -1))
+  }
+
+  const handleSubmit = () => {
+    if (!typed.trim() || feedback !== null) return
+    const value = Number(typed)
+    if (Number.isNaN(value)) return
+    handleAnswer(value)
+  }
 
   function handleTimeUp() {
     recordHourlyAttempt()
@@ -57,14 +80,22 @@ export default function MathGame() {
     nextQuestion()
   }
 
+  // Keep questions in sync when operation mode changes from outside
+  const lastOpRef = useRef<OperationMode>(operation)
+  if (lastOpRef.current !== operation) {
+    lastOpRef.current = operation
+    nextQuestion(operation)
+  }
+
   return (
-    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '48px', width: '100%', maxWidth: '520px', margin: '0 auto' }}>
+    <div
+      ref={containerRef}
+      className="w-full max-w-full flex flex-col items-center mx-auto px-2 py-3 sm:px-4 sm:py-5 gap-4 sm:gap-6"
+    >
 
       {/* Timer Header Row */}
-      <div className='g-item' style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="g-item w-full" style={{ marginBottom: '8px' }}>
         <Timer key={timerKey} seconds={90} onTimeUp={handleTimeUp} type="math" />
-        
-        {/* Streak badge */}
         <AnimatePresence>
           {streak >= 2 && (
             <motion.div
@@ -72,125 +103,103 @@ export default function MathGame() {
               initial={{ scale: 0.8, opacity: 0, x: 20 }}
               animate={{ scale: 1, opacity: 1, x: 0 }}
               exit={{ scale: 0.8, opacity: 0, x: 20 }}
+              className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold"
               style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '10px 20px', borderRadius: '100px',
-                border: '1px solid var(--accent-cyan)',
-                background: 'rgba(0, 240, 255, 0.1)',
-                boxShadow: '0 0 20px rgba(0, 240, 255, 0.2)'
+                borderColor: '#27272a',
+                background: '#18181b',
+                color: '#94a3b8',
               }}
             >
-              <span style={{ fontSize: '18px' }}>⚡</span>
-              <span style={{ fontSize: '14px', color: '#fff', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{streak}× COMBO</span>
+              <span>⚡</span>
+              {streak}× COMBO
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       {/* Question presentation */}
-      <AnimatePresence mode='wait'>
+      <AnimatePresence mode="wait">
         <motion.div
           key={question.expression}
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0,  scale: 1    }}
-          exit={{   opacity: 0, y: -20, scale: 0.95  }}
-          transition={{ duration: 0.4, ease: [0.16,1,0.3,1] }}
-          className='g-item bg-[var(--bg-card)] border border-[rgba(0,240,255,0.15)] rounded-3xl relative w-full text-center px-6 py-12 sm:px-10 sm:py-16'
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -16, scale: 0.98 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="g-item relative w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center"
+          className="px-4 py-5 sm:px-5 sm:py-6"
           style={{
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           }}
         >
-          <div style={{
-            position: 'absolute', top: '24px', right: '24px',
-            fontSize: '12px', fontFamily: 'var(--font-mono)', letterSpacing: '0.12em',
-            color: 'var(--accent-cyan)', textTransform: 'uppercase', fontWeight: 700,
-            background: 'rgba(0, 240, 255, 0.08)', padding: '6px 14px', borderRadius: '100px'
-          }}>
+          <div
+            className="absolute right-4 top-4 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider"
+            style={{ color: '#94a3b8' }}
+          >
             {question.operation === '+' ? 'Addition' : question.operation === '-' ? 'Subtract' : question.operation === '×' ? 'Multiply' : 'Divide'}
           </div>
-          <p style={{ fontSize: '14px', fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '24px' }}>
+          <p className="section-label mb-4 text-slate-400">
             Calculate the result
           </p>
-          <div className="text-[clamp(40px,10vw,88px)] font-bold text-white tracking-tight leading-none">
+          <div className="text-[clamp(28px,7vw,56px)] font-bold leading-none text-white">
             {question.expression}
-            <span style={{ color: 'var(--accent-cyan)' }}> = ?</span>
+            <span className="text-slate-400"> = ?</span>
           </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Answer grid */}
-      <div className='g-item grid grid-cols-2 gap-4 w-full'>
-        {question.options.map((opt, i) => {
-          const isSelected = selected === opt
-          const isCorrect  = opt === question.answer
-          const showCorrect = !isSelected && selected !== null && isCorrect
-
-          let bg      = 'rgba(255,255,255,0.02)'
-          let border  = 'rgba(255,255,255,0.1)'
-          let color   = '#fff'
-          let transform = 'scale(1)'
-          let boxShadow = 'none'
-
-          if (isSelected && isCorrect)  { 
-            bg = 'rgba(0, 240, 255, 0.1)'
-            border = 'var(--accent-cyan)'
-            transform = 'scale(1.02)'
-            boxShadow = '0 0 20px rgba(0, 240, 255, 0.3)'
-          }
-          if (isSelected && !isCorrect) { 
-            bg = 'rgba(255, 0, 127, 0.1)'
-            border = 'var(--accent-pink)'
-            color = 'rgba(255,255,255,0.5)' 
-            boxShadow = '0 0 20px rgba(255, 0, 127, 0.2)'
-          }
-          if (showCorrect) { 
-            border = 'rgba(0, 240, 255, 0.5)' 
-            color = 'var(--accent-cyan)'
-          }
-
-          return (
-            <motion.button
-              key={`${question.expression}-${i}`}
-              whileHover={selected === null ? { scale: 1.02, y: -4, backgroundColor: 'rgba(255,255,255,0.06)' } : {}}
-              whileTap={selected === null ? { scale: 0.98 } : {}}
-              onClick={() => handleAnswer(opt)}
-              disabled={selected !== null}
-              className="relative rounded-2xl border-2 py-6 px-4 sm:py-8 sm:px-6 font-mono font-bold text-2xl sm:text-4xl transition-all duration-300"
-              style={{
-                borderColor: border, background: bg, color, textShadow: isSelected && isCorrect ? '0 0 10px rgba(0, 240, 255, 0.5)' : 'none',
-                cursor: selected === null ? 'pointer' : 'not-allowed',
-                transform, boxShadow,
-              }}
+      {/* Typed answer input + keypad */}
+      <div className="g-item w-full space-y-3">
+        <div
+          style={{
+            textAlign: 'center',
+            fontSize: '11px',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            fontFamily: 'var(--font-mono)',
+            color: 'rgba(148,163,184,0.9)',
+          }}
+        >
+          Type out your answer
+        </div>
+        <div
+          className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 px-4 py-3 text-center font-mono text-sm text-zinc-300"
+        >
+          {typed || 'Enter answer'}
+        </div>
+        <div className="mt-1 grid grid-cols-3 gap-1.5 sm:gap-2">
+          {['1','2','3','4','5','6','7','8','9','.','0','⌫'].map(key => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => (key === '⌫' ? handleBackspace() : handleDigit(key))}
+              className="rounded-xl bg-zinc-900/80 border border-zinc-800 py-2.5 sm:py-3 text-center text-sm font-semibold text-zinc-100 active:bg-zinc-800 min-h-[44px] sm:min-h-0"
             >
-              {opt}
-              {isSelected && isCorrect && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  style={{ position: 'absolute', top: '16px', right: '20px', fontSize: '16px', color: 'var(--accent-cyan)' }}>
-                  ✓
-                </motion.span>
-              )}
-              {isSelected && !isCorrect && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  style={{ position: 'absolute', top: '16px', right: '20px', fontSize: '16px', color: 'var(--accent-pink)' }}>
-                  ✕
-                </motion.span>
-              )}
-            </motion.button>
-          )
-        })}
+              {key}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-800 py-2.5 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
+        >
+          Check answer
+        </button>
       </div>
 
       {/* Feedback text */}
       <AnimatePresence>
         {feedback && (
-          <motion.p key={feedback}
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ 
-              fontSize: '16px', fontFamily: 'var(--font-mono)', fontWeight: 700,
-              color: feedback === 'correct' ? 'var(--accent-cyan)' : 'var(--accent-pink)',
-              background: feedback === 'correct' ? 'rgba(0, 240, 255, 0.1)' : 'rgba(255, 0, 127, 0.1)',
-              padding: '12px 24px', borderRadius: '100px',
-              border: `1px solid ${feedback === 'correct' ? 'rgba(0, 240, 255, 0.2)' : 'rgba(255, 0, 127, 0.2)'}`
+          <motion.p
+            key={feedback}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="rounded-full border px-4 py-2 text-sm font-semibold"
+            style={{
+              color: feedback === 'correct' ? '#22c55e' : '#94a3b8',
+              borderColor: feedback === 'correct' ? 'rgba(34,197,94,0.3)' : '#27272a',
+              background: feedback === 'correct' ? 'rgba(34,197,94,0.08)' : '#18181b',
             }}
           >
             {feedback === 'correct'

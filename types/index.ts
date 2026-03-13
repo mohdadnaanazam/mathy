@@ -2,6 +2,12 @@
 
 export type GameType = 'math' | 'memory'
 export type Difficulty = 'easy' | 'medium' | 'hard'
+export type OperationMode =
+  | 'addition'
+  | 'subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'mixture'
 
 export interface MathQuestion {
   expression: string
@@ -42,4 +48,5 @@ export interface GameState {
   gamesPlayed: number
   isLocked:    boolean
   difficulty:  Difficulty
+  operation?:  OperationMode
 }

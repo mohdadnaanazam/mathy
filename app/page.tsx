@@ -2,39 +2,58 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Play, Brain, Puzzle, Crown } from 'lucide-react'
+import { Plus, Minus, X, Divide, Sparkles } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
-import { GameType } from '@/types'
+import { GameType, OperationMode } from '@/types'
 import { useAttempts } from '@/hooks/useAttempts'
 import { formatTime } from '@/lib/utils'
 import MobileArenaFooter from '@/components/layout/MobileArenaFooter'
 
-const MODE_TO_GAME_TYPE: Record<string, GameType> = {
-  Math: 'math',
-  Memory: 'memory',
-  Puzzle: 'memory',
-  Classical: 'memory',
+type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture'
+
+const MODE_TO_OPERATION: Record<ModeLabel, OperationMode> = {
+  Addition: 'addition',
+  Subtraction: 'subtraction',
+  Multiplication: 'multiplication',
+  Division: 'division',
+  Mixture: 'mixture',
 }
 
 export default function LandingPage() {
   const router = useRouter()
   const setType = useGameStore(s => s.setGameType)
+  const setOperation = useGameStore(s => s.setOperation)
   const { timeToReset } = useAttempts()
 
   const [activeChallenge, setActiveChallenge] = useState<'Puzzle' | 'Math'>('Puzzle')
-  const [activeMode, setActiveMode] = useState<'Math' | 'Memory' | 'Puzzle' | 'Classical'>('Memory')
+  const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
 
-  function play(type: GameType) {
+  function play(type: GameType, operationMode?: ModeLabel) {
     setType(type)
+    if (type === 'math' && operationMode) {
+      setOperation(MODE_TO_OPERATION[operationMode])
+    }
     router.push('/game')
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden relative pb-24 pt-20 md:pt-24">
+    <main className="min-h-screen overflow-x-hidden relative pb-24 pt-20 md:pt-24 bg-[var(--bg-surface)]">
+
+      {/* Hero / intro */}
+      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-10 md:py-14">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">
+            Train your brain
+          </h1>
+          <p className="text-sm sm:text-base text-slate-400 max-w-lg">
+            Quick math duels. No signup. Sharpen your skills in under a minute.
+          </p>
+        </div>
+      </section>
 
       {/* DUELS SECTION (from phone UI) */}
-      <section className="border-t border-slate-800 bg-background py-8 md:py-10">
+      <section className="border-b border-[var(--border-subtle)] bg-background py-8 md:py-10">
         <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-4 space-y-5 md:space-y-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -45,12 +64,12 @@ export default function LandingPage() {
             </div>
             <Link
               href="/game"
-              className="inline-flex items-center justify-center rounded-full px-3.5 py-1.5 text-[10px] font-mono uppercase tracking-[0.22em]"
+              className="inline-flex items-center justify-center rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-200 hover:shadow-[0_0_24px_rgba(249,115,22,0.35)] hover:scale-[1.02] active:scale-[0.98]"
               style={{
-                backgroundColor: '#f97316',
+                backgroundColor: 'var(--accent-orange)',
                 color: '#111827',
-                border: '1px solid #ea580c',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.55)',
+                border: '1px solid var(--accent-orange-hover)',
+                boxShadow: '0 4px 16px rgba(249,115,22,0.25)',
                 whiteSpace: 'nowrap',
               }}
             >
@@ -68,13 +87,13 @@ export default function LandingPage() {
                   type="button"
                   onClick={() => {
                     setActiveChallenge(label as 'Puzzle' | 'Math')
-                    setActiveMode(label as 'Math' | 'Memory' | 'Puzzle' | 'Classical')
+                    setActiveMode(label === 'Puzzle' ? 'Mixture' : 'Addition')
                   }}
-                  className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between text-xs sm:text-sm font-semibold"
+                  className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between text-xs sm:text-sm font-semibold transition-all duration-200"
                   style={{
-                    backgroundColor: '#050816',
+                    backgroundColor: 'var(--bg-surface)',
                     borderRadius: 999,
-                    border: isActive ? '1px solid #f97316' : '1px solid #27272a',
+                    border: isActive ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
                   }}
                 >
                   <span
@@ -85,7 +104,7 @@ export default function LandingPage() {
                   </span>
                   <span
                     style={{
-                      color: isActive ? '#f97316' : '#9ca3af',
+                      color: isActive ? 'var(--accent-orange)' : '#9ca3af',
                       fontSize: '14px',
                     }}
                   >
@@ -96,37 +115,36 @@ export default function LandingPage() {
             })}
           </div>
 
-          {/* Icon row for duels (play, memory, puzzle, classical) */}
-          <div className="flex gap-2 sm:gap-3 pt-4 mb-3 sm:mb-4">
+          {/* Icon row for duels (operation modes) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 pt-4 mb-3 sm:mb-4">
             {[
-              { icon: Play, label: 'Math' },
-              { icon: Brain, label: 'Memory' },
-              { icon: Puzzle, label: 'Puzzle' },
-              { icon: Crown, label: 'Classical' },
+              { icon: Plus, label: 'Addition' as ModeLabel },
+              { icon: Minus, label: 'Subtraction' as ModeLabel },
+              { icon: X, label: 'Multiplication' as ModeLabel },
+              { icon: Divide, label: 'Division' as ModeLabel },
+              { icon: Sparkles, label: 'Mixture' as ModeLabel },
             ].map(item => {
               const active = activeMode === item.label
               return (
                 <button
                   key={item.label}
                   type="button"
-                  onClick={() =>
-                    setActiveMode(item.label as 'Math' | 'Memory' | 'Puzzle' | 'Classical')
-                  }
-                  className="flex flex-1 flex-col items-center justify-center rounded-lg px-3 py-2.5 sm:py-3"
+                  onClick={() => setActiveMode(item.label)}
+                  className="flex flex-1 flex-col items-center justify-center rounded-xl px-3 py-2.5 sm:py-3 transition-all duration-200"
                   style={{
-                    backgroundColor: '#050816',
+                    backgroundColor: 'var(--bg-surface)',
                     borderRadius: 12,
-                    border: active ? '1px solid #22d3ee' : '1px solid #27272a',
-                    boxShadow: active ? '0 0 0 1px rgba(34,211,238,0.5)' : 'none',
+                    border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                    boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
                   }}
                 >
                   <item.icon
                     size={16}
                     strokeWidth={active ? 2.4 : 2}
                     className="mb-0.5"
-                    style={{ color: active ? '#22d3ee' : '#e5e7eb' }}
+                    style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
                   />
-                  <span className="mt-0.5 text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-300">
+                  <span className="mt-0.5 text-[9px] sm:text-[10px] font-semibold tracking-[0.08em] text-slate-300">
                     {item.label}
                   </span>
                 </button>
@@ -139,19 +157,17 @@ export default function LandingPage() {
             <div className="space-y-1">
               <div className="section-label">Duels</div>
               <div className="flex gap-2">
-                {['Math', 'Memory', 'Puzzle', 'Classical'].map(mode => {
+                {(['Addition', 'Subtraction', 'Multiplication', 'Division', 'Mixture'] as ModeLabel[]).map(mode => {
                   const active = activeMode === mode
                   return (
                     <button
                       key={mode}
                       type="button"
-                      onClick={() =>
-                        setActiveMode(mode as 'Math' | 'Memory' | 'Puzzle' | 'Classical')
-                      }
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${
+                  onClick={() => setActiveMode(mode)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-colors duration-200 ${
                         active
-                          ? 'bg-zinc-100 text-zinc-900'
-                          : 'bg-zinc-900 text-zinc-400'
+                          ? 'bg-[var(--accent-orange-muted)] text-[var(--accent-orange)] border border-[rgba(249,115,22,0.4)]'
+                          : 'bg-zinc-900/80 text-zinc-400 border border-transparent hover:text-zinc-300'
                       }`}
                     >
                       {mode}
@@ -167,7 +183,7 @@ export default function LandingPage() {
             {/* Primary duel card */}
             <div className="card px-4 py-4 sm:px-5 sm:py-5">
               <div className="mb-4 flex items-center justify-between text-xs font-mono uppercase tracking-[0.18em] text-slate-400">
-                <span>{activeMode === 'Memory' ? 'Memory' : 'Math'}</span>
+                <span>{activeMode}</span>
                 <span className="rounded-full bg-zinc-800 px-3 py-1 text-[10px] text-zinc-100">
                   Just played
                 </span>
@@ -180,8 +196,8 @@ export default function LandingPage() {
               </p>
               <button
                 type="button"
-                className="mt-2 text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
-                onClick={() => play(MODE_TO_GAME_TYPE[activeMode])}
+                className="mt-2 text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-success)] hover:opacity-90 transition-opacity cursor-pointer"
+                onClick={() => play('math', activeMode)}
               >
                 Tap to enter live game &rarr;
               </button>
@@ -190,14 +206,14 @@ export default function LandingPage() {
             {/* Memory duel cards */}
             {[
               {
-                tag: 'Memory',
-                title: 'Mind Snap Duels',
-                body: 'Who can snap faster?',
+                tag: 'Addition',
+                title: 'Speed Add Duels',
+                body: 'Quick-fire addition battles.',
               },
               {
-                tag: 'Memory',
-                title: 'Flash Anzan Duels',
-                body: 'Rapid-fire mental math flashes.',
+                tag: 'Multiplication',
+                title: 'Grid Multiply Duels',
+                body: 'Race on multiplication grids.',
               },
             ].map(card => (
               <div key={card.title} className="card px-4 py-4 sm:px-5 sm:py-5">
@@ -212,8 +228,8 @@ export default function LandingPage() {
                 </p>
                 <button
                   type="button"
-                  className="mt-2 text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
-                  onClick={() => play('memory')}
+                  className="mt-2 text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-success)] hover:opacity-90 transition-opacity cursor-pointer"
+                  onClick={() => play('math', 'Mixture')}
                 >
                   Tap to enter live game &rarr;
                 </button>
@@ -224,7 +240,7 @@ export default function LandingPage() {
       </section>
 
       {/* Compact status strip above footer */}
-      <section className="border-t border-slate-900 bg-black/90">
+      <section className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-4">
           <div className="flex items-center gap-3 text-xs font-mono tracking-[0.16em] text-slate-300">
             <span className="uppercase text-[10px] text-slate-400">Energy</span>

@@ -76,13 +76,20 @@
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  /* Mathy accents layered on top but keep ProCodeX base */
-  --accent-cyan: #00f5ff;
+  /* Mathy accents – unified palette */
+  --accent-orange: #f97316;
+  --accent-orange-hover: #ea580c;
+  --accent-orange-muted: rgba(249, 115, 22, 0.15);
+  --accent-cyan: #06b6d4;
   --accent-pink: #ff6b81;
   --accent-purple: #8b3dff;
-  --bg-card: rgba(24, 24, 27, 1);
-  --border-subtle: rgba(39, 39, 42, 1);
-  --border-bright: rgba(82, 82, 91, 1);
+  --accent-success: #10b981;
+  --accent-success-muted: rgba(16, 185, 129, 0.15);
+  --bg-card: rgba(24, 24, 27, 0.95);
+  --bg-card-elevated: rgba(30, 30, 35, 0.98);
+  --border-subtle: rgba(39, 39, 42, 0.8);
+  --border-bright: rgba(82, 82, 91, 0.6);
+  --bg-surface: #0c0c0f;
 }
 
 @layer base {
@@ -148,10 +155,10 @@
   /* Phone-style typography helpers */
   .section-label {
     font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.18em;
+    font-size: 10px;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(148, 163, 184, 0.9);
+    color: rgba(148, 163, 184, 0.85);
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -168,18 +175,24 @@
 
   /* Structural / cards */
   .card {
-    background: var(--card);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border-subtle);
-    border-radius: 20px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    border-radius: 16px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.02) inset;
   }
   .card:hover {
     border-color: var(--border-bright);
-    box-shadow: 0 18px 45px rgba(0,0,0,0.55);
-    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.03) inset;
+    transform: translateY(-1px);
+  }
+  .card-interactive {
+    cursor: pointer;
+  }
+  .card-interactive:active {
+    transform: translateY(0);
   }
 
   /* Primary & secondary buttons */
@@ -295,17 +308,28 @@
   font-size: 13px; font-weight: 600; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-urbanist);
   text-transform: uppercase; letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .toggle-btn {
+    padding: 6px 12px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
 }
 .toggle-active {
-  background: #3f3f46;
-  color: #f9fafb;
-  box-shadow: none;
+  background: var(--accent-orange-muted);
+  color: var(--accent-orange);
+  border: 1px solid rgba(249, 115, 22, 0.35);
 }
 .toggle-inactive {
-  background: rgba(15,23,42,0.95); color: #6b7280;
+  background: rgba(15,23,42,0.95);
+  color: #6b7280;
+  border: 1px solid transparent;
 }
 .toggle-inactive:hover {
-  color: #e5e7eb; background: rgba(15,23,42,1);
+  color: #e5e7eb;
+  background: rgba(30, 35, 45, 0.95);
 }
 
 /* ═══ RESPONSIVE NAV ════════════════════════════════════════════════════ */
