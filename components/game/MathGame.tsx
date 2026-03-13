@@ -125,8 +125,7 @@ export default function MathGame() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="g-item relative w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center"
-          className="px-4 py-5 sm:px-5 sm:py-6"
+          className="g-item relative w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center px-4 py-5 sm:px-5 sm:py-6"
           style={{
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           }}

@@ -10,7 +10,7 @@ export default function Navbar() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 bg-[#050816] border-b border-slate-800">
+    <nav className="fixed inset-x-0 top-0 z-50 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
         {/* Left: logo / brand */}
         <Link

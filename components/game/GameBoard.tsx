@@ -264,7 +264,7 @@ export default function GameBoard() {
       </div>
 
       {/* Status bar */}
-      <div className="border-b border-zinc-800 bg-zinc-950/95 md:sticky md:top-[64px] md:z-40">
+      <div className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] md:sticky md:top-[64px] md:z-40">
         <div
           className="mx-auto flex min-h-[48px] sm:min-h-[52px] w-full max-w-4xl flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 sm:py-0 lg:px-4"
         >
