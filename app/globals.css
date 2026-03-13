@@ -9,7 +9,7 @@
   --border-bright:rgba(255, 255, 255, 0.2);
   
   --accent-cyan:  #00f5ff;
-  --accent-pink:  #ff4b8b; /* A more lovable rose/sunset pink instead of neon magenta */
+  --accent-pink:  #ff6b81; /* A softer, lovable coral/watermelon pink */
   --accent-purple:#8b3dff;
   --text-main:    #ffffff;
   --text-dim:     rgba(255, 255, 255, 0.5);
@@ -156,4 +156,13 @@ a { text-decoration: none; }
 }
 .toggle-inactive:hover {
   color: #fff; background: rgba(255,255,255,0.05);
+}
+
+/* ═══ RESPONSIVE NAV ════════════════════════════════════════════════════ */
+.nav-brand-text { display: inline; }
+.nav-link { padding: 10px 20px; font-size: 15px; }
+
+@media (max-width: 480px) {
+  .nav-brand-text { display: none; }
+  .nav-link { padding: 8px 12px; font-size: 14px; }
 }

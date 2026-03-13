@@ -17,7 +17,7 @@ export default function Navbar() {
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
     }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="nav-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
         {/* Logo */}
         <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', position: 'relative', zIndex: 200 }}>
@@ -30,7 +30,7 @@ export default function Navbar() {
           }}>
             <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-cyan)', boxShadow: '0 0 10px var(--accent-cyan)' }} />
           </div>
-          <span style={{ fontWeight: 800, color: '#fff', fontSize: '18px', letterSpacing: '0.04em', fontFamily: 'var(--font-sans)', textShadow: '0 0 12px rgba(255,255,255,0.3)' }}>
+          <span className="nav-brand-text" style={{ fontWeight: 800, color: '#fff', fontSize: '18px', letterSpacing: '0.04em', fontFamily: 'var(--font-sans)', textShadow: '0 0 12px rgba(255,255,255,0.3)' }}>
             AI<span style={{ color: 'var(--accent-cyan)' }}>GAMES</span>
           </span>
         </Link>
@@ -38,8 +38,8 @@ export default function Navbar() {
         {/* Nav links */}
         <div style={{ display: 'flex', gap: '8px' }}>
           {[{ href: '/', label: 'Home' }, { href: '/game', label: 'Play' }].map(({ href, label }) => (
-            <Link key={href} href={href} style={{
-              padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: 600,
+            <Link key={href} href={href} className="nav-link" style={{
+              borderRadius: '8px', fontWeight: 600,
               textDecoration: 'none', transition: 'all 0.15s',
               background: pathname === href ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: pathname === href ? '#fff' : 'rgba(255,255,255,0.5)',
