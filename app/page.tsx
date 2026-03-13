@@ -1,16 +1,25 @@
 'use client'
 
-import { useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { GameType } from '@/types'
 import MobileArenaFooter from '@/components/layout/MobileArenaFooter'
 
+const MODE_TO_GAME_TYPE: Record<string, GameType> = {
+  Math: 'math',
+  Memory: 'memory',
+  Puzzle: 'memory',
+  Classical: 'memory',
+}
+
 export default function LandingPage() {
-  const heroRef = useRef<HTMLElement>(null)
   const router = useRouter()
   const setType = useGameStore(s => s.setGameType)
+
+  const [activeChallenge, setActiveChallenge] = useState<'Puzzle' | 'Math'>('Puzzle')
+  const [activeMode, setActiveMode] = useState<'Math' | 'Memory' | 'Puzzle' | 'Classical'>('Memory')
 
   function play(type: GameType) {
     setType(type)
@@ -18,163 +27,17 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden relative pb-24 md:pb-0">
-      {/* HERO */}
-      <section
-        ref={heroRef}
-        className="relative flex items-center pt-20 pb-16 px-4"
-      >
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 lg:flex-row lg:items-center">
-          {/* Left: copy */}
-          <div className="flex-1 space-y-8 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-4 py-1.5">
-              <span
-                style={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '999px',
-                  backgroundColor: '#22c55e',
-                  boxShadow: '0 0 12px rgba(34,197,94,0.9)',
-                }}
-              />
-              <span className="text-[11px] font-mono tracking-[0.18em] uppercase text-slate-300">
-                Practice math & memory
-              </span>
-            </div>
+    <main className="min-h-screen overflow-x-hidden relative pb-80">
 
-            <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-white">
-                Train your brain with
-                <br />
-                quick daily games.
-              </h1>
-              <p className="max-w-xl text-[15px] leading-relaxed text-slate-300">
-                Mathy gives you short, focused sessions for arithmetic and
-                memory. Open the site, tap play, and finish a round in under
-                two minutes.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 md:justify-start">
-              <button
-                className="btn-primary"
-                style={{
-                  backgroundColor: '#f97316',
-                  boxShadow: '0 10px 30px rgba(248,113,113,0.35)',
-                }}
-                onClick={() => play('math')}
-              >
-                Get started now
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => play('memory')}
-              >
-                Try memory cards
-              </button>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-8 text-sm text-slate-300 md:justify-start">
-              <div>
-                <div className="font-mono text-lg text-white">2</div>
-                <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                  Game modes
-                </div>
-              </div>
-              <div>
-                <div className="font-mono text-lg text-white">90s</div>
-                <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                  Average round
-                </div>
-              </div>
-              <div>
-                <div className="font-mono text-lg text-white">0</div>
-                <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                  Sign-ups needed
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: simple preview card */}
-          <div className="flex-1">
-            <div
-              className="card"
-              style={{
-                padding: '24px',
-                maxWidth: '420px',
-                margin: '0 auto',
-              }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      width: '9px',
-                      height: '9px',
-                      borderRadius: '999px',
-                      backgroundColor: '#22c55e',
-                    }}
-                  />
-                  <span className="text-xs font-mono uppercase tracking-[0.18em] text-slate-400">
-                    Next round
-                  </span>
-                </div>
-                <span className="text-xs font-mono text-slate-400">
-                  01:30
-                </span>
-              </div>
-
-              <div className="rounded-xl bg-slate-900/80 border border-slate-800 px-4 py-6 mb-4">
-                <div className="mb-2 text-xs font-mono uppercase tracking-[0.16em] text-slate-500">
-                  Example question
-                </div>
-                <div className="text-3xl font-semibold text-white">
-                  7 × 8 = <span className="text-gradient">?</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-5">
-                {['52', '54', '56', '60'].map((opt, idx) => (
-                  <button
-                    key={opt}
-                    type="button"
-                    className="rounded-lg border border-slate-700 bg-slate-900/70 py-2 text-center text-sm font-mono text-slate-200"
-                    style={
-                      idx === 2
-                        ? {
-                            borderColor: '#22c55e',
-                            color: '#bbf7d0',
-                          }
-                        : undefined
-                    }
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                className="w-full rounded-full bg-slate-100 py-2.5 text-sm font-semibold tracking-[0.14em] uppercase text-slate-900"
-                onClick={() => play('math')}
-              >
-                Play a quick round
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SIMPLE SECTIONS */}
-      <section className="border-t border-slate-800 bg-[#050816] py-12">
-        <div className="container">
-          <div className="mb-6 flex items-center justify-between gap-4">
+      {/* DUELS SECTION (from phone UI) */}
+      <section className="border-t border-slate-800 bg-background py-10">
+        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-0 space-y-6">
+          <div className="flex items-center justify-between">
             <div>
-              <div className="section-label mb-2">/ Modes</div>
-              <h2 className="text-2xl font-semibold text-white">
-                Two simple ways to play.
-              </h2>
+              <div className="section-label mb-1">/ Today's challenge</div>
+              <p className="text-xs text-slate-400">
+                Pick a mode and jump into a quick duel.
+              </p>
             </div>
             <Link
               href="/game"
@@ -184,46 +47,167 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="card p-5">
-              <div className="text-sm font-mono uppercase tracking-[0.18em] text-slate-400 mb-2">
-                Math
+          {/* Challenge pills */}
+          <div className="flex gap-3">
+            {['Puzzle', 'Math'].map(label => {
+              const isActive = activeChallenge === label
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => {
+                    setActiveChallenge(label as 'Puzzle' | 'Math')
+                    setActiveMode(label as 'Math' | 'Memory' | 'Puzzle' | 'Classical')
+                  }}
+                  className="flex-1 px-4 py-3 flex items-center justify-between text-sm font-semibold"
+                  style={{
+                    backgroundColor: '#050816',
+                    borderRadius: 999,
+                    border: isActive ? '1px solid #f97316' : '1px solid #27272a',
+                  }}
+                >
+                  <span
+                    className="uppercase tracking-[0.16em] text-xs"
+                    style={{ color: '#f9fafb' }}
+                  >
+                    {label}
+                  </span>
+                  <span
+                    style={{
+                      color: isActive ? '#f97316' : '#9ca3af',
+                      fontSize: '14px',
+                    }}
+                  >
+                    ›
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Icon row for duels (play, memory, puzzle, classical) */}
+          <div className="flex gap-3 pt-4">
+            {[
+              { icon: '▶', label: 'Math' },
+              { icon: '🧠', label: 'Memory' },
+              { icon: '▦', label: 'Puzzle' },
+              { icon: '♛', label: 'Classical' },
+            ].map(item => {
+              const active = activeMode === item.label
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() =>
+                    setActiveMode(item.label as 'Math' | 'Memory' | 'Puzzle' | 'Classical')
+                  }
+                  className="flex flex-1 flex-col items-center justify-center rounded-lg px-3 py-3"
+                  style={{
+                    backgroundColor: '#18181b',
+                    borderRadius: 14,
+                    border: active ? '1px solid #22d3ee' : '1px solid #27272a',
+                    boxShadow: active ? '0 0 0 1px rgba(34,211,238,0.5)' : 'none',
+                  }}
+                >
+                  <span
+                    className="text-lg"
+                    style={{ color: active ? '#22d3ee' : '#e5e7eb' }}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-300">
+                    {item.label}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Duels tabs row */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="section-label">/ Duels</div>
+              <div className="flex gap-2">
+                {['Math', 'Memory', 'Puzzle', 'Classical'].map(mode => {
+                  const active = activeMode === mode
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() =>
+                        setActiveMode(mode as 'Math' | 'Memory' | 'Puzzle' | 'Classical')
+                      }
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${
+                        active
+                          ? 'bg-zinc-100 text-zinc-900'
+                          : 'bg-zinc-900 text-zinc-400'
+                      }`}
+                    >
+                      {mode}
+                    </button>
+                  )
+                })}
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-white">
-                Timed arithmetic drills
+            </div>
+          </div>
+
+          {/* Duels cards list */}
+          <div className="space-y-4">
+            {/* Primary duel card */}
+            <div className="card p-5">
+              <div className="mb-4 flex items-center justify-between text-xs font-mono uppercase tracking-[0.18em] text-slate-400">
+                <span>{activeMode === 'Memory' ? 'Memory' : 'Math'}</span>
+                <span className="rounded-full bg-zinc-800 px-3 py-1 text-[10px] text-zinc-100">
+                  Just played
+                </span>
+              </div>
+              <h3 className="mb-1 text-xl font-semibold text-white">
+                Sprint Duels
               </h3>
-              <p className="text-sm text-slate-300 mb-3">
-                Practice addition, subtraction, multiplication, and division
-                with a 90-second timer.
+              <p className="mb-3 text-sm text-slate-300">
+                Race to solve the most in 1 minute.
               </p>
               <button
                 type="button"
-                className="text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
-                onClick={() => play('math')}
+                className="mt-2 text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
+                onClick={() => play(MODE_TO_GAME_TYPE[activeMode])}
               >
-                Start math mode &rarr;
+                Tap to enter live game &rarr;
               </button>
             </div>
 
-            <div className="card p-5">
-              <div className="text-sm font-mono uppercase tracking-[0.18em] text-slate-400 mb-2">
-                Memory
+            {/* Memory duel cards */}
+            {[
+              {
+                tag: 'Memory',
+                title: 'Mind Snap Duels',
+                body: 'Who can snap faster?',
+              },
+              {
+                tag: 'Memory',
+                title: 'Flash Anzan Duels',
+                body: 'Rapid-fire mental math flashes.',
+              },
+            ].map(card => (
+              <div key={card.title} className="card p-5">
+                <div className="mb-2 text-xs font-mono uppercase tracking-[0.18em] text-slate-400">
+                  {card.tag}
+                </div>
+                <h3 className="mb-1 text-xl font-semibold text-white">
+                  {card.title}
+                </h3>
+                <p className="mb-3 text-sm text-slate-300">
+                  {card.body}
+                </p>
+                <button
+                  type="button"
+                  className="mt-2 text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
+                  onClick={() => play('memory')}
+                >
+                  Tap to enter live game &rarr;
+                </button>
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-white">
-                Flip-and-match cards
-              </h3>
-              <p className="text-sm text-slate-300 mb-3">
-                Strengthen short-term memory with quick emoji matching
-                rounds.
-              </p>
-              <button
-                type="button"
-                className="text-xs font-mono uppercase tracking-[0.18em] text-emerald-300"
-                onClick={() => play('memory')}
-              >
-                Start memory mode &rarr;
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </section>

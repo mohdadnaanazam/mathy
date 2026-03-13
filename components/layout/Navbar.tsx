@@ -63,17 +63,13 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile: simple menu icon */}
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 text-slate-200 md:hidden"
+        {/* Mobile: simple Play button */}
+        <Link
+          href="/game"
+          className="inline-flex md:hidden items-center justify-center rounded-full border border-slate-500 px-3 py-1 text-xs font-semibold text-slate-100"
         >
-          <span className="sr-only">Open menu</span>
-          <div className="space-y-1">
-            <span className="block h-0.5 w-4 bg-slate-200" />
-            <span className="block h-0.5 w-4 bg-slate-200" />
-          </div>
-        </button>
+          Play
+        </Link>
       </div>
     </nav>
   )

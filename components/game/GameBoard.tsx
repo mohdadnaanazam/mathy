@@ -495,11 +495,23 @@ export default function GameBoard() {
             )}
           </div>
 
-          {/* Game canvas */}
-          <div className='card p-6 md:p-10 lg:p-16 relative' style={{
-            boxShadow: gameType === 'math' ? '0 0 80px rgba(0, 240, 255, 0.08) inset, 0 8px 32px rgba(0,0,0,0.4)' : '0 0 80px rgba(255, 0, 127, 0.08) inset, 0 8px 32px rgba(0,0,0,0.4)',
-            border: `1px solid ${gameType === 'math' ? 'rgba(0, 240, 255, 0.2)' : 'rgba(255, 0, 127, 0.2)'}`
-          }}>
+          {/* Game canvas (slightly smaller than before) */}
+          <div
+            className="card relative mx-auto"
+            style={{
+              padding: '20px 16px',
+              maxWidth: '520px',
+              boxShadow:
+                gameType === 'math'
+                  ? '0 0 60px rgba(0, 240, 255, 0.06) inset, 0 6px 24px rgba(0,0,0,0.4)'
+                  : '0 0 60px rgba(255, 0, 127, 0.06) inset, 0 6px 24px rgba(0,0,0,0.4)',
+              border: `1px solid ${
+                gameType === 'math'
+                  ? 'rgba(0, 240, 255, 0.18)'
+                  : 'rgba(255, 0, 127, 0.18)'
+              }`,
+            }}
+          >
             {gameType === 'math' ? <MathGame /> : <MemoryGame />}
           </div>
         </main>
