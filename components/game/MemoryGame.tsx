@@ -31,7 +31,14 @@ export default function MemoryGame() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        style={{ textAlign: 'center', padding: '80px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}
+        style={{
+          textAlign: 'center',
+          padding: '48px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '24px',
+        }}
       >
         <div style={{ fontSize: '72px', filter: 'drop-shadow(0 0 20px rgba(255, 0, 127, 0.4))' }}>🎉</div>
         <div style={{ fontSize: '36px', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', textShadow: '0 0 20px rgba(255, 0, 127, 0.5)' }}>Flawless Victory.</div>
@@ -46,9 +53,25 @@ export default function MemoryGame() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', alignItems: 'center' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '32px',
+        alignItems: 'center',
+      }}
+    >
       {/* Header row */}
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          rowGap: '16px',
+        }}
+      >
         <Timer key='memory-timer' seconds={120} onTimeUp={handleTimeUp} type="memory" />
         <div style={{ textAlign: 'right' }}>
           <div className='section-label' style={{ color: 'var(--accent-pink)', marginBottom: '8px' }}>Total Moves</div>
@@ -59,13 +82,9 @@ export default function MemoryGame() {
       </div>
 
       {/* Card grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '16px',
-        width: '100%',
-        maxWidth: '480px',
-      }}>
+      <div
+        className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4 w-full max-w-[420px] sm:max-w-[480px]"
+      >
         {cards.map(card => {
           const isFlipped  = flippedIds.includes(card.id)
           const isMatched  = matchedIds.includes(card.id)
@@ -74,7 +93,11 @@ export default function MemoryGame() {
           return (
             <motion.div
               key={card.id}
-              style={{ perspective: '800px', cursor: isMatched ? 'default' : 'pointer', height: '100px' }}
+              style={{
+                perspective: '800px',
+                cursor: isMatched ? 'default' : 'pointer',
+              }}
+              className="aspect-[3/4]"
               onClick={() => handleCardClick(card.id)}
               whileHover={!faceUp ? { scale: 1.05, y: -4 } : {}}
               whileTap={!faceUp ? { scale: 0.95 } : {}}

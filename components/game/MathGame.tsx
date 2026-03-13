@@ -95,15 +95,9 @@ export default function MathGame() {
           animate={{ opacity: 1, y: 0,  scale: 1    }}
           exit={{   opacity: 0, y: -20, scale: 0.95  }}
           transition={{ duration: 0.4, ease: [0.16,1,0.3,1] }}
-          className='g-item'
+          className='g-item bg-[var(--bg-card)] border border-[rgba(0,240,255,0.15)] rounded-3xl relative w-full text-center px-6 py-12 sm:px-10 sm:py-16'
           style={{
-            width: '100%', textAlign: 'center',
-            padding: '64px 40px',
-            background: 'var(--bg-card)',
-            border: '1px solid rgba(0, 240, 255, 0.15)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            borderRadius: '24px',
-            position: 'relative',
           }}
         >
           <div style={{
@@ -117,7 +111,7 @@ export default function MathGame() {
           <p style={{ fontSize: '14px', fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '24px' }}>
             Calculate the result
           </p>
-          <div style={{ fontSize: 'clamp(56px, 10vw, 88px)', fontWeight: 700, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
+          <div className="text-[clamp(40px,10vw,88px)] font-bold text-white tracking-tight leading-none">
             {question.expression}
             <span style={{ color: 'var(--accent-cyan)' }}> = ?</span>
           </div>
@@ -125,7 +119,7 @@ export default function MathGame() {
       </AnimatePresence>
 
       {/* Answer grid */}
-      <div className='g-item' style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%' }}>
+      <div className='g-item grid grid-cols-2 gap-4 w-full'>
         {question.options.map((opt, i) => {
           const isSelected = selected === opt
           const isCorrect  = opt === question.answer
@@ -161,14 +155,11 @@ export default function MathGame() {
               whileTap={selected === null ? { scale: 0.98 } : {}}
               onClick={() => handleAnswer(opt)}
               disabled={selected !== null}
+              className="relative rounded-2xl border-2 py-6 px-4 sm:py-8 sm:px-6 font-mono font-bold text-2xl sm:text-4xl transition-all duration-300"
               style={{
-                padding: '32px 24px', borderRadius: '20px',
-                border: `2px solid ${border}`, background: bg, color, textShadow: isSelected && isCorrect ? '0 0 10px rgba(0, 240, 255, 0.5)' : 'none',
-                fontSize: '36px', fontWeight: 700, fontFamily: 'var(--font-mono)',
+                borderColor: border, background: bg, color, textShadow: isSelected && isCorrect ? '0 0 10px rgba(0, 240, 255, 0.5)' : 'none',
                 cursor: selected === null ? 'pointer' : 'not-allowed',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform, boxShadow,
-                position: 'relative',
               }}
             >
               {opt}

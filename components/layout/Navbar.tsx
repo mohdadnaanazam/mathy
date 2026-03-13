@@ -10,63 +10,58 @@ export default function Navbar() {
   const pathname  = usePathname()
 
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
-      background: 'rgba(0,0,0,0.85)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-    }}>
-      <div className="nav-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-
-        {/* Logo */}
-        <Link href='/' style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', position: 'relative', zIndex: 200 }}>
-          <div style={{
-            width: '32px', height: '32px', borderRadius: '8px',
-            border: '1px solid rgba(0, 240, 255, 0.4)',
-            background: 'rgba(0, 240, 255, 0.08)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 16px rgba(0, 240, 255, 0.2)'
-          }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-cyan)', boxShadow: '0 0 10px var(--accent-cyan)' }} />
+    <nav className="fixed inset-x-0 top-2 z-50 flex w-full justify-center px-4">
+      <div className="flex w-full max-w-6xl items-center justify-between rounded-full border border-border/30 bg-background/80 px-4 py-2 shadow-sm backdrop-blur-xl">
+        {/* Left: logo */}
+        <Link
+          href="/"
+          className="relative z-20 flex items-center gap-2 text-sm font-semibold tracking-[0.18em]"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[rgba(0,240,255,0.4)] bg-[rgba(0,240,255,0.08)] shadow-[0_0_16px_rgba(0,240,255,0.2)]">
+            <div className="h-2.5 w-2.5 rounded-full bg-[var(--accent-cyan)] shadow-[0_0_10px_var(--accent-cyan)]" />
           </div>
-          <span className="nav-brand-text" style={{ fontWeight: 800, color: '#fff', fontSize: '18px', letterSpacing: '0.04em', fontFamily: 'var(--font-sans)', textShadow: '0 0 12px rgba(255,255,255,0.3)' }}>
-            AI<span style={{ color: 'var(--accent-cyan)' }}>GAMES</span>
+          <span className="hidden text-sm font-extrabold text-white sm:inline nav-brand-text">
+            AI<span className="text-[var(--accent-cyan)]">GAMES</span>
           </span>
         </Link>
 
-        {/* Nav links */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[{ href: '/', label: 'Home' }, { href: '/game', label: 'Play' }].map(({ href, label }) => (
-            <Link key={href} href={href} className="nav-link" style={{
-              borderRadius: '8px', fontWeight: 600,
-              textDecoration: 'none', transition: 'all 0.15s',
-              background: pathname === href ? 'rgba(255,255,255,0.1)' : 'transparent',
-              color: pathname === href ? '#fff' : 'rgba(255,255,255,0.5)',
-              border: pathname === href ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent'
-            }}>
-              {label}
-            </Link>
-          ))}
+        {/* Center: nav links */}
+        <div className="hidden items-center gap-1 text-xs font-medium md:flex">
+          {[{ href: '/', label: 'Home' }, { href: '/game', label: 'Play' }].map(
+            ({ href, label }) => {
+              const active = pathname === href
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`relative rounded-lg px-3 py-2 transition-colors ${
+                    active
+                      ? 'bg-foreground/10 text-white'
+                      : 'text-foreground/60 hover:bg-foreground/5 hover:text-foreground'
+                  }`}
+                >
+                  {label}
+                </Link>
+              )
+            }
+          )}
         </div>
 
         {/* Right: attempts + timer + CTA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ display: 'none', '@media (minWidth: 480px)': { display: 'flex' }, alignItems: 'center', gap: '8px' } as any}>
-            <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)' }}>
+        <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 sm:flex">
+            <span className="text-[11px] font-mono text-foreground/60">
               {remaining}/{max}
             </span>
-            <span style={{ width: '1px', height: '12px', background: 'rgba(255,255,255,0.1)' }} />
+            <span className="h-3 w-px bg-foreground/15" />
           </div>
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>
+          <span className="text-[11px] font-mono tracking-[0.15em] text-foreground/70">
             {formatTime(timeToReset)}
           </span>
-          <Link href='/game' style={{
-            padding: '6px 12px', borderRadius: '6px',
-            background: '#fff', color: '#000',
-            fontSize: '11px', fontWeight: 700, textDecoration: 'none',
-            marginLeft: '4px', whiteSpace: 'nowrap'
-          }}>
+          <Link
+            href="/game"
+            className="ml-1 inline-flex items-center justify-center rounded-full bg-foreground px-3 py-1 text-[11px] font-semibold text-background shadow-sm hover:bg-foreground/90"
+          >
             Play →
           </Link>
         </div>

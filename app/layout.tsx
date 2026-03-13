@@ -1,22 +1,33 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Space_Mono } from 'next/font/google'
+import { Inter, Poppins, Urbanist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  weight: ['300', '400', '500', '600', '700'],
-  display: 'swap',
-})
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  weight: ['400', '700'],
-  display: 'swap',
-})
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const urbanist = Urbanist({
+  variable: "--font-urbanist",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title:       'AI Games — Math & Memory Challenges',
@@ -26,8 +37,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='en' className={`${spaceGrotesk.variable} ${spaceMono.variable}`}>
-      <body style={{ background: '#050505', color: '#fff', margin: 0 }}>
+    <html lang='en' suppressHydrationWarning className={`${inter.variable} ${poppins.variable} ${urbanist.variable} ${geistMono.variable}`}>
+      <body className="antialiased overflow-x-hidden">
         <Navbar />
         {children}
         <Footer />

@@ -26,7 +26,7 @@ export default function AttemptTracker() {
       </div>
 
       {/* Segments */}
-      <div style={{ display: 'flex', gap: '4px' }}>
+      <div className="hidden sm:flex" style={{ gap: '4px' }}>
         {Array.from({ length: 15 }).map((_, i) => {
           const active = i < used
           const color = active ? c : 'rgba(255,255,255,0.05)'

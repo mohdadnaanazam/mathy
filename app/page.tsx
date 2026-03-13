@@ -8,6 +8,8 @@ import gsap from 'gsap'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { GameType } from '@/types'
+import GamePreviewWindow from '@/components/home/GamePreviewWindow'
+import MobileArenaFooter from '@/components/layout/MobileArenaFooter'
 
 const ParticleBackground = dynamic(() => import('@/components/three/ParticleBackground'), {
   ssr: false,
@@ -53,13 +55,13 @@ export default function LandingPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', overflow: 'hidden', position: 'relative' }}>
+    <main className="min-h-screen overflow-x-hidden relative pb-24 md:pb-0">
 
       {/* Grid background base */}
-      <div className='grid-bg' style={{ position: 'absolute', inset: 0, opacity: 1, pointerEvents: 'none', zIndex: -1 }} />
+      <div className='grid-bg absolute inset-0 opacity-100 pointer-events-none -z-10' />
 
       {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-      <section ref={heroRef} style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '80px', paddingBottom: '80px' }}>
+      <section ref={heroRef} className="relative min-h-[100svh] flex items-center pt-24 pb-16 px-4">
 
         {/* Three.js particles */}
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.6, pointerEvents: 'none' }}>
@@ -67,98 +69,100 @@ export default function LandingPage() {
         </div>
 
         {/* Center Glow */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '800px', height: '800px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(112,0,255,0.15) 0%, transparent 60%)',
-          pointerEvents: 'none', zIndex: 0
-        }} />
+        <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] md:w-[800px] md:h-[800px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(112,0,255,0.15) 0%, transparent 60%)' }} />
 
-        {/* Content */}
-        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 24px', maxWidth: '900px', width: '100%' }}>
+        {/* Content Container */}
+        <div className="mx-auto w-full max-w-7xl relative z-10 mt-12 lg:mt-0">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            
+            {/* Left Column */}
+            <div className="text-left w-full pl-0 sm:pl-4">
 
-          {/* Tag */}
-          <div className='h-tag' style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              padding: '8px 20px', borderRadius: '100px',
-              border: '1px solid rgba(0, 240, 255, 0.3)',
-              background: 'rgba(0, 240, 255, 0.05)',
-              boxShadow: '0 0 20px rgba(0, 240, 255, 0.1) inset'
-            }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block', boxShadow: '0 0 10px var(--accent-cyan)', animation: 'pulse 2s infinite' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-cyan)', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 700 }}>
-                Instant browser play
-              </span>
-            </div>
-          </div>
-
-          {/* H1 */}
-          <h1 className='h-h1' style={{
-            fontSize: 'clamp(56px, 10vw, 130px)',
-            fontWeight: 700,
-            lineHeight: 0.9,
-            letterSpacing: '-0.04em',
-            color: '#fff',
-            marginBottom: '32px',
-          }}>
-            Train Your
-            <br /><span className='text-gradient'>Brain.</span>
-          </h1>
-
-          {/* Sub */}
-          <p className='h-sub' style={{
-            fontSize: '18px',
-            color: 'rgba(255,255,255,0.5)',
-            maxWidth: '520px',
-            margin: '0 auto 48px',
-            lineHeight: 1.6,
-            fontWeight: 400,
-          }}>
-            AI-powered math equations and memory challenges.
-            <br />No sign-up. Just open and start playing.
-          </p>
-
-          {/* CTAs */}
-          <div className='h-ctas' style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '80px' }}>
-            <button className='btn-primary' onClick={() => play('math')}>
-              ✦ Play Now — It's Free
-            </button>
-            <button className='btn-secondary' onClick={() => play('memory')}>
-              🧩 Memory Challenge
-            </button>
-          </div>
-
-          {/* Stats row */}
-          <div style={{
-            display: 'flex',
-            gap: '48px',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            paddingTop: '40px',
-            borderTop: '1px solid var(--border-subtle)',
-            background: 'linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, transparent 100%)',
-            margin: '0 -24px', paddingLeft: '24px', paddingRight: '24px', borderRadius: '24px 24px 0 0'
-          }}>
-            {[
-              { val: '2',    lbl: 'Modes', color: 'var(--accent-cyan)'  },
-              { val: '15',   lbl: 'Per Hr', color: 'var(--accent-pink)'    },
-              { val: '0',    lbl: 'Signups', color: 'var(--accent-purple)'  },
-            ].map(({ val, lbl, color }) => (
-              <div key={lbl} className='h-stat' style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '40px', fontWeight: 700, color: '#fff', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
-                  {val}<span style={{ color }}>.</span>
+              {/* Tag */}
+              <div className='h-tag' style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '32px' }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  padding: '8px 20px', borderRadius: '100px',
+                  border: '1px solid rgba(0, 240, 255, 0.3)',
+                  background: 'rgba(0, 240, 255, 0.05)',
+                  boxShadow: '0 0 20px rgba(0, 240, 255, 0.1) inset'
+                }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block', boxShadow: '0 0 10px var(--accent-cyan)', animation: 'pulse 2s infinite' }} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-cyan)', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 700 }}>
+                    Instant browser play
+                  </span>
                 </div>
-                <div className='section-label' style={{ marginTop: '12px', justifyContent: 'center', color: 'rgba(255,255,255,0.3)' }}>{lbl}</div>
               </div>
-            ))}
+
+              {/* H1 */}
+              <h1 className='h-h1' style={{
+                fontSize: 'clamp(48px, 8vw, 84px)',
+                fontWeight: 700,
+                lineHeight: 1.05,
+                letterSpacing: '-0.04em',
+                color: '#fff',
+                marginBottom: '24px',
+              }}>
+                Train Your
+                <br /><span className='text-gradient'>Brain.</span>
+              </h1>
+
+              {/* Sub */}
+              <p className='h-sub' style={{
+                fontSize: '18px',
+                color: 'rgba(255,255,255,0.6)',
+                maxWidth: '520px',
+                marginBottom: '40px',
+                lineHeight: 1.6,
+                fontWeight: 400,
+              }}>
+                AI-powered math equations and memory challenges.
+                <br />No sign-up. Just open and start playing.
+              </p>
+
+              {/* CTAs */}
+              <div className='h-ctas' style={{ display: 'flex', gap: '16px', justifyContent: 'flex-start', flexWrap: 'wrap', marginBottom: '60px' }}>
+                <button className='btn-primary' onClick={() => play('math')}>
+                  ✦ Play Now
+                </button>
+                <button className='btn-secondary' onClick={() => play('memory')}>
+                  🧩 Memory Challenge
+                </button>
+              </div>
+
+              {/* Stats row */}
+              <div style={{
+                display: 'flex',
+                gap: '40px',
+                justifyContent: 'flex-start',
+                flexWrap: 'wrap',
+              }}>
+                {[
+                  { val: '2',    lbl: 'Modes', color: 'var(--accent-cyan)'  },
+                  { val: '15',   lbl: 'Per Hr', color: 'var(--accent-pink)'    },
+                  { val: '0',    lbl: 'Signups', color: 'var(--accent-purple)'  },
+                ].map(({ val, lbl, color }) => (
+                  <div key={lbl} className='h-stat' style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: '36px', fontWeight: 700, color: '#fff', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
+                      {val}<span style={{ color }}>.</span>
+                    </div>
+                    <div className='section-label' style={{ marginTop: '8px', justifyContent: 'flex-start', color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{lbl}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Game Preview Window */}
+            <div className="relative mt-12 lg:mt-0 w-full max-w-[600px] mx-auto lg:max-w-none">
+              <GamePreviewWindow />
+            </div>
+
           </div>
         </div>
       </section>
 
       {/* ══ GAME MODES ═══════════════════════════════════════════════════ */}
-      <section style={{ padding: '120px 0', position: 'relative' }}>
+      <section className="py-20 md:py-32 relative">
         <div style={{ position: 'absolute', top: 0, left: '20%', width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-cyan), transparent)', opacity: 0.3 }} />
         
         <div className='container'>
@@ -234,7 +238,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ HOW IT WORKS ════════════════════════════════════════════════ */}
-      <section style={{ padding: '120px 0', position: 'relative' }}>
+      <section className="py-20 md:py-32 relative">
         <div style={{ position: 'absolute', top: 0, left: '20%', width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-purple), transparent)', opacity: 0.3 }} />
         
         <div className='container'>
@@ -245,7 +249,7 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {STEPS.map((s, i) => (
               <motion.div
                 key={s.n}
@@ -269,16 +273,16 @@ export default function LandingPage() {
       </section>
 
       {/* ══ CTA BAND ════════════════════════════════════════════════════ */}
-      <section style={{ padding: '160px 0', position: 'relative', overflow: 'hidden' }}>
+      <section className="py-24 md:py-40 relative overflow-hidden">
         <div style={{ position: 'absolute', top: 0, left: '20%', width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, var(--accent-pink), transparent)', opacity: 0.5 }} />
         
         {/* Massive background glow for CTA */}
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', background: 'radial-gradient(ellipse at center, rgba(255,0,127,0.1) 0%, transparent 60%)', zIndex: -1, pointerEvents: 'none' }} />
         
-        <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto', padding: '0 32px' }}>
-          <div className='section-label' style={{ marginBottom: '24px', justifyContent: 'center' }}>/ Ready?</div>
+        <div className="text-center w-full max-w-[640px] mx-auto px-6">
+          <div className='section-label mb-6 justify-center'>/ Ready?</div>
           <h2 style={{
-            fontSize: 'clamp(40px, 8vw, 80px)',
+            fontSize: 'clamp(36px, 8vw, 80px)',
             fontWeight: 700,
             color: '#fff',
             letterSpacing: '-0.04em',
@@ -297,6 +301,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Mobile arena footer (same as game screen) */}
+      <MobileArenaFooter />
     </main>
   )
 }
