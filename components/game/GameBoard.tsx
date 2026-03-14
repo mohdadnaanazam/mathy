@@ -39,11 +39,11 @@ export default function GameBoard() {
   return (
     <div
       ref={boardRef}
-      className="overflow-x-hidden bg-[var(--bg-surface)]"
+      className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col"
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         paddingTop: '56px',
-        paddingBottom: '80px',
+        paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
         position: 'relative',
       }}
     >
@@ -61,8 +61,12 @@ export default function GameBoard() {
 
       {/* Custom game bar (replaces footer on game page) */}
       <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-800 bg-[var(--bg-surface)]"
-        style={{ maxWidth: '420px', margin: '0 auto', left: 0, right: 0 }}
+        className="fixed left-0 right-0 bottom-0 z-40 border-t border-zinc-800 bg-[var(--bg-surface)]"
+        style={{
+          maxWidth: '420px',
+          margin: '0 auto',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
       >
         <button
           type="button"

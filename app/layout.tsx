@@ -39,6 +39,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: 'cover' as const, // enables safe-area-inset-* on notched devices
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -46,7 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang='en' suppressHydrationWarning className={`${inter.variable} ${poppins.variable} ${urbanist.variable} ${geistMono.variable}`}>
       <body className="antialiased overflow-x-hidden">
         <Navbar />
-        {children}
+        <div data-root-content className="flex flex-col min-h-0">
+          {children}
+        </div>
         <Footer />
       </body>
     </html>

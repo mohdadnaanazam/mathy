@@ -8,7 +8,10 @@ export default function Footer() {
 
   return (
     <footer
-      className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4 px-4 sm:px-6 pb-16"
+      className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4 px-4 sm:px-6 shrink-0"
+      style={{
+        paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))',
+      }}
     >
       <div className="mx-auto max-w-4xl flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
