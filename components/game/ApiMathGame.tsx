@@ -39,7 +39,10 @@ export default function ApiMathGame() {
 
   const current = games[currentIndex]
 
+  // Only run entrance animation when advancing to next question, not on first load.
+  // Otherwise gsap.from() resets opacity to 0 after the question is already visible, causing a flash (appear → disappear → appear).
   useGSAP(() => {
+    if (currentIndex === 0) return
     gsap.from('.api-game-item', {
       y: 40,
       opacity: 0,
