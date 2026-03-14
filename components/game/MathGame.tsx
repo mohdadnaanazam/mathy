@@ -10,9 +10,13 @@ import { MathQuestion, OperationMode } from '@/types'
 import Timer from './Timer'
 
 export default function MathGame() {
-  const operation = useGameStore(s => s.operation)
+  const operation        = useGameStore(s => s.operation)
+  const difficulty       = useGameStore(s => s.difficulty)
+  const customOperations = useGameStore(s => s.customOperations)
+  const addScore         = useGameStore(s => s.addScore)
+  const recordAttempt    = useGameStore(s => s.recordAttempt)
   const [question, setQuestion] = useState<MathQuestion>(() =>
-    generateMathQuestion('medium', operation),
+    generateMathQuestion(difficulty, operation, operation === 'custom' ? customOperations : undefined),
   )
   const [selected, setSelected] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
@@ -20,10 +24,6 @@ export default function MathGame() {
   const [streak,   setStreak]   = useState(0)
   const [timerKey, setTimerKey] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
-
-  const addScore      = useGameStore(s => s.addScore)
-  const recordAttempt = useGameStore(s => s.recordAttempt)
-  const difficulty    = useGameStore(s => s.difficulty)
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
 
   useGSAP(() => {
@@ -35,7 +35,8 @@ export default function MathGame() {
 
   function nextQuestion(currentMode?: OperationMode) {
     const mode = currentMode ?? operation
-    setQuestion(generateMathQuestion(difficulty, mode))
+    const customOps = mode === 'custom' ? customOperations : undefined
+    setQuestion(generateMathQuestion(difficulty, mode, customOps))
     setSelected(null)
     setFeedback(null)
     setTyped('')

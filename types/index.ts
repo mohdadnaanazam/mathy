@@ -8,6 +8,7 @@ export type OperationMode =
   | 'multiplication'
   | 'division'
   | 'mixture'
+  | 'custom'
 
 export interface MathQuestion {
   expression: string

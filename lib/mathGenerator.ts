@@ -3,6 +3,7 @@ import { MathQuestion, Difficulty, OperationMode } from '@/types'
 export function generateMathQuestion(
   difficulty: Difficulty,
   mode: OperationMode = 'mixture',
+  customOps?: OperationMode[],
 ): MathQuestion {
   const ranges: Record<Difficulty, number> = { easy: 10, medium: 50, hard: 100 }
   const max = ranges[difficulty]
@@ -11,23 +12,29 @@ export function generateMathQuestion(
   let b = Math.floor(Math.random() * max) + 1
 
   let ops: string[]
-  switch (mode) {
-    case 'addition':
-      ops = ['+']
-      break
-    case 'subtraction':
-      ops = ['-']
-      break
-    case 'multiplication':
-      ops = ['×']
-      break
-    case 'division':
-      ops = ['÷']
-      break
-    case 'mixture':
-    default:
-      ops = difficulty === 'easy' ? ['+', '-'] : ['+', '-', '×', '÷']
-      break
+  if (mode === 'custom' && customOps?.length) {
+    const opMap: Record<string, string> = { addition: '+', subtraction: '-', multiplication: '×', division: '÷' }
+    ops = customOps.map(o => opMap[o]).filter(Boolean)
+  } else {
+    switch (mode) {
+      case 'addition':
+        ops = ['+']
+        break
+      case 'subtraction':
+        ops = ['-']
+        break
+      case 'multiplication':
+        ops = ['×']
+        break
+      case 'division':
+        ops = ['÷']
+        break
+      case 'mixture':
+      case 'custom':
+      default:
+        ops = difficulty === 'easy' ? ['+', '-'] : ['+', '-', '×', '÷']
+        break
+    }
   }
 
   const op  = ops[Math.floor(Math.random() * ops.length)]

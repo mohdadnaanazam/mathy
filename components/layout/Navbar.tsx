@@ -25,9 +25,9 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop nav + status */}
-        <div className="hidden items-center gap-6 md:flex">
-          <div className="flex items-center gap-1 text-xs font-medium">
+        {/* Desktop nav + status: prevent overlap with flex-shrink-0 on Play */}
+        <div className="hidden md:flex flex-1 items-center justify-end gap-3 min-w-0 max-w-[calc(100%-8rem)]">
+          <div className="flex items-center gap-1 text-xs font-medium shrink-0">
             {[{ href: '/', label: 'Home' }, { href: '/game', label: 'Play' }].map(
               ({ href, label }) => {
                 const active = pathname === href
@@ -47,21 +47,18 @@ export default function Navbar() {
               }
             )}
           </div>
-
-          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-300">
-            <span>
-              {remaining}/{max} plays
-            </span>
-            <span className="h-3 w-px bg-slate-700" />
-            <span>{formatTime(timeToReset)}</span>
-            <Link
-              href="/game"
-              className="rounded-full px-3 py-1.5 font-semibold text-[11px] transition-all duration-200 hover:shadow-[0_0_16px_rgba(249,115,22,0.3)]"
-              style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
-            >
-              Play →
-            </Link>
+          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-300 min-w-0 overflow-hidden">
+            <span className="shrink-0">{remaining}/{max} plays</span>
+            <span className="h-3 w-px bg-slate-700 shrink-0" />
+            <span className="tabular-nums truncate">{formatTime(timeToReset)}</span>
           </div>
+          <Link
+            href="/game"
+            className="shrink-0 rounded-full px-3 py-1.5 font-semibold text-[11px] transition-all duration-200 hover:shadow-[0_0_16px_rgba(249,115,22,0.3)]"
+            style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
+          >
+            Play →
+          </Link>
         </div>
 
         {/* Mobile: Play button */}
