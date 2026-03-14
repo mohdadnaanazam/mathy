@@ -9,7 +9,7 @@ import { OperationMode } from '@/types'
 import GameLockScreen from './GameLockScreen'
 import { Settings2 } from 'lucide-react'
 
-const MathGame = dynamic(() => import('./MathGame'), { ssr: false })
+const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 
 const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
   { label: 'Addition', value: 'addition' },
