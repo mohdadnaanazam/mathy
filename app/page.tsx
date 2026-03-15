@@ -56,6 +56,9 @@ export default function LandingPage() {
   const [memorySessionMax, setMemorySessionMaxState] = useState<number>(10)
   const [memorySessionPlayed, setMemorySessionPlayedState] = useState<number>(0)
   const [memorySessionHydrated, setMemorySessionHydrated] = useState(false)
+  const [memoryVariantPlayed, setMemoryVariantPlayed] = useState<number>(0)
+  const [memoryVariantTotal, setMemoryVariantTotal] = useState<number>(20)
+  const [memoryVariantRemaining, setMemoryVariantRemaining] = useState<number>(20)
   const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
   const [mathGamesCount, setMathGamesCount] = useState<number>(10)
   const [mathSessionMax, setMathSessionMaxState] = useState<number>(10)
@@ -96,6 +99,20 @@ export default function LandingPage() {
       )
     })
   }, [activeMode, mathDifficulty])
+
+  // Hydrate per-difficulty Memory Grid progress (easy / medium / hard separately).
+  useEffect(() => {
+    if (!memoryDifficulty) return
+    getVariantProgress('memory', memoryDifficulty).then(p => {
+      setMemoryVariantPlayed(p.played)
+      setMemoryVariantTotal(p.total)
+      setMemoryVariantRemaining(p.remaining)
+      setMemoryGamesCount(prev =>
+        p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
+      )
+    })
+  }, [memoryDifficulty])
+
   useEffect(() => {
     const onVisibility = () => { if (document.visibilityState === 'visible') hydrateSessions() }
     document.addEventListener('visibilitychange', onVisibility)
@@ -159,15 +176,14 @@ export default function LandingPage() {
 
     // Memory grid
     if (memoryDifficulty === null) return
-    const memoryRemaining = Math.max(0, memorySessionMax - memorySessionPlayed)
-    // Prevent starting a memory session when this difficulty is already exhausted.
-    if (memoryRemaining <= 0) return
+    // Prevent starting when this difficulty has 0 remaining (per-difficulty progress).
+    if (memoryVariantRemaining <= 0) return
     playMemoryGrid()
   }
 
   const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
-  const canPlayMemory =
-    memoryDifficulty !== null && Math.max(0, memorySessionMax - memorySessionPlayed) > 0
+  const canPlayMemory = memoryDifficulty !== null && memoryVariantRemaining > 0
+  const memoryVariantExhausted = memoryVariantRemaining <= 0
 
   const mathVariantExhausted = mathVariantRemaining <= 0
 
@@ -450,9 +466,9 @@ export default function LandingPage() {
                 {memorySessionHydrated && (
                   <>
                     <span className="text-[10px] font-mono text-slate-500 mt-1">
-                      {memorySessionPlayed} / {memorySessionMax} played · {Math.max(0, memorySessionMax - memorySessionPlayed)} remaining
+                      {memoryVariantPlayed} / {memoryVariantTotal} played · {memoryVariantRemaining} remaining
                     </span>
-                    {memorySessionPlayed >= memorySessionMax && (
+                    {memoryVariantExhausted && (
                       <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
                         You finished Memory Grid ({memoryDifficulty ?? 'easy'}). Try{' '}
                         {memoryDifficulty === 'easy'
@@ -469,8 +485,12 @@ export default function LandingPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setMemoryGamesCount(v => Math.max(1, v - 1))}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                  onClick={() => {
+                    if (memoryVariantExhausted) return
+                    setMemoryGamesCount(v => Math.max(1, Math.min(v - 1, memoryVariantRemaining)))
+                  }}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  disabled={memoryVariantExhausted}
                 >
                   −
                 </button>
@@ -479,8 +499,14 @@ export default function LandingPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setMemoryGamesCount(v => Math.min(20, v + 1))}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                  onClick={() => {
+                    if (memoryVariantExhausted) return
+                    setMemoryGamesCount(v =>
+                      Math.min(Math.max(v + 1, 1), memoryVariantRemaining),
+                    )
+                  }}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  disabled={memoryVariantExhausted}
                 >
                   +
                 </button>
@@ -509,13 +535,11 @@ export default function LandingPage() {
           >
             {isLocked
               ? 'Limit reached (15/hour)'
-              : isRefreshing
-                ? 'Refreshing…'
-                : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
-                  ? 'Choose difficulty first'
-                  : isNavigating
-                    ? 'Starting…'
-                    : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+              : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
+                ? 'Choose difficulty first'
+                : isNavigating
+                  ? 'Starting…'
+                  : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
             {!isLocked &&
               !isNavigating &&
               !isRefreshing &&

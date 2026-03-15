@@ -36,6 +36,7 @@ export default function GameBoard() {
 
   // Use URL for first paint so memory game shows immediately on reload (no blank flash)
   const modeParam = searchParams.get('mode')
+  const opParam = searchParams.get('op')
   const effectiveGameType = modeParam === 'memory' ? 'memory' : gameType
 
   const setOperation = useGameStore(s => s.setOperation)
@@ -49,6 +50,15 @@ export default function GameBoard() {
   }, [])
 
   const isCustom = operation === 'custom'
+
+  // If user lands directly on /game?op=custom, open the custom panel and
+  // keep the user in configuration mode instead of immediately starting a game.
+  useEffect(() => {
+    if (opParam === 'custom') {
+      setCustomOpen(true)
+      setOperation('custom')
+    }
+  }, [opParam, setOperation])
 
   if (isLocked) return <GameLockScreen />
 
@@ -74,7 +84,16 @@ export default function GameBoard() {
             boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
           }}
         >
-          {effectiveGameType === 'memory' ? <MemoryGridGame /> : <MathGame />}
+          {effectiveGameType === 'memory' ? (
+            <MemoryGridGame />
+          ) : opParam === 'custom' ? (
+            <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
+              Select which operations you want to include in your custom game using the panel below,
+              then return to the home screen and press Play to start.
+            </div>
+          ) : (
+            <MathGame />
+          )}
         </div>
       </main>
 

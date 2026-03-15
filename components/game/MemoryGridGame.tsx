@@ -12,6 +12,7 @@ import {
   getMemorySessionPlayed,
   incrementMemorySessionPlayed,
   addToVariantPlayed,
+  getVariantProgress,
   resetMemorySession,
 } from '@/lib/db'
 import Timer from './Timer'
@@ -48,6 +49,9 @@ export default function MemoryGridGame() {
   const [gameOver, setGameOver] = useState(false)
   const [timerKey, setTimerKey] = useState(0)
   const [sessionComplete, setSessionComplete] = useState(false)
+  const [nextVariantPlayed, setNextVariantPlayed] = useState(0)
+  const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
+  const [nextGamesCount, setNextGamesCount] = useState(5)
 
   const pointsPerCorrect = difficulty === 'easy' ? 10 : difficulty === 'medium' ? 20 : 50
 
@@ -137,13 +141,30 @@ export default function MemoryGridGame() {
     setPhase('result')
   }, [recordHourlyAttempt, syncNow])
 
+  // When difficulty changes and we're not on the session-complete panel, reset and start a new session.
+  // When on the panel, changing difficulty only updates the panel (remaining count); do not start a round.
   useEffect(() => {
+    if (sessionComplete) return
     setRoundIndex(0)
     setSessionComplete(false)
-    startRound()
-  }, [difficulty, startRound])
+    const t = setTimeout(() => startRound(), 0)
+    return () => clearTimeout(t)
+  }, [difficulty, sessionComplete])
+
+  // Load per-difficulty progress for the Session Complete panel (remaining games).
+  useEffect(() => {
+    if (!sessionComplete || !difficulty) return
+    getVariantProgress('memory', difficulty).then(p => {
+      setNextVariantPlayed(p.played)
+      setNextVariantRemaining(p.remaining)
+      setNextGamesCount(prev =>
+        p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
+      )
+    })
+  }, [sessionComplete, difficulty])
 
   const currentRoundDisplay = Math.min(Math.max(roundIndex || 1, 1), sessionMax || 1)
+  const nextVariantExhausted = nextVariantRemaining <= 0
 
   if (userLoading) {
     return (
@@ -208,7 +229,7 @@ export default function MemoryGridGame() {
             </div>
           </div>
 
-          {/* Number of games picker (reuses sessionMax semantics) */}
+          {/* Number of games: show remaining for current difficulty, clamp stepper */}
           <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
             <div className="flex flex-col">
               <span className="section-label text-xs mb-0.5">Number of games</span>
@@ -216,24 +237,45 @@ export default function MemoryGridGame() {
                 Max 20 per difficulty. Tap − or + to adjust.
               </span>
               <span className="text-[10px] font-mono text-slate-500 mt-1">
-                Session length: {sessionMax} rounds
+                {nextVariantPlayed} / 20 played · {nextVariantRemaining} remaining
               </span>
+              {nextVariantExhausted && (
+                <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
+                  You finished Memory Grid ({difficulty}). Try{' '}
+                  {difficulty === 'easy'
+                    ? 'Medium or Hard'
+                    : difficulty === 'medium'
+                      ? 'Hard'
+                      : 'another game'}
+                  .
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setSessionMax(m => Math.max(1, m - 1))}
-                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                onClick={() => {
+                  if (nextVariantExhausted) return
+                  setNextGamesCount(v => Math.max(1, Math.min(v - 1, nextVariantRemaining)))
+                }}
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                disabled={nextVariantExhausted}
               >
                 −
               </button>
               <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
-                {sessionMax}
+                {nextGamesCount}
               </div>
               <button
                 type="button"
-                onClick={() => setSessionMax(m => Math.min(20, m + 1))}
-                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                onClick={() => {
+                  if (nextVariantExhausted) return
+                  setNextGamesCount(v =>
+                    Math.min(Math.max(v + 1, 1), nextVariantRemaining),
+                  )
+                }}
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                disabled={nextVariantExhausted}
               >
                 +
               </button>
@@ -243,11 +285,15 @@ export default function MemoryGridGame() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
             <button
               type="button"
+              disabled={nextVariantExhausted || nextGamesCount <= 0}
               onClick={async () => {
-                await resetMemorySession(sessionMax)
-                router.push('/game?mode=memory')
+                if (nextVariantExhausted || nextGamesCount <= 0) return
+                await resetMemorySession(nextGamesCount)
+                setSessionComplete(false)
+                setRoundIndex(0)
+                setTimeout(() => startRound(), 0)
               }}
-              className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900"
+              className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 disabled:opacity-60"
             >
               Play game
             </button>
