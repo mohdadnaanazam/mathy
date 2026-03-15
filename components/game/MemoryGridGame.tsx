@@ -98,9 +98,9 @@ export default function MemoryGridGame() {
 
   if (userLoading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-10">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-slate-300" />
-        <p className="text-xs text-slate-400 uppercase tracking-wider">Loading…</p>
+      <div className="flex flex-col items-center justify-center gap-2 py-8">
+        <div className="h-6 w-6 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-slate-700 border-t-slate-300" />
+        <p className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-[0.16em]">Loading…</p>
       </div>
     )
   }
@@ -111,20 +111,27 @@ export default function MemoryGridGame() {
   const showAsWrong = (index: number) => gameOver && selected.includes(index) && !pattern.includes(index)
 
   return (
-    <div className="w-full max-w-full flex flex-col items-center mx-auto px-2 py-3 sm:px-4 sm:py-5 gap-4 sm:gap-6">
-      <div className="api-game-item w-full flex items-center justify-between flex-wrap gap-2" style={{ marginBottom: '8px' }}>
+    <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-1 sm:px-2 sm:py-3 gap-2 sm:gap-4">
+      {/* Section title: Memory Grid Game (matches Math Game label) */}
+      <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
+        <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+          Memory Grid Game
+        </span>
+      </div>
+
+      <div className="api-game-item w-full flex items-center justify-between flex-wrap gap-1.5 mb-1">
         <Timer key={timerKey} seconds={60} onTimeUp={handleTimeUp} type="memory" />
-        <div className="flex items-center gap-4">
-          <span className="section-label text-slate-400">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="section-label text-slate-400 text-xs">
             Round: {roundScore} pts
           </span>
-          <span className="text-sm font-semibold text-white">
+          <span className="text-xs sm:text-sm font-semibold text-white">
             Total: {score}
           </span>
         </div>
       </div>
 
-      <p className="section-label mb-4 text-slate-400">
+      <p className="section-label mb-2 sm:mb-3 text-slate-400 text-xs">
         {phase === 'highlight'
           ? 'Remember the blocks…'
           : phase === 'recall'
@@ -137,7 +144,7 @@ export default function MemoryGridGame() {
       </p>
 
       <div
-        className="api-game-item grid gap-1.5 sm:gap-2 w-full max-w-[320px] sm:max-w-[400px]"
+        className="api-game-item grid gap-1 sm:gap-1.5 w-full max-w-[280px] sm:max-w-[360px]"
         style={{
           gridTemplateColumns: `repeat(${size}, 1fr)`,
           aspectRatio: '1',
@@ -166,7 +173,7 @@ export default function MemoryGridGame() {
                     : 'rgba(63, 63, 70, 0.8)',
               }}
               transition={{ duration: 0.25 }}
-              className="rounded-xl border-2 min-h-[44px] sm:min-h-0 aspect-square touch-manipulative"
+              className="rounded-lg sm:rounded-xl border-2 min-h-[40px] sm:min-h-0 aspect-square touch-manipulative"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               onClick={() => handleCellClick(index)}
               disabled={phase !== 'recall' || gameOver}
@@ -175,16 +182,20 @@ export default function MemoryGridGame() {
         </AnimatePresence>
       </div>
 
-      <div className="api-game-item w-full flex justify-center">
+      <div className="api-game-item w-full flex justify-center pt-0.5">
         <button
           type="button"
           onClick={() => {
             setTimerKey(k => k + 1)
             startRound()
           }}
-          className="btn-secondary rounded-full px-5 py-2.5 text-sm font-semibold"
+          className="rounded-full px-4 py-2.5 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-white transition-all min-h-[40px] sm:min-h-[44px] touch-manipulative"
+          style={{
+            background: 'var(--accent-orange)',
+            boxShadow: '0 4px 14px rgba(234, 88, 12, 0.35)',
+          }}
         >
-          Next round
+          Next round →
         </button>
       </div>
     </div>

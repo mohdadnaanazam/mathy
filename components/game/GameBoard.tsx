@@ -28,10 +28,16 @@ export default function GameBoard() {
   const setGameType = useGameStore(s => s.setGameType)
   const operation = useGameStore(s => s.operation)
 
+  // Sync store from URL so navigation to /game?mode=memory works
   useEffect(() => {
     const mode = searchParams.get('mode')
     if (mode === 'memory') setGameType('memory')
   }, [searchParams, setGameType])
+
+  // Use URL for first paint so memory game shows immediately on reload (no blank flash)
+  const modeParam = searchParams.get('mode')
+  const effectiveGameType = modeParam === 'memory' ? 'memory' : gameType
+
   const setOperation = useGameStore(s => s.setOperation)
   const customOperations = useGameStore(s => s.customOperations)
   const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
@@ -52,25 +58,25 @@ export default function GameBoard() {
       className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col"
       style={{
         minHeight: '100dvh',
-        paddingTop: '16px',
-        paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+        paddingTop: '12px',
+        paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
         position: 'relative',
       }}
     >
       {/* Game only */}
-      <main id="live-game-area" className="mx-auto w-full max-w-[420px] px-3 py-6 sm:px-4 sm:py-8">
+      <main id="live-game-area" className="mx-auto w-full max-w-[420px] px-2 py-4 sm:px-4 sm:py-6">
         <div
-          className="card relative w-full border-zinc-800 bg-zinc-900/30 px-3 py-4 sm:px-4 sm:py-5"
+          className="card relative w-full border-zinc-800 bg-zinc-900/30 px-2 py-3 sm:px-4 sm:py-4"
           style={{
             boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
           }}
         >
-          {gameType === 'memory' ? <MemoryGridGame /> : <MathGame />}
+          {effectiveGameType === 'memory' ? <MemoryGridGame /> : <MathGame />}
         </div>
       </main>
 
       {/* Custom game bar (math only) */}
-      {gameType === 'math' && (
+      {effectiveGameType === 'math' && (
       <div
         className="fixed left-0 right-0 bottom-0 z-40 border-t border-zinc-800 bg-[var(--bg-surface)]"
         style={{
@@ -85,7 +91,7 @@ export default function GameBoard() {
             setCustomOpen((o) => !o)
             if (!customOpen) setOperation('custom')
           }}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-semibold transition-colors"
           style={{
             color: isCustom ? 'var(--accent-orange)' : 'rgba(148,163,184,0.9)',
             borderBottom: customOpen ? '1px solid var(--border-subtle)' : 'none',
@@ -95,11 +101,11 @@ export default function GameBoard() {
           Custom game — choose operations
         </button>
         {customOpen && (
-          <div className="px-4 pb-4 pt-3">
-            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
+          <div className="px-3 pb-3 pt-2">
+            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1.5">
               Include: (e.g. only × & ÷ or only + & −)
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {CUSTOM_OP_CHOICES.map(({ label, value }) => {
                 const on = customOperations.includes(value)
                 return (

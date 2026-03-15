@@ -52,33 +52,33 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden relative pb-24 pt-20 md:pt-24 bg-[var(--bg-surface)]">
+    <main className="min-h-screen overflow-x-hidden relative pb-20 pt-16 sm:pt-20 md:pt-24 bg-[var(--bg-surface)]">
       {/* Hero */}
-      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-10 md:py-14">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">
+      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-6 sm:py-8 md:py-10">
+        <div className="mx-auto max-w-4xl px-3 sm:px-6 lg:px-4">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight mb-1.5">
             Train your brain
           </h1>
-          <p className="text-sm sm:text-base text-slate-400 max-w-lg">
+          <p className="text-xs sm:text-sm md:text-base text-slate-400 max-w-lg">
             Quick math duels. No signup. Pick a mode and play.
           </p>
         </div>
       </section>
 
       {/* Pick mode + Play */}
-      <section className="border-b border-[var(--border-subtle)] py-8 md:py-10">
-        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-4 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <section className="border-b border-[var(--border-subtle)] py-5 sm:py-6 md:py-8">
+        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-4 sm:space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <div className="section-label mb-1">Choose operation</div>
-              <p className="text-xs text-slate-400">
+              <div className="section-label mb-0.5 text-xs">Choose operation</div>
+              <p className="text-[11px] sm:text-xs text-slate-400">
                 Addition, subtraction, multiplication, division, mixture, or custom.
               </p>
             </div>
             <button
               type="button"
               onClick={() => play(activeMode)}
-              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shrink-0"
+              className="inline-flex items-center justify-center rounded-full px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shrink-0"
               style={{
                 backgroundColor: 'var(--accent-orange)',
                 color: '#111827',
@@ -92,7 +92,7 @@ export default function LandingPage() {
           </div>
 
           {/* Operation icons */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
             {[
               { icon: Plus, label: 'Addition' as ModeLabel },
               { icon: Minus, label: 'Subtraction' as ModeLabel },
@@ -107,7 +107,7 @@ export default function LandingPage() {
                   key={item.label}
                   type="button"
                   onClick={() => setActiveMode(item.label)}
-                  className="flex flex-col items-center justify-center rounded-xl px-3 py-3 sm:py-4 transition-all duration-200"
+                  className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
                   style={{
                     backgroundColor: 'var(--bg-surface)',
                     borderRadius: 12,
@@ -131,11 +131,11 @@ export default function LandingPage() {
 
           {/* Custom: choose which operations to include */}
           {activeMode === 'Custom' && (
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-4 space-y-2">
-              <p className="text-xs text-slate-500 uppercase tracking-wider">
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3 space-y-1.5">
+              <p className="text-[11px] text-slate-500 uppercase tracking-wider">
                 Include (e.g. only × & ÷ or only + & −)
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {CUSTOM_OP_CHOICES.map(({ label, value }) => {
                   const on = customOperations.includes(value)
                   return (
@@ -143,7 +143,7 @@ export default function LandingPage() {
                       key={value}
                       type="button"
                       onClick={() => toggleCustomOp(value)}
-                      className={`text-sm px-3 py-2 rounded-full border transition-colors ${
+                      className={`text-xs sm:text-sm px-2.5 py-1.5 rounded-full border transition-colors ${
                         on
                           ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)] text-[var(--accent-orange)]'
                           : 'border-zinc-700 bg-zinc-800/50 text-slate-500'
@@ -160,22 +160,22 @@ export default function LandingPage() {
       </section>
 
       {/* Memory Grid Game - same UI style as math (orange accent) */}
-      <section className="border-b border-[var(--border-subtle)] py-8 md:py-10">
-        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-4 space-y-4">
-          <div className="section-label mb-1 flex items-center gap-2">
-            <Grid3X3 size={16} style={{ color: 'var(--accent-orange)' }} />
+      <section className="border-b border-[var(--border-subtle)] py-5 sm:py-6 md:py-8">
+        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-3">
+          <div className="section-label mb-0.5 flex items-center gap-1.5 text-xs">
+            <Grid3X3 size={14} style={{ color: 'var(--accent-orange)' }} />
             Memory Grid Game
           </div>
-          <p className="text-xs text-slate-400 max-w-lg">
+          <p className="text-[11px] sm:text-xs text-slate-400 max-w-lg">
             Remember the highlighted blocks, then tap them in order. Grid size depends on difficulty.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
               <button
                 key={d}
                 type="button"
                 onClick={() => setMemoryDifficulty(d)}
-                className="rounded-xl border px-4 py-2 text-sm font-semibold capitalize transition-all"
+                className="rounded-xl border px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold capitalize transition-all"
                 style={{
                   backgroundColor: 'var(--bg-surface)',
                   border: memoryDifficulty === d ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
@@ -189,7 +189,7 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={playMemoryGrid}
-              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shrink-0"
+              className="inline-flex items-center justify-center rounded-full px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shrink-0"
               style={{
                 backgroundColor: 'var(--accent-orange)',
                 color: '#111827',
@@ -206,7 +206,7 @@ export default function LandingPage() {
 
       {/* Energy strip */}
       <section className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-4">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-3 py-2 sm:px-6 lg:px-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs font-mono tracking-[0.16em] text-slate-300">
             <div className="flex items-center gap-3">
               <span className="uppercase text-[10px] text-slate-400">Energy</span>

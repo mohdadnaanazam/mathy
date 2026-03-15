@@ -8,9 +8,13 @@ import { useGameStore } from '@/store/gameStore'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useGameLoader } from '@/hooks/useGameLoader'
 import { useGameTimer } from '@/hooks/useGameTimer'
+import { useUserUUID } from '@/hooks/useUserUUID'
+import { useScore } from '@/hooks/useScore'
 import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
 import { API_BASE_URL } from '@/src/api/apiClient'
+
+const POINTS_CORRECT = 100
 
 export default function ApiMathGame() {
   const operation = useGameStore(s => s.operation)
@@ -18,6 +22,8 @@ export default function ApiMathGame() {
   const { games, loading, error, refresh } = useGameLoader(operation)
   const { secondsRemaining, hasTimer } = useGameTimer()
   const prevSecondsRef = useRef(secondsRemaining)
+  const { userUuid, loading: userLoading } = useUserUUID()
+  const { score, addScore, syncNow } = useScore(userUuid)
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [typed, setTyped] = useState('')
@@ -63,23 +69,36 @@ export default function ApiMathGame() {
     if (!current || !typed.trim() || feedback !== null) return
     const correctValue = Number(current.correct_answer)
     const given = Number(typed)
-    if (Number.isNaN(correctValue) || Number.isNaN(given)) return
-    const isCorrect = given === correctValue
+    if (Number.isNaN(correctValue) && Number.isNaN(given)) return
+    const isCorrect = !Number.isNaN(correctValue) && !Number.isNaN(given) && given === correctValue
     setFeedback(isCorrect ? 'correct' : 'wrong')
     recordHourlyAttempt()
+    if (isCorrect) {
+      addScore(POINTS_CORRECT).then(() => syncNow())
+    }
     setTimeout(goNext, 800)
-  }, [current, typed, feedback, goNext, recordHourlyAttempt])
+  }, [current, typed, feedback, goNext, recordHourlyAttempt, addScore, syncNow])
 
-  // Auto-submit: when typed answer matches correct answer (or wrong when same length after delay)
+  // Validate when input length equals answer length (correct or wrong)
   useEffect(() => {
-    if (!current || feedback !== null) return
-    const correctStr = String(current.correct_answer)
-    if (typed === correctStr) {
-      const t = setTimeout(handleSubmit, 150)
+    if (!current || feedback !== null || !typed.trim()) return
+    const correctNum = Number(current.correct_answer)
+    const correctStr = Number.isNaN(correctNum)
+      ? String(current.correct_answer).trim()
+      : String(correctNum)
+    const inputLen = typed.trim().length
+    const answerLen = correctStr.length
+    if (inputLen < answerLen) return
+    // Same length or user typed more digits → validate
+    if (inputLen === answerLen) {
+      const isCorrect = typed.trim() === correctStr || Number(typed) === correctNum
+      const delay = isCorrect ? 120 : 280
+      const t = setTimeout(handleSubmit, delay)
       return () => clearTimeout(t)
     }
-    if (typed.length === correctStr.length && typed !== correctStr) {
-      const t = setTimeout(handleSubmit, 600)
+    // Optional: if they typed one more char than answer, validate immediately (e.g. extra digit)
+    if (inputLen > answerLen) {
+      const t = setTimeout(handleSubmit, 150)
       return () => clearTimeout(t)
     }
   }, [typed, current, feedback, handleSubmit])
@@ -102,9 +121,9 @@ export default function ApiMathGame() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-10">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-slate-300" />
-        <p className="text-xs text-slate-400 uppercase tracking-[0.18em]">
+      <div className="flex flex-col items-center justify-center gap-2 py-8">
+        <div className="h-6 w-6 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-slate-700 border-t-slate-300" />
+        <p className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-[0.16em]">
           Loading games…
         </p>
       </div>
@@ -113,7 +132,7 @@ export default function ApiMathGame() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-10 text-center px-4">
+      <div className="flex flex-col items-center justify-center gap-2 py-6 text-center px-3">
         <p className="text-sm text-rose-400">{error}</p>
         <p className="text-xs text-slate-500">
           API: {API_BASE_URL}/games — ensure the backend is running (e.g. <code className="text-slate-400">npm run dev</code> in backend).
@@ -131,17 +150,32 @@ export default function ApiMathGame() {
 
   if (!current) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-        <p className="text-sm text-slate-300">No games loaded.</p>
+      <div className="flex flex-col items-center justify-center gap-1 py-6 text-center">
+        <p className="text-xs sm:text-sm text-slate-300">No games loaded.</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full max-w-full flex flex-col items-center mx-auto px-2 py-3 sm:px-4 sm:py-5 gap-4 sm:gap-6">
-      {/* Timer Header Row */}
-      <div className="api-game-item w-full" style={{ marginBottom: '8px' }}>
+    <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-1 sm:px-2 sm:py-3 gap-2 sm:gap-4">
+      {/* Section title: Math Game */}
+      <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
+        <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+          Math Game
+        </span>
+      </div>
+
+      {/* Timer + Score row (score persisted in IndexedDB, loads on return) */}
+      <div className="api-game-item w-full flex items-center justify-between flex-wrap gap-1.5 mb-1">
         <Timer key={timerKey} seconds={90} onTimeUp={handleTimeUp} type="math" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="section-label text-slate-400 text-xs">
+            Total
+          </span>
+          <span className="text-xs sm:text-sm font-semibold text-white tabular-nums">
+            {score}
+          </span>
+        </div>
       </div>
 
       {/* Question presentation */}
@@ -152,50 +186,43 @@ export default function ApiMathGame() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="api-game-item relative w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center px-4 py-5 sm:px-5 sm:py-6"
+          className="api-game-item relative w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center px-3 py-4 sm:px-4 sm:py-5"
           style={{
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           }}
         >
           <div
-            className="absolute right-4 top-4 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider"
+            className="absolute right-2 top-2 sm:right-3 sm:top-3 rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider"
             style={{ color: '#94a3b8' }}
           >
             {current.game_type}
           </div>
-          <p className="section-label mb-4 text-slate-400">
+          <p className="section-label mb-2 sm:mb-3 text-slate-400 text-xs">
             Calculate the result
           </p>
-          <div className="text-[clamp(28px,7vw,56px)] font-bold leading-none text-white">
+          <div className="text-[clamp(24px,6.5vw,52px)] font-bold leading-none text-white">
             {current.question}
           </div>
         </motion.div>
       </AnimatePresence>
 
       {/* Typed answer input + keypad */}
-      <div className="api-game-item w-full space-y-3">
+      <div className="api-game-item w-full space-y-2">
         <div
-          style={{
-            textAlign: 'center',
-            fontSize: '11px',
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-mono)',
-            color: 'rgba(148,163,184,0.9)',
-          }}
+          className="text-center font-mono uppercase text-[10px] sm:text-[11px] tracking-widest text-slate-400"
         >
-          Type out your answer
+          Type your answer
         </div>
-        <div className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 px-4 py-3 text-center font-mono text-sm text-zinc-300">
+        <div className="w-full rounded-lg sm:rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-center font-mono text-sm text-zinc-300">
           {typed || 'Enter answer'}
         </div>
-        <div className="mt-1 grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'].map(key => (
             <button
               key={key}
               type="button"
               onClick={() => (key === '⌫' ? handleBackspace() : handleDigit(key))}
-              className="rounded-xl bg-zinc-900/80 border border-zinc-800 py-2.5 sm:py-3 text-center text-sm font-semibold text-zinc-100 active:bg-zinc-800 min-h-[44px] sm:min-h-0"
+              className="rounded-lg sm:rounded-xl bg-zinc-900/80 border border-zinc-800 py-2 sm:py-2.5 text-center text-sm font-semibold text-zinc-100 active:bg-zinc-800 min-h-[40px] sm:min-h-[44px] touch-manipulative"
             >
               {key}
             </button>
@@ -211,7 +238,7 @@ export default function ApiMathGame() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="rounded-full border px-4 py-2 text-sm font-semibold"
+            className="rounded-full border px-3 py-1.5 text-xs sm:text-sm font-semibold"
             style={{
               color: feedback === 'correct' ? '#22c55e' : '#94a3b8',
               borderColor: feedback === 'correct' ? 'rgba(34,197,94,0.3)' : '#27272a',

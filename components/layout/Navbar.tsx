@@ -11,16 +11,16 @@ export default function Navbar() {
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-3 py-2 sm:px-4 sm:py-2.5">
         {/* Left: logo / brand */}
         <Link
           href="/"
-          className="flex items-center gap-2"
+          className="flex items-center gap-1.5 sm:gap-2"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-700">
-            <span className="text-xs font-semibold text-white">M</span>
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-700 shrink-0">
+            <span className="text-[10px] sm:text-xs font-semibold text-white">M</span>
           </div>
-          <span className="text-base font-semibold text-white">
+          <span className="text-sm sm:text-base font-semibold text-white">
             Mathy
           </span>
         </Link>
