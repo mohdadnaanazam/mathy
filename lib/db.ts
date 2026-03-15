@@ -3,6 +3,7 @@ import type { BackendGame } from '@/src/services/gameService'
 
 const DB_NAME = 'mathy-games-db'
 const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour
+const TOTAL_QUESTIONS_PER_VARIANT = 20
 
 export interface GameCacheEntry {
   gameType: string
@@ -120,6 +121,44 @@ export async function incrementMathSessionPlayed(): Promise<number> {
 export async function resetMathSession(max: number): Promise<void> {
   await setMathSessionMax(max)
   await setMathSessionPlayed(0)
+}
+
+/** Per-variant (operation + difficulty) progress: how many questions user has answered out of fixed total. */
+function variantKey(operation: string, difficulty: string): string {
+  return `played_${operation}_${difficulty}`
+}
+
+export async function getVariantPlayed(operation: string, difficulty: string): Promise<number> {
+  const row = await db.meta.get(variantKey(operation, difficulty))
+  return row?.value ?? 0
+}
+
+export async function setVariantPlayed(
+  operation: string,
+  difficulty: string,
+  played: number,
+): Promise<void> {
+  await db.meta.put({ key: variantKey(operation, difficulty), value: played })
+}
+
+export async function incrementVariantPlayed(
+  operation: string,
+  difficulty: string,
+): Promise<number> {
+  const current = await getVariantPlayed(operation, difficulty)
+  const next = Math.min(TOTAL_QUESTIONS_PER_VARIANT, current + 1)
+  await setVariantPlayed(operation, difficulty, next)
+  return next
+}
+
+export async function getVariantProgress(
+  operation: string,
+  difficulty: string,
+): Promise<{ played: number; total: number; remaining: number }> {
+  const played = await getVariantPlayed(operation, difficulty)
+  const total = TOTAL_QUESTIONS_PER_VARIANT
+  const remaining = Math.max(0, total - played)
+  return { played, total, remaining }
 }
 
 /** Memory session progress: same rules as math (max rounds, played, default 10). */

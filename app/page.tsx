@@ -18,6 +18,7 @@ import {
   resetMemorySession,
   setMathSessionPlayed,
   setMemorySessionPlayed,
+  getVariantProgress,
 } from '@/lib/db'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
 
@@ -64,6 +65,9 @@ export default function LandingPage() {
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
   const showMathOperations = mathDifficulty !== null
+  const [mathVariantPlayed, setMathVariantPlayed] = useState<number>(0)
+  const [mathVariantTotal, setMathVariantTotal] = useState<number>(20)
+  const [mathVariantRemaining, setMathVariantRemaining] = useState<number>(20)
 
   // Hydrate math & memory session progress from IndexedDB so played/remaining show correctly after return
   function hydrateSessions() {
@@ -77,6 +81,21 @@ export default function LandingPage() {
   useEffect(() => {
     hydrateSessions()
   }, [])
+
+  // Hydrate per-variant progress (operation + difficulty) whenever either changes.
+  useEffect(() => {
+    if (!mathDifficulty) return
+    const op = MODE_TO_OPERATION[activeMode]
+    getVariantProgress(op, mathDifficulty).then(p => {
+      setMathVariantPlayed(p.played)
+      setMathVariantTotal(p.total)
+      setMathVariantRemaining(p.remaining)
+      // Clamp stepper so it never exceeds remaining (but stays at least 1 when remaining > 0)
+      setMathGamesCount(prev =>
+        p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
+      )
+    })
+  }, [activeMode, mathDifficulty])
   useEffect(() => {
     const onVisibility = () => { if (document.visibilityState === 'visible') hydrateSessions() }
     document.addEventListener('visibilitychange', onVisibility)
@@ -141,8 +160,7 @@ export default function LandingPage() {
   const canPlayMath = mathDifficulty !== null
   const canPlayMemory = memoryDifficulty !== null
 
-  const mathSessionFinished =
-    mathSessionHydrated && mathSessionPlayed >= mathSessionMax
+  const mathVariantExhausted = mathVariantRemaining <= 0
 
   const playDisabled = isNavigating || isLocked || isRefreshing ||
     (activeGame === 'math' && !canPlayMath) ||
@@ -299,9 +317,9 @@ export default function LandingPage() {
                 {mathSessionHydrated && (
                   <>
                     <span className="text-[10px] font-mono text-slate-500 mt-1">
-                      {mathSessionPlayed} / {mathSessionMax} played · {Math.max(0, mathSessionMax - mathSessionPlayed)} remaining
+                      {mathVariantPlayed} / {mathVariantTotal} played · {mathVariantRemaining} remaining
                     </span>
-                    {mathSessionPlayed >= mathSessionMax && (
+                    {mathVariantExhausted && (
                       <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
                         You finished {activeMode} ({mathDifficulty}). Try{' '}
                         {mathDifficulty === 'easy'
@@ -319,11 +337,11 @@ export default function LandingPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (mathSessionFinished) return
-                    setMathGamesCount(v => Math.max(1, v - 1))
+                    if (mathVariantExhausted) return
+                    setMathGamesCount(v => Math.max(1, Math.min(v - 1, mathVariantRemaining)))
                   }}
                   className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
-                  disabled={mathSessionFinished}
+                  disabled={mathVariantExhausted}
                 >
                   −
                 </button>
@@ -333,11 +351,13 @@ export default function LandingPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (mathSessionFinished) return
-                    setMathGamesCount(v => Math.min(20, v + 1))
+                    if (mathVariantExhausted) return
+                    setMathGamesCount(v =>
+                      Math.min(Math.max(v + 1, 1), mathVariantRemaining),
+                    )
                   }}
                   className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
-                  disabled={mathSessionFinished}
+                  disabled={mathVariantExhausted}
                 >
                   +
                 </button>
