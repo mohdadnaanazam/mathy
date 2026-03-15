@@ -141,6 +141,9 @@ export default function LandingPage() {
   const canPlayMath = mathDifficulty !== null
   const canPlayMemory = memoryDifficulty !== null
 
+  const mathSessionFinished =
+    mathSessionHydrated && mathSessionPlayed >= mathSessionMax
+
   const playDisabled = isNavigating || isLocked || isRefreshing ||
     (activeGame === 'math' && !canPlayMath) ||
     (activeGame === 'memory' && !canPlayMemory)
@@ -315,8 +318,12 @@ export default function LandingPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setMathGamesCount(v => Math.max(1, v - 1))}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                  onClick={() => {
+                    if (mathSessionFinished) return
+                    setMathGamesCount(v => Math.max(1, v - 1))
+                  }}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  disabled={mathSessionFinished}
                 >
                   −
                 </button>
@@ -325,8 +332,12 @@ export default function LandingPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setMathGamesCount(v => Math.min(20, v + 1))}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                  onClick={() => {
+                    if (mathSessionFinished) return
+                    setMathGamesCount(v => Math.min(20, v + 1))
+                  }}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  disabled={mathSessionFinished}
                 >
                   +
                 </button>
