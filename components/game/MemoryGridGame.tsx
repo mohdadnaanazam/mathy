@@ -6,7 +6,12 @@ import { useGameStore } from '@/store/gameStore'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import { useScore } from '@/hooks/useScore'
-import { getMemorySessionMax, getMemorySessionPlayed, incrementMemorySessionPlayed } from '@/lib/db'
+import {
+  getMemorySessionMax,
+  getMemorySessionPlayed,
+  incrementMemorySessionPlayed,
+  addToVariantPlayed,
+} from '@/lib/db'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
 
@@ -83,7 +88,11 @@ export default function MemoryGridGame() {
         if (next.length === pattern.length) {
           setGameOver(true)
           getMemorySessionPlayed().then(played => {
-            if (played < sessionMax) incrementMemorySessionPlayed()
+            if (played < sessionMax) {
+              incrementMemorySessionPlayed()
+              // Track per-difficulty cumulative progress for memory game
+              addToVariantPlayed('memory', difficulty, 1)
+            }
           })
           setTimeout(() => syncNow(), 300)
         }
@@ -91,7 +100,10 @@ export default function MemoryGridGame() {
         if (WRONG_PENALTY > 0) addScore(-WRONG_PENALTY)
         setGameOver(true)
         getMemorySessionPlayed().then(played => {
-          if (played < sessionMax) incrementMemorySessionPlayed()
+          if (played < sessionMax) {
+            incrementMemorySessionPlayed()
+            addToVariantPlayed('memory', difficulty, 1)
+          }
         })
         setTimeout(() => syncNow(), 300)
       }
