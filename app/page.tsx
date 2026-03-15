@@ -1,14 +1,20 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3, LayoutGrid } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3, LayoutGrid, Calculator } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { OperationMode, type Difficulty } from '@/types'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useGameTimer } from '@/hooks/useGameTimer'
 import { formatTime } from '@/lib/utils'
-import { clearGameCache } from '@/lib/db'
+import {
+  clearGameCache,
+  getMathSessionMax,
+  getMathSessionPlayed,
+  resetMathSession,
+  setMathSessionPlayed,
+} from '@/lib/db'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
 
 type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
@@ -41,13 +47,33 @@ export default function LandingPage() {
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty>('medium')
-  const [memoryDefault, setMemoryDefault] = useState<number>(6)
-  const [memoryDifficultyTouched, setMemoryDifficultyTouched] = useState(false)
   const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
+  const [mathGamesCount, setMathGamesCount] = useState<number>(20)
+  const [mathSessionMax, setMathSessionMaxState] = useState<number>(20)
+  const [mathSessionPlayed, setMathSessionPlayedState] = useState<number>(0)
+  const [mathSessionHydrated, setMathSessionHydrated] = useState(false)
   const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
   const showMathOperations = mathDifficulty !== null
+
+  // Hydrate math session progress from IndexedDB (played / max) so it shows correctly after user returns
+  function hydrateMathSession() {
+    getMathSessionMax().then(m => {
+      setMathSessionMaxState(m)
+      setMathGamesCount(m)
+    })
+    getMathSessionPlayed().then(p => setMathSessionPlayedState(p))
+    setMathSessionHydrated(true)
+  }
+  useEffect(() => {
+    hydrateMathSession()
+  }, [])
+  useEffect(() => {
+    const onVisibility = () => { if (document.visibilityState === 'visible') hydrateMathSession() }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [])
 
   async function handleReloadNewGames() {
     if (!isRefreshing || isReloadingGames) return
@@ -55,18 +81,26 @@ export default function LandingPage() {
     try {
       await clearGameCache()
       setLastFetchAt(null)
+      await setMathSessionPlayed(0)
+      setMathSessionPlayedState(0)
     } finally {
       setIsReloadingGames(false)
     }
   }
 
-  function play(operationMode?: ModeLabel) {
+  async function play(operationMode?: ModeLabel) {
     if (isNavigating) return
     setIsNavigating(true)
     setType('math')
     setDifficulty(mathDifficulty ?? 'medium')
     const op = operationMode ? MODE_TO_OPERATION[operationMode] : 'mixture'
     setOperation(op)
+    // If user changed "Number of games", start a new session (reset played). Otherwise keep progress.
+    if (mathGamesCount !== mathSessionMax) {
+      await resetMathSession(mathGamesCount)
+      setMathSessionMaxState(mathGamesCount)
+      setMathSessionPlayedState(0)
+    }
     router.push(`/game?op=${op}`)
   }
 
@@ -182,7 +216,7 @@ export default function LandingPage() {
             </div>
           )}
 
-          {/* 2. Choose difficulty (Easy / Medium / Hard) – same style as memory: icon, label, grid size */}
+          {/* 2. Choose difficulty (Easy / Medium / Hard) – math icon, no grid size */}
           <div className="flex flex-col gap-2">
             <div className="rounded-xl border border-[var(--border-subtle)] p-3">
               <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
@@ -193,7 +227,6 @@ export default function LandingPage() {
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
                 const active = mathDifficulty === d
-                const gridSize = d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'
                 return (
                   <button
                     key={d}
@@ -207,7 +240,7 @@ export default function LandingPage() {
                       boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
                     }}
                   >
-                    <LayoutGrid
+                    <Calculator
                       size={20}
                       strokeWidth={active ? 2.4 : 2}
                       className="mb-1"
@@ -219,15 +252,43 @@ export default function LandingPage() {
                     >
                       {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
                     </span>
-                    <span
-                      className="text-[9px] sm:text-[10px] mt-0.5"
-                      style={{ color: active ? 'var(--accent-orange)' : '#64748b' }}
-                    >
-                      {gridSize}
-                    </span>
                   </button>
                 )
               })}
+            </div>
+          </div>
+
+          {/* Math: number of games (max 20) – persisted in IndexedDB; show played/remaining when hydrated */}
+          <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
+            <div className="flex flex-col">
+              <span className="section-label text-xs mb-0.5">Number of games</span>
+              <span className="text-[11px] sm:text-xs text-slate-400">
+                Max 20 per type and level. Tap − or + to adjust.
+              </span>
+              {mathSessionHydrated && (
+                <span className="text-[10px] font-mono text-slate-500 mt-1">
+                  {mathSessionPlayed} / {mathSessionMax} played · {Math.max(0, mathSessionMax - mathSessionPlayed)} remaining
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMathGamesCount(v => Math.max(1, v - 1))}
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+              >
+                −
+              </button>
+              <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                {mathGamesCount}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMathGamesCount(v => Math.min(20, v + 1))}
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+              >
+                +
+              </button>
             </div>
           </div>
         </div>
@@ -267,7 +328,7 @@ export default function LandingPage() {
                 <button
                   key={d}
                   type="button"
-                  onClick={() => { setMemoryDifficulty(d); setMemoryDifficultyTouched(true); setActiveGame('memory') }}
+                  onClick={() => { setMemoryDifficulty(d); setActiveGame('memory') }}
                   className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
                   style={{
                     backgroundColor: 'var(--bg-surface)',
@@ -293,36 +354,6 @@ export default function LandingPage() {
             })}
           </div>
 
-          {/* Default value control – only visible after user picks a difficulty */}
-          {memoryDifficultyTouched && (
-            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
-              <div className="flex flex-col">
-                <span className="section-label text-xs mb-0.5">Default value</span>
-                <span className="text-[11px] sm:text-xs text-slate-400">
-                  Starts at 6. Tap − or + to adjust.
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMemoryDefault(v => Math.max(1, v - 1))}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
-                >
-                  −
-                </button>
-                <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
-                  {memoryDefault}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setMemoryDefault(v => Math.min(12, v + 1))}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 

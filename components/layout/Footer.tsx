@@ -2,11 +2,13 @@
 import Link from 'next/link'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useGameTimer } from '@/hooks/useGameTimer'
+import { useBackendHealth } from '@/hooks/useBackendHealth'
 import { formatTime } from '@/lib/utils'
 
 export default function Footer() {
   const { timeToReset } = useAttempts()
   const { formatted: gamesRefreshFormatted, hasTimer } = useGameTimer()
+  const { api, db, loading, gamesCount } = useBackendHealth()
 
   return (
     <footer
@@ -19,6 +21,14 @@ export default function Footer() {
         <div className="flex items-center gap-2">
           <span className="text-base">🧠</span>
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-[0.12em]">AI GAMES</span>
+          {!loading && (
+            <span
+              className="text-[9px] font-mono text-slate-600"
+              title={api && db ? `Backend & Supabase connected. Games in DB: ${gamesCount ?? '—'}` : 'Backend or DB not connected'}
+            >
+              {api && db ? '· API ✓ DB ✓' : api ? '· API ✓ DB ✗' : '· API ✗'}
+            </span>
+          )}
         </div>
         <div className="flex gap-6 items-center">
           <Link href="/" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Home</Link>

@@ -15,6 +15,7 @@ import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
 import { API_BASE_URL } from '@/src/api/apiClient'
 import type { OperationMode } from '@/types'
+import { getMathSessionMax, getMathSessionPlayed, incrementMathSessionPlayed } from '@/lib/db'
 
 const POINTS_CORRECT = 100
 
@@ -42,12 +43,18 @@ export default function ApiMathGame() {
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
 
+  const [sessionMax, setSessionMax] = useState<number>(20)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [typed, setTyped] = useState('')
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
 
-  const current = games[currentIndex]
+  useEffect(() => {
+    getMathSessionMax().then(setSessionMax)
+  }, [])
+
+  const effectiveGames = games.slice(0, Math.max(1, sessionMax))
+  const current = effectiveGames[currentIndex]
 
   useEffect(() => {
     setCurrentIndex(0)
@@ -73,14 +80,21 @@ export default function ApiMathGame() {
       duration: 0.8,
       ease: 'power3.out',
     })
-  }, [currentIndex, games.length])
+  }, [currentIndex, effectiveGames.length])
 
   const goNext = useCallback(() => {
     setTyped('')
     setFeedback(null)
     setTimerKey(k => k + 1)
-    setCurrentIndex(i => (i + 1 < games.length ? i + 1 : 0))
-  }, [games.length])
+    getMathSessionPlayed().then(played => {
+      if (played < sessionMax) incrementMathSessionPlayed()
+    })
+    setCurrentIndex(i => {
+      const len = Math.max(1, sessionMax)
+      const next = i + 1
+      return next < Math.min(games.length, len) ? next : 0
+    })
+  }, [games.length, sessionMax])
 
   const handleSubmit = useCallback(() => {
     if (!current || !typed.trim() || feedback !== null) return
@@ -216,7 +230,7 @@ export default function ApiMathGame() {
         >
           <div className="absolute right-2 top-2 sm:right-3 sm:top-3 flex items-center gap-1.5">
             <span className="text-[9px] sm:text-[10px] font-mono text-slate-500">
-              {currentIndex + 1} of {games.length}
+              {currentIndex + 1} of {effectiveGames.length}
             </span>
             <span
               className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider"

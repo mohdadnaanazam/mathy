@@ -97,7 +97,7 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
     return () => {
       cancelled = true
     }
-  }, [gameType, setLastFetchAtGlobal])
+  }, [gameType, setLastFetchAtGlobal, loadFromServer])
 
   return { games, loading, error, lastFetchAt, refresh }
 }

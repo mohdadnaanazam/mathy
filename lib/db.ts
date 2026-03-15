@@ -85,3 +85,39 @@ export function getCacheTtlMs(): number {
 export async function clearGameCache(): Promise<void> {
   await db.gameCache.clear()
 }
+
+/** Math session progress: max games per session and how many played (persists across reloads). */
+const META_MATH_SESSION_MAX = 'mathSessionMax'
+const META_MATH_SESSION_PLAYED = 'mathSessionPlayed'
+
+export async function getMathSessionMax(): Promise<number> {
+  const row = await db.meta.get(META_MATH_SESSION_MAX)
+  return row?.value ?? 20
+}
+
+export async function getMathSessionPlayed(): Promise<number> {
+  const row = await db.meta.get(META_MATH_SESSION_PLAYED)
+  return row?.value ?? 0
+}
+
+export async function setMathSessionMax(max: number): Promise<void> {
+  await db.meta.put({ key: META_MATH_SESSION_MAX, value: max })
+}
+
+export async function setMathSessionPlayed(played: number): Promise<void> {
+  await db.meta.put({ key: META_MATH_SESSION_PLAYED, value: played })
+}
+
+/** Increment played count by 1; returns new value. */
+export async function incrementMathSessionPlayed(): Promise<number> {
+  const played = await getMathSessionPlayed()
+  const next = played + 1
+  await setMathSessionPlayed(next)
+  return next
+}
+
+/** Reset session: set max and played to 0 (call when starting a new session with new max). */
+export async function resetMathSession(max: number): Promise<void> {
+  await setMathSessionMax(max)
+  await setMathSessionPlayed(0)
+}
