@@ -112,10 +112,10 @@ export default function MemoryGridGame() {
 
   return (
     <div className="w-full max-w-full flex flex-col items-center mx-auto px-2 py-3 sm:px-4 sm:py-5 gap-4 sm:gap-6">
-      <div className="w-full flex items-center justify-between flex-wrap gap-2">
+      <div className="api-game-item w-full flex items-center justify-between flex-wrap gap-2" style={{ marginBottom: '8px' }}>
         <Timer key={timerKey} seconds={60} onTimeUp={handleTimeUp} type="memory" />
         <div className="flex items-center gap-4">
-          <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+          <span className="section-label text-slate-400">
             Round: {roundScore} pts
           </span>
           <span className="text-sm font-semibold text-white">
@@ -124,7 +124,7 @@ export default function MemoryGridGame() {
         </div>
       </div>
 
-      <p className="text-xs text-slate-500 uppercase tracking-wider">
+      <p className="section-label mb-4 text-slate-400">
         {phase === 'highlight'
           ? 'Remember the blocks…'
           : phase === 'recall'
@@ -137,7 +137,7 @@ export default function MemoryGridGame() {
       </p>
 
       <div
-        className="grid gap-1.5 sm:gap-2 w-full max-w-[320px] sm:max-w-[400px]"
+        className="api-game-item grid gap-1.5 sm:gap-2 w-full max-w-[320px] sm:max-w-[400px]"
         style={{
           gridTemplateColumns: `repeat(${size}, 1fr)`,
           aspectRatio: '1',
@@ -166,7 +166,8 @@ export default function MemoryGridGame() {
                     : 'rgba(63, 63, 70, 0.8)',
               }}
               transition={{ duration: 0.25 }}
-              className="rounded-lg border-2 min-h-[44px] sm:min-h-0 aspect-square touch-manipulative"
+              className="rounded-xl border-2 min-h-[44px] sm:min-h-0 aspect-square touch-manipulative"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               onClick={() => handleCellClick(index)}
               disabled={phase !== 'recall' || gameOver}
             />
@@ -174,14 +175,14 @@ export default function MemoryGridGame() {
         </AnimatePresence>
       </div>
 
-      <div className="flex gap-3">
+      <div className="api-game-item w-full flex justify-center">
         <button
           type="button"
           onClick={() => {
             setTimerKey(k => k + 1)
             startRound()
           }}
-          className="rounded-xl border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm font-semibold text-zinc-200 hover:bg-zinc-700"
+          className="btn-secondary rounded-full px-5 py-2.5 text-sm font-semibold"
         >
           Next round
         </button>

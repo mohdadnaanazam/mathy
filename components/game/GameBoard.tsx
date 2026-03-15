@@ -1,6 +1,7 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useAttempts } from '@/hooks/useAttempts'
@@ -21,9 +22,16 @@ const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
+  const searchParams = useSearchParams()
   const { isLocked } = useAttempts()
   const gameType = useGameStore(s => s.gameType)
+  const setGameType = useGameStore(s => s.setGameType)
   const operation = useGameStore(s => s.operation)
+
+  useEffect(() => {
+    const mode = searchParams.get('mode')
+    if (mode === 'memory') setGameType('memory')
+  }, [searchParams, setGameType])
   const setOperation = useGameStore(s => s.setOperation)
   const customOperations = useGameStore(s => s.customOperations)
   const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
@@ -44,7 +52,7 @@ export default function GameBoard() {
       className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col"
       style={{
         minHeight: '100dvh',
-        paddingTop: '56px',
+        paddingTop: '16px',
         paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
         position: 'relative',
       }}

@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { useGameTimer } from '@/hooks/useGameTimer'
+import { useCountdown } from '@/hooks/useCountdown'
 
 interface Props {
   seconds: number
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function Timer({ seconds, onTimeUp, type = 'math' }: Props) {
-  const { remaining, pct, isLow } = useGameTimer(seconds, onTimeUp)
+  const { remaining, pct, isLow } = useCountdown(seconds, onTimeUp)
   
   const m = Math.floor(remaining / 60)
   const s = remaining % 60

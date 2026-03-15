@@ -74,17 +74,18 @@ export async function setLastSync(timestamp: number): Promise<void> {
 }
 
 export async function getGameStoreRecord(): Promise<GameStoreRecord | null> {
-  return userDb.game_store.get(GAME_STORE_KEY) ?? null
+  const row = await userDb.game_store.get(GAME_STORE_KEY)
+  return row ?? null
 }
 
 export async function setGameStoreRecord(record: Partial<GameStoreRecord> & { id: string }): Promise<void> {
   const existing = await userDb.game_store.get(GAME_STORE_KEY)
-  const merged = {
-    id: GAME_STORE_KEY,
-    user_uuid: existing?.user_uuid ?? '',
-    score: existing?.score ?? 0,
-    last_sync: existing?.last_sync ?? 0,
+  const merged: GameStoreRecord = {
     ...record,
+    id: GAME_STORE_KEY,
+    user_uuid: record.user_uuid ?? existing?.user_uuid ?? '',
+    score: record.score ?? existing?.score ?? 0,
+    last_sync: record.last_sync ?? existing?.last_sync ?? 0,
   }
-  await userDb.game_store.put(merged as GameStoreRecord)
+  await userDb.game_store.put(merged)
 }

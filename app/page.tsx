@@ -48,7 +48,7 @@ export default function LandingPage() {
   function playMemoryGrid() {
     setType('memory')
     setDifficulty(memoryDifficulty)
-    router.push('/game')
+    router.push('/game?mode=memory')
   }
 
   return (
@@ -159,11 +159,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Memory Grid Game */}
+      {/* Memory Grid Game - same UI style as math (orange accent) */}
       <section className="border-b border-[var(--border-subtle)] py-8 md:py-10">
         <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-4 space-y-4">
           <div className="section-label mb-1 flex items-center gap-2">
-            <Grid3X3 size={16} style={{ color: 'var(--accent-cyan)' }} />
+            <Grid3X3 size={16} style={{ color: 'var(--accent-orange)' }} />
             Memory Grid Game
           </div>
           <p className="text-xs text-slate-400 max-w-lg">
@@ -175,11 +175,12 @@ export default function LandingPage() {
                 key={d}
                 type="button"
                 onClick={() => setMemoryDifficulty(d)}
-                className="rounded-full border px-4 py-2 text-sm font-semibold capitalize transition-colors"
+                className="rounded-xl border px-4 py-2 text-sm font-semibold capitalize transition-all"
                 style={{
-                  borderColor: memoryDifficulty === d ? 'var(--accent-cyan)' : 'var(--border-subtle)',
-                  color: memoryDifficulty === d ? 'var(--accent-cyan)' : '#94a3b8',
-                  background: memoryDifficulty === d ? 'rgba(6, 182, 212, 0.1)' : 'transparent',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: memoryDifficulty === d ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                  boxShadow: memoryDifficulty === d ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
+                  color: memoryDifficulty === d ? 'var(--accent-orange)' : '#e5e7eb',
                 }}
               >
                 {d} {d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'}
@@ -188,13 +189,16 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={playMemoryGrid}
-              className="rounded-full px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shrink-0"
               style={{
-                backgroundColor: 'var(--accent-cyan)',
-                color: '#0c0c0f',
+                backgroundColor: 'var(--accent-orange)',
+                color: '#111827',
+                border: '1px solid var(--accent-orange-hover)',
+                boxShadow: '0 4px 16px rgba(249,115,22,0.25)',
+                whiteSpace: 'nowrap',
               }}
             >
-              Play Memory Grid
+              Play game &rarr;
             </button>
           </div>
         </div>

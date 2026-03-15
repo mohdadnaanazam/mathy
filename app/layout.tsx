@@ -47,7 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en' suppressHydrationWarning className={`${inter.variable} ${poppins.variable} ${urbanist.variable} ${geistMono.variable}`}>
       <body className="antialiased overflow-x-hidden">
-        <Navbar />
+        <div className="hidden" aria-hidden="true">
+          <Navbar />
+        </div>
         <div data-root-content className="flex flex-col min-h-0">
           {children}
         </div>
