@@ -62,11 +62,15 @@ export default function ApiMathGame() {
   const gamesForDifficulty = games.filter(
     (g: BackendGame) => g.difficulty === (difficulty as Difficulty),
   )
+  // De-duplicate questions so the same prompt (e.g. "20 + 10 = ?") only appears once per batch
+  const uniqueGamesForDifficulty = Array.from(
+    new Map(gamesForDifficulty.map(g => [g.question, g])).values(),
+  )
   const maxQuestions = Math.min(
     Math.max(1, sessionMax),
-    Math.max(1, gamesForDifficulty.length),
+    Math.max(1, uniqueGamesForDifficulty.length),
   )
-  const effectiveGames = gamesForDifficulty.slice(0, maxQuestions)
+  const effectiveGames = uniqueGamesForDifficulty.slice(0, maxQuestions)
   const current = effectiveGames[currentIndex]
 
   useEffect(() => {
