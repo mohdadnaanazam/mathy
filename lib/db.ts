@@ -92,7 +92,7 @@ const META_MATH_SESSION_PLAYED = 'mathSessionPlayed'
 
 export async function getMathSessionMax(): Promise<number> {
   const row = await db.meta.get(META_MATH_SESSION_MAX)
-  return row?.value ?? 20
+  return row?.value ?? 10
 }
 
 export async function getMathSessionPlayed(): Promise<number> {
@@ -120,4 +120,38 @@ export async function incrementMathSessionPlayed(): Promise<number> {
 export async function resetMathSession(max: number): Promise<void> {
   await setMathSessionMax(max)
   await setMathSessionPlayed(0)
+}
+
+/** Memory session progress: same rules as math (max rounds, played, default 10). */
+const META_MEMORY_SESSION_MAX = 'memorySessionMax'
+const META_MEMORY_SESSION_PLAYED = 'memorySessionPlayed'
+
+export async function getMemorySessionMax(): Promise<number> {
+  const row = await db.meta.get(META_MEMORY_SESSION_MAX)
+  return row?.value ?? 10
+}
+
+export async function getMemorySessionPlayed(): Promise<number> {
+  const row = await db.meta.get(META_MEMORY_SESSION_PLAYED)
+  return row?.value ?? 0
+}
+
+export async function setMemorySessionMax(max: number): Promise<void> {
+  await db.meta.put({ key: META_MEMORY_SESSION_MAX, value: max })
+}
+
+export async function setMemorySessionPlayed(played: number): Promise<void> {
+  await db.meta.put({ key: META_MEMORY_SESSION_PLAYED, value: played })
+}
+
+export async function incrementMemorySessionPlayed(): Promise<number> {
+  const played = await getMemorySessionPlayed()
+  const next = played + 1
+  await setMemorySessionPlayed(next)
+  return next
+}
+
+export async function resetMemorySession(max: number): Promise<void> {
+  await setMemorySessionMax(max)
+  await setMemorySessionPlayed(0)
 }

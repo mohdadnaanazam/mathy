@@ -12,8 +12,12 @@ import {
   clearGameCache,
   getMathSessionMax,
   getMathSessionPlayed,
+  getMemorySessionMax,
+  getMemorySessionPlayed,
   resetMathSession,
+  resetMemorySession,
   setMathSessionPlayed,
+  setMemorySessionPlayed,
 } from '@/lib/db'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
 
@@ -46,10 +50,14 @@ export default function LandingPage() {
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
-  const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty>('medium')
+  const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty | null>(null)
+  const [memoryGamesCount, setMemoryGamesCount] = useState<number>(10)
+  const [memorySessionMax, setMemorySessionMaxState] = useState<number>(10)
+  const [memorySessionPlayed, setMemorySessionPlayedState] = useState<number>(0)
+  const [memorySessionHydrated, setMemorySessionHydrated] = useState(false)
   const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
-  const [mathGamesCount, setMathGamesCount] = useState<number>(20)
-  const [mathSessionMax, setMathSessionMaxState] = useState<number>(20)
+  const [mathGamesCount, setMathGamesCount] = useState<number>(10)
+  const [mathSessionMax, setMathSessionMaxState] = useState<number>(10)
   const [mathSessionPlayed, setMathSessionPlayedState] = useState<number>(0)
   const [mathSessionHydrated, setMathSessionHydrated] = useState(false)
   const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
@@ -57,20 +65,20 @@ export default function LandingPage() {
   const [isReloadingGames, setIsReloadingGames] = useState(false)
   const showMathOperations = mathDifficulty !== null
 
-  // Hydrate math session progress from IndexedDB (played / max) so it shows correctly after user returns
-  function hydrateMathSession() {
-    getMathSessionMax().then(m => {
-      setMathSessionMaxState(m)
-      setMathGamesCount(m)
-    })
+  // Hydrate math & memory session progress from IndexedDB so played/remaining show correctly after return
+  function hydrateSessions() {
+    getMathSessionMax().then(m => { setMathSessionMaxState(m); setMathGamesCount(m) })
     getMathSessionPlayed().then(p => setMathSessionPlayedState(p))
     setMathSessionHydrated(true)
+    getMemorySessionMax().then(m => { setMemorySessionMaxState(m); setMemoryGamesCount(m) })
+    getMemorySessionPlayed().then(p => setMemorySessionPlayedState(p))
+    setMemorySessionHydrated(true)
   }
   useEffect(() => {
-    hydrateMathSession()
+    hydrateSessions()
   }, [])
   useEffect(() => {
-    const onVisibility = () => { if (document.visibilityState === 'visible') hydrateMathSession() }
+    const onVisibility = () => { if (document.visibilityState === 'visible') hydrateSessions() }
     document.addEventListener('visibilitychange', onVisibility)
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
@@ -83,6 +91,8 @@ export default function LandingPage() {
       setLastFetchAt(null)
       await setMathSessionPlayed(0)
       setMathSessionPlayedState(0)
+      await setMemorySessionPlayed(0)
+      setMemorySessionPlayedState(0)
     } finally {
       setIsReloadingGames(false)
     }
@@ -104,19 +114,35 @@ export default function LandingPage() {
     router.push(`/game?op=${op}`)
   }
 
-  function playMemoryGrid() {
-    if (isNavigating) return
+  async function playMemoryGrid() {
+    if (isNavigating || memoryDifficulty === null) return
     setIsNavigating(true)
     setType('memory')
     setDifficulty(memoryDifficulty)
+    if (memoryGamesCount !== memorySessionMax) {
+      await resetMemorySession(memoryGamesCount)
+      setMemorySessionMaxState(memoryGamesCount)
+      setMemorySessionPlayedState(0)
+    }
     router.push('/game?mode=memory')
   }
 
   function handlePlay() {
     if (isLocked) return
-    if (activeGame === 'math') play(activeMode)
-    else playMemoryGrid()
+    if (activeGame === 'math') {
+      if (mathDifficulty === null) return
+      play(activeMode)
+    } else {
+      if (memoryDifficulty === null) return
+      playMemoryGrid()
+    }
   }
+
+  const canPlayMath = mathDifficulty !== null
+  const canPlayMemory = memoryDifficulty !== null
+  const playDisabled = isNavigating || isLocked ||
+    (activeGame === 'math' && !canPlayMath) ||
+    (activeGame === 'memory' && !canPlayMemory)
 
   return (
     <main
@@ -258,39 +284,41 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Math: number of games (max 20) – persisted in IndexedDB; show played/remaining when hydrated */}
-          <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
-            <div className="flex flex-col">
-              <span className="section-label text-xs mb-0.5">Number of games</span>
-              <span className="text-[11px] sm:text-xs text-slate-400">
-                Max 20 per type and level. Tap − or + to adjust.
-              </span>
-              {mathSessionHydrated && (
-                <span className="text-[10px] font-mono text-slate-500 mt-1">
-                  {mathSessionPlayed} / {mathSessionMax} played · {Math.max(0, mathSessionMax - mathSessionPlayed)} remaining
+          {/* Number of games: only visible after user has chosen a difficulty */}
+          {mathDifficulty !== null && (
+            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
+              <div className="flex flex-col">
+                <span className="section-label text-xs mb-0.5">Number of games</span>
+                <span className="text-[11px] sm:text-xs text-slate-400">
+                  Max 20 per type and level. Tap − or + to adjust.
                 </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setMathGamesCount(v => Math.max(1, v - 1))}
-                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
-              >
-                −
-              </button>
-              <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
-                {mathGamesCount}
+                {mathSessionHydrated && (
+                  <span className="text-[10px] font-mono text-slate-500 mt-1">
+                    {mathSessionPlayed} / {mathSessionMax} played · {Math.max(0, mathSessionMax - mathSessionPlayed)} remaining
+                  </span>
+                )}
               </div>
-              <button
-                type="button"
-                onClick={() => setMathGamesCount(v => Math.min(20, v + 1))}
-                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
-              >
-                +
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMathGamesCount(v => Math.max(1, v - 1))}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                >
+                  −
+                </button>
+                <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                  {mathGamesCount}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMathGamesCount(v => Math.min(20, v + 1))}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                >
+                  +
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -319,7 +347,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Difficulty options – clicking sets active game to memory */}
+          {/* Difficulty options – clicking sets active game to memory; required before Play */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
               const active = memoryDifficulty === d
@@ -354,6 +382,41 @@ export default function LandingPage() {
             })}
           </div>
 
+          {/* Number of games for memory: same rules as math, only visible after difficulty chosen */}
+          {memoryDifficulty !== null && (
+            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
+              <div className="flex flex-col">
+                <span className="section-label text-xs mb-0.5">Number of games</span>
+                <span className="text-[11px] sm:text-xs text-slate-400">
+                  Max 20 per type and level. Tap − or + to adjust.
+                </span>
+                {memorySessionHydrated && (
+                  <span className="text-[10px] font-mono text-slate-500 mt-1">
+                    {memorySessionPlayed} / {memorySessionMax} played · {Math.max(0, memorySessionMax - memorySessionPlayed)} remaining
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMemoryGamesCount(v => Math.max(1, v - 1))}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                >
+                  −
+                </button>
+                <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                  {memoryGamesCount}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMemoryGamesCount(v => Math.min(20, v + 1))}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -366,7 +429,7 @@ export default function LandingPage() {
           <button
             type="button"
             onClick={handlePlay}
-            disabled={isNavigating || isLocked}
+            disabled={playDisabled}
             className="inline-flex items-center justify-center rounded-full px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none shrink-0"
             style={{
               backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
@@ -378,10 +441,12 @@ export default function LandingPage() {
           >
             {isLocked
               ? 'Limit reached (15/hour)'
-              : isNavigating
-                ? 'Starting…'
-                : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
-            {!isLocked && !isNavigating && ' →'}
+              : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
+                ? 'Choose difficulty first'
+                : isNavigating
+                  ? 'Starting…'
+                  : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+            {!isLocked && !isNavigating && (canPlayMath && activeGame === 'math' || canPlayMemory && activeGame === 'memory') && ' →'}
           </button>
         </div>
       </section>

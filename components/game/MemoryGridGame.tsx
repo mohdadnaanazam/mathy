@@ -6,6 +6,7 @@ import { useGameStore } from '@/store/gameStore'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import { useScore } from '@/hooks/useScore'
+import { getMemorySessionMax, getMemorySessionPlayed, incrementMemorySessionPlayed } from '@/lib/db'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
 
@@ -30,12 +31,17 @@ export default function MemoryGridGame() {
   const size = GRID_SIZE[difficulty]
   const total = size * size
 
+  const [sessionMax, setSessionMax] = useState(10)
   const [phase, setPhase] = useState<Phase>('highlight')
   const [pattern, setPattern] = useState<number[]>([])
   const [selected, setSelected] = useState<number[]>([])
   const [roundScore, setRoundScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [timerKey, setTimerKey] = useState(0)
+
+  useEffect(() => {
+    getMemorySessionMax().then(setSessionMax)
+  }, [])
 
   const cells = useMemo(() => Array.from({ length: total }, (_, i) => i), [total])
 
@@ -75,15 +81,21 @@ export default function MemoryGridGame() {
         addScore(points)
         if (next.length === pattern.length) {
           setGameOver(true)
+          getMemorySessionPlayed().then(played => {
+            if (played < sessionMax) incrementMemorySessionPlayed()
+          })
           setTimeout(() => syncNow(), 300)
         }
       } else {
         if (WRONG_PENALTY > 0) addScore(-WRONG_PENALTY)
         setGameOver(true)
+        getMemorySessionPlayed().then(played => {
+          if (played < sessionMax) incrementMemorySessionPlayed()
+        })
         setTimeout(() => syncNow(), 300)
       }
     },
-    [phase, gameOver, selected, pattern, addScore, syncNow],
+    [phase, gameOver, selected, pattern, addScore, syncNow, sessionMax],
   )
 
   const handleTimeUp = useCallback(() => {
