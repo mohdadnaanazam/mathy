@@ -49,6 +49,8 @@ export default function ApiMathGame() {
   const { score, addScore, syncNow } = useScore(userUuid)
 
   const [sessionMax, setSessionMax] = useState<number>(20)
+  const [sessionPlayed, setSessionPlayed] = useState<number>(0)
+  const sessionDone = sessionPlayed >= sessionMax
   const [currentIndex, setCurrentIndex] = useState(0)
   const [typed, setTyped] = useState('')
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
@@ -57,6 +59,7 @@ export default function ApiMathGame() {
 
   useEffect(() => {
     getMathSessionMax().then(setSessionMax)
+    getMathSessionPlayed().then(setSessionPlayed)
   }, [])
 
   const gamesForDifficulty = games.filter(
@@ -100,19 +103,25 @@ export default function ApiMathGame() {
   }, [currentIndex, effectiveGames.length])
 
   const goNext = useCallback(() => {
+    if (sessionDone) return
     setTyped('')
     setFeedback(null)
     setTimerKey(k => k + 1)
     getMathSessionPlayed().then(played => {
-      if (played < sessionMax) incrementMathSessionPlayed()
+      if (played < sessionMax) {
+        incrementMathSessionPlayed().then(next => {
+          setSessionPlayed(next)
+        })
+      }
     })
     setCurrentIndex(i => {
       const next = i + 1
       return next < maxQuestions ? next : i
     })
-  }, [maxQuestions])
+  }, [maxQuestions, sessionDone, sessionMax])
 
   const handleSubmit = useCallback(() => {
+    if (sessionDone) return
     if (!current || !typed.trim() || feedback !== null) return
     const correctValue = Number(current.correct_answer)
     const given = Number(typed)
@@ -130,7 +139,7 @@ export default function ApiMathGame() {
         setFeedback(null)
       }, 1800)
     }
-  }, [current, typed, feedback, goNext, recordHourlyAttempt, addScore, syncNow, pointsPerCorrect])
+  }, [current, typed, feedback, goNext, recordHourlyAttempt, addScore, syncNow, pointsPerCorrect, sessionDone])
 
   // Validate when input length equals answer length (correct or wrong)
   useEffect(() => {
@@ -168,6 +177,7 @@ export default function ApiMathGame() {
   }
 
   function handleTimeUp() {
+    if (sessionDone) return
     recordHourlyAttempt()
     goNext()
   }
