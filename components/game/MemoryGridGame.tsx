@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { useAttempts } from '@/hooks/useAttempts'
@@ -11,6 +12,7 @@ import {
   getMemorySessionPlayed,
   incrementMemorySessionPlayed,
   addToVariantPlayed,
+  resetMemorySession,
 } from '@/lib/db'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
@@ -27,7 +29,9 @@ const WRONG_PENALTY = 0
 type Phase = 'highlight' | 'recall' | 'result'
 
 export default function MemoryGridGame() {
+  const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty)
+  const setDifficulty = useGameStore(s => s.setDifficulty)
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
@@ -36,12 +40,14 @@ export default function MemoryGridGame() {
   const total = size * size
 
   const [sessionMax, setSessionMax] = useState(10)
+  const [roundIndex, setRoundIndex] = useState(0) // 1-based round counter
   const [phase, setPhase] = useState<Phase>('highlight')
   const [pattern, setPattern] = useState<number[]>([])
   const [selected, setSelected] = useState<number[]>([])
   const [roundScore, setRoundScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [timerKey, setTimerKey] = useState(0)
+  const [sessionComplete, setSessionComplete] = useState(false)
 
   const pointsPerCorrect = difficulty === 'easy' ? 10 : difficulty === 'medium' ? 20 : 50
 
@@ -58,12 +64,14 @@ export default function MemoryGridGame() {
   }, [cells, total])
 
   const startRound = useCallback(() => {
+    if (sessionComplete) return
+    setRoundIndex(prev => prev + 1)
     setPhase('highlight')
     setSelected([])
     setRoundScore(0)
     setGameOver(false)
     generatePattern()
-  }, [generatePattern])
+  }, [generatePattern, sessionComplete])
 
   useEffect(() => {
     if (phase !== 'highlight' || pattern.length === 0) return
@@ -89,9 +97,15 @@ export default function MemoryGridGame() {
           setGameOver(true)
           getMemorySessionPlayed().then(played => {
             if (played < sessionMax) {
-              incrementMemorySessionPlayed()
-              // Track per-difficulty cumulative progress for memory game
-              addToVariantPlayed('memory', difficulty, 1)
+              incrementMemorySessionPlayed().then(next => {
+                // Track per-difficulty cumulative progress for memory game
+                addToVariantPlayed('memory', difficulty, 1)
+                if (next >= sessionMax) {
+                  setSessionComplete(true)
+                }
+              })
+            } else {
+              setSessionComplete(true)
             }
           })
           setTimeout(() => syncNow(), 300)
@@ -101,8 +115,14 @@ export default function MemoryGridGame() {
         setGameOver(true)
         getMemorySessionPlayed().then(played => {
           if (played < sessionMax) {
-            incrementMemorySessionPlayed()
-            addToVariantPlayed('memory', difficulty, 1)
+            incrementMemorySessionPlayed().then(next => {
+              addToVariantPlayed('memory', difficulty, 1)
+              if (next >= sessionMax) {
+                setSessionComplete(true)
+              }
+            })
+          } else {
+            setSessionComplete(true)
           }
         })
         setTimeout(() => syncNow(), 300)
@@ -118,8 +138,12 @@ export default function MemoryGridGame() {
   }, [recordHourlyAttempt, syncNow])
 
   useEffect(() => {
+    setRoundIndex(0)
+    setSessionComplete(false)
     startRound()
-  }, [difficulty])
+  }, [difficulty, startRound])
+
+  const currentRoundDisplay = Math.min(Math.max(roundIndex || 1, 1), sessionMax || 1)
 
   if (userLoading) {
     return (
@@ -135,6 +159,111 @@ export default function MemoryGridGame() {
   const isCorrect = (index: number) => pattern.includes(index)
   const showAsWrong = (index: number) => gameOver && selected.includes(index) && !pattern.includes(index)
 
+  if (sessionComplete) {
+    return (
+      <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-2 sm:px-2 sm:py-4 gap-3 sm:gap-5">
+        <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
+          <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+            Memory Grid Game
+          </span>
+        </div>
+
+        <div className="api-game-item w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 sm:px-4 sm:py-5 space-y-4">
+          <div className="text-center space-y-2">
+            <p className="section-label text-xs text-slate-400">
+              Session complete
+            </p>
+            <p className="text-sm sm:text-base text-slate-200">
+              You finished this set of rounds for Memory Grid.
+            </p>
+            <p className="text-[11px] sm:text-xs text-slate-400">
+              Choose your next difficulty and number of games, or go back to the home screen.
+            </p>
+          </div>
+
+          {/* Difficulty selector */}
+          <div className="space-y-1.5">
+            <p className="section-label text-[11px] text-slate-400">
+              Choose difficulty
+            </p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
+                const active = difficulty === d
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDifficulty(d)}
+                    className="rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 text-[11px] sm:text-xs font-semibold transition-all"
+                    style={{
+                      backgroundColor: 'var(--bg-surface)',
+                      borderRadius: 12,
+                      border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                    }}
+                  >
+                    {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Number of games picker (reuses sessionMax semantics) */}
+          <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
+            <div className="flex flex-col">
+              <span className="section-label text-xs mb-0.5">Number of games</span>
+              <span className="text-[11px] sm:text-xs text-slate-400">
+                Max 20 per difficulty. Tap − or + to adjust.
+              </span>
+              <span className="text-[10px] font-mono text-slate-500 mt-1">
+                Session length: {sessionMax} rounds
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSessionMax(m => Math.max(1, m - 1))}
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+              >
+                −
+              </button>
+              <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                {sessionMax}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSessionMax(m => Math.min(20, m + 1))}
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
+            <button
+              type="button"
+              onClick={async () => {
+                await resetMemorySession(sessionMax)
+                router.push('/game?mode=memory')
+              }}
+              className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900"
+            >
+              Play game
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-200"
+            >
+              Go to home
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-1 sm:px-2 sm:py-3 gap-2 sm:gap-4">
       {/* Section title: Memory Grid Game (matches Math Game label) */}
@@ -148,7 +277,7 @@ export default function MemoryGridGame() {
         <Timer key={timerKey} seconds={60} onTimeUp={handleTimeUp} type="memory" />
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="section-label text-slate-400 text-xs">
-            Round: {roundScore} pts
+            Round {currentRoundDisplay} / {sessionMax} · {roundScore} pts
           </span>
           <span className="text-xs sm:text-sm font-semibold text-white">
             Total: {score}

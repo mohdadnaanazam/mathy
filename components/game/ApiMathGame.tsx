@@ -112,7 +112,14 @@ export default function ApiMathGame() {
     Math.max(1, sessionMax),
     Math.max(1, uniqueGamesForDifficulty.length),
   )
-  const effectiveGames = uniqueGamesForDifficulty.slice(0, maxQuestions)
+  // Randomly sample a subset from the entire pool so sessions draw
+  // from a larger question set, even when more than maxQuestions exist.
+  const shuffledPool = [...uniqueGamesForDifficulty]
+  for (let i = shuffledPool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffledPool[i], shuffledPool[j]] = [shuffledPool[j], shuffledPool[i]]
+  }
+  const effectiveGames = shuffledPool.slice(0, maxQuestions)
 
   useEffect(() => {
     const len = effectiveGames.length
