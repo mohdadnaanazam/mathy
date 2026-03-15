@@ -189,13 +189,12 @@ export default function ApiMathGame() {
   )
 
   const handleDigit = (d: string) => {
-    if (sessionDone) return
-    setAnswer(prev => {
-      if (prev.length >= 6) return prev
-      const next = prev === '0' && d !== '.' ? d : prev + d
-      validateAnswer(next)
-      return next
-    })
+    if (sessionDone || feedback !== null) return
+    const base = answer === 'Enter answer' ? '' : answer
+    if (base.length >= 6) return
+    const next = base === '0' && d !== '.' ? d : base + d
+    setAnswer(next)
+    validateAnswer(next)
   }
 
   const handleBackspace = () => {
