@@ -54,7 +54,7 @@ export default function ApiMathGame() {
   const [questionOrder, setQuestionOrder] = useState<number[]>([])
   const sessionDone = sessionPlayed >= sessionMax
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [typed, setTyped] = useState('')
+  const [answer, setAnswer] = useState('')
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
@@ -82,7 +82,7 @@ export default function ApiMathGame() {
     if (len === 0) {
       setQuestionOrder([])
       setCurrentIndex(0)
-      setTyped('')
+      setAnswer('')
       setFeedback(null)
       return
     }
@@ -93,7 +93,7 @@ export default function ApiMathGame() {
     }
     setQuestionOrder(indices)
     setCurrentIndex(0)
-    setTyped('')
+    setAnswer('')
     setFeedback(null)
   }, [effectiveGames.length])
 
@@ -104,7 +104,7 @@ export default function ApiMathGame() {
 
   useEffect(() => {
     setCurrentIndex(0)
-    setTyped('')
+    setAnswer('')
     setFeedback(null)
   }, [operation])
 
@@ -130,7 +130,7 @@ export default function ApiMathGame() {
 
   const goNext = useCallback(() => {
     if (sessionDone) return
-    setTyped('')
+    setAnswer('')
     setFeedback(null)
     setTimerKey(k => k + 1)
     getMathSessionPlayed().then(played => {
@@ -180,7 +180,7 @@ export default function ApiMathGame() {
         setFeedback('wrong')
         recordHourlyAttempt()
         setTimeout(() => {
-          setTyped('')
+          setAnswer('')
           setFeedback(null)
         }, 1800)
       }
@@ -190,18 +190,17 @@ export default function ApiMathGame() {
 
   const handleDigit = (d: string) => {
     if (sessionDone) return
-    setTyped(prev => {
-      const currentValue = prev === 'Enter answer' ? '' : prev
-      if (currentValue.length >= 6) return currentValue
-      const next = currentValue === '0' && d !== '.' ? d : currentValue + d
+    setAnswer(prev => {
+      if (prev.length >= 6) return prev
+      const next = prev === '0' && d !== '.' ? d : prev + d
       validateAnswer(next)
       return next
     })
   }
 
   const handleBackspace = () => {
-    if (feedback !== null) return
-    setTyped(prev => prev.slice(0, -1))
+    if (feedback !== null || sessionDone) return
+    setAnswer(prev => prev.slice(0, -1))
   }
 
   function handleTimeUp() {
@@ -309,9 +308,12 @@ export default function ApiMathGame() {
         >
           Type your answer
         </div>
-        <div className="w-full rounded-lg sm:rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-center font-mono text-sm text-zinc-300">
-          {typed || 'Enter answer'}
-        </div>
+        <input
+          value={answer}
+          readOnly
+          placeholder="Enter answer"
+          className="w-full rounded-lg sm:rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-center font-mono text-sm text-zinc-300"
+        />
         <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'].map(key => (
             <button
