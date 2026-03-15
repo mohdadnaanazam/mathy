@@ -196,18 +196,17 @@ export default function ApiMathGame() {
     getMathSessionPlayed().then(played => {
       const willBe = Math.min(sessionMax, played + 1)
 
-      // Track per-variant progress one question at a time.
+      // Track per-variant progress one question at a time and
+      // immediately refresh the played / remaining counters so
+      // the game UI stays in sync with the home screen.
       if (difficulty) {
         incrementVariantPlayed(operation, difficulty as Difficulty).then(() => {
-          // When the session just finished, refresh variant progress for the next-session picker UI.
-          if (willBe >= sessionMax) {
-            getVariantProgress(operation, difficulty as Difficulty).then(p => {
-              setNextOperation(operation)
-              setNextDifficulty(difficulty as Difficulty)
-              setNextVariantPlayed(p.played)
-              setNextVariantRemaining(p.remaining)
-            })
-          }
+          getVariantProgress(operation, difficulty as Difficulty).then(p => {
+            setNextOperation(operation)
+            setNextDifficulty(difficulty as Difficulty)
+            setNextVariantPlayed(p.played)
+            setNextVariantRemaining(p.remaining)
+          })
         })
       }
 
