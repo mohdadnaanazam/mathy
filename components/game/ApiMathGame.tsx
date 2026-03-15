@@ -63,6 +63,7 @@ export default function ApiMathGame() {
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
   const [sessionProgressApplied, setSessionProgressApplied] = useState(false)
+  const [sessionComplete, setSessionComplete] = useState(false)
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
 
   useEffect(() => {
@@ -141,6 +142,10 @@ export default function ApiMathGame() {
 
     // Update persisted session count up to the configured max
     getMathSessionPlayed().then(played => {
+      const willBe = Math.min(sessionMax, played + 1)
+      if (willBe >= sessionMax) {
+        setSessionComplete(true)
+      }
       if (played < sessionMax) {
         incrementMathSessionPlayed().then(next => {
           setSessionPlayed(next)
@@ -257,10 +262,45 @@ export default function ApiMathGame() {
     )
   }
 
-  if (!current) {
+  if (!current && !sessionComplete) {
     return (
       <div className="flex flex-col items-center justify-center gap-1 py-6 text-center">
         <p className="text-xs sm:text-sm text-slate-300">No games loaded.</p>
+      </div>
+    )
+  }
+
+  // When the session is complete (e.g. 5 of 5), stop showing questions
+  // and instead show a simple "Next game" panel so the user can decide what to do next.
+  if (sessionComplete) {
+    return (
+      <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-2 sm:px-2 sm:py-4 gap-3 sm:gap-5">
+        <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
+          <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+            Math Game
+          </span>
+        </div>
+
+        <div className="api-game-item w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 sm:px-4 sm:py-5 text-center space-y-3">
+          <p className="section-label text-xs text-slate-400 mb-1">
+            Session complete
+          </p>
+          <p className="text-sm sm:text-base text-slate-200">
+            You finished this set of questions for {operation}.
+          </p>
+          <p className="text-[11px] sm:text-xs text-slate-400">
+            Go back to the home screen to pick a difficulty and choose how many of the remaining questions you want to play next.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-200"
+            >
+              Go to home
+            </button>
+          </div>
+        </div>
       </div>
     )
   }

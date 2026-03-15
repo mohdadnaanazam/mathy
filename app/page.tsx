@@ -148,21 +148,33 @@ export default function LandingPage() {
 
   function handlePlay() {
     if (isLocked || isRefreshing) return
+
     if (activeGame === 'math') {
       if (mathDifficulty === null) return
+      // Prevent starting a math session when this variant is already exhausted (20 / 20).
+      if (mathVariantRemaining <= 0) return
       play(activeMode)
-    } else {
-      if (memoryDifficulty === null) return
-      playMemoryGrid()
+      return
     }
+
+    // Memory grid
+    if (memoryDifficulty === null) return
+    const memoryRemaining = Math.max(0, memorySessionMax - memorySessionPlayed)
+    // Prevent starting a memory session when this difficulty is already exhausted.
+    if (memoryRemaining <= 0) return
+    playMemoryGrid()
   }
 
-  const canPlayMath = mathDifficulty !== null
-  const canPlayMemory = memoryDifficulty !== null
+  const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
+  const canPlayMemory =
+    memoryDifficulty !== null && Math.max(0, memorySessionMax - memorySessionPlayed) > 0
 
   const mathVariantExhausted = mathVariantRemaining <= 0
 
-  const playDisabled = isNavigating || isLocked || isRefreshing ||
+  const playDisabled =
+    isNavigating ||
+    isLocked ||
+    isRefreshing ||
     (activeGame === 'math' && !canPlayMath) ||
     (activeGame === 'memory' && !canPlayMemory)
 
