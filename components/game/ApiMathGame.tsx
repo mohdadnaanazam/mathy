@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
@@ -31,6 +31,7 @@ function operationFromUrl(opParam: string | null): OperationMode | null {
 }
 
 export default function ApiMathGame() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const storeOperation = useGameStore(s => s.operation)
   const setOperation = useGameStore(s => s.setOperation)
@@ -344,6 +345,17 @@ export default function ApiMathGame() {
           </motion.p>
         )}
       </AnimatePresence>
+
+      {/* Home button – visible always, especially useful after finishing session */}
+      <div className="api-game-item w-full flex justify-center pt-1">
+        <button
+          type="button"
+          onClick={() => router.push('/')}
+          className="rounded-full px-4 py-2 text-xs sm:text-sm font-semibold uppercase tracking-[0.12em] text-slate-200 border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 transition-colors min-h-[36px]"
+        >
+          Home
+        </button>
+      </div>
     </div>
   )
 }
