@@ -15,7 +15,12 @@ import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
 import { API_BASE_URL } from '@/src/api/apiClient'
 import type { OperationMode, Difficulty } from '@/types'
-import { getMathSessionMax, getMathSessionPlayed, incrementMathSessionPlayed } from '@/lib/db'
+import {
+  getMathSessionMax,
+  getMathSessionPlayed,
+  incrementMathSessionPlayed,
+  addToVariantPlayed,
+} from '@/lib/db'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -57,6 +62,7 @@ export default function ApiMathGame() {
   const [answer, setAnswer] = useState('')
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
+  const [sessionProgressApplied, setSessionProgressApplied] = useState(false)
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
 
   useEffect(() => {
@@ -204,6 +210,17 @@ export default function ApiMathGame() {
     if (feedback !== null) return
     setAnswer(prev => prev.slice(0, -1))
   }
+
+  // When the persisted session counter reaches the selected max for this session,
+  // mark the session as complete and add the whole session count to the per-variant progress.
+  useEffect(() => {
+    if (sessionProgressApplied) return
+    if (sessionPlayed < sessionMax || sessionMax <= 0) return
+
+    addToVariantPlayed(operation, difficulty ?? 'easy', sessionMax).then(() => {
+      setSessionProgressApplied(true)
+    })
+  }, [sessionPlayed, sessionMax, sessionProgressApplied, operation, difficulty])
 
   function handleTimeUp() {
     if (sessionDone) return

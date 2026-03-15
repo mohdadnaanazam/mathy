@@ -167,6 +167,19 @@ export async function incrementVariantPlayed(
   return next
 }
 
+// Add an arbitrary number of played questions for a variant (used when a full session finishes).
+export async function addToVariantPlayed(
+  operation: string,
+  difficulty: string,
+  delta: number,
+): Promise<number> {
+  if (delta <= 0) return getVariantPlayed(operation, difficulty)
+  const current = await getVariantPlayed(operation, difficulty)
+  const next = Math.min(TOTAL_QUESTIONS_PER_VARIANT, current + delta)
+  await setVariantPlayed(operation, difficulty, next)
+  return next
+}
+
 export async function getVariantProgress(
   operation: string,
   difficulty: string,
