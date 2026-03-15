@@ -64,7 +64,7 @@ export default function GameBoard() {
       }}
     >
       {/* Game only */}
-      <main id="live-game-area" className="mx-auto w-full max-w-[420px] px-2 py-4 sm:px-4 sm:py-6">
+      <main id="live-game-area" className="mx-auto w-full max-w-[720px] px-2 py-4 sm:px-4 sm:py-6">
         <div
           className="card relative w-full border-zinc-800 bg-zinc-900/30 px-2 py-3 sm:px-4 sm:py-4"
           style={{
@@ -80,7 +80,7 @@ export default function GameBoard() {
       <div
         className="fixed left-0 right-0 bottom-0 z-40 border-t border-zinc-800 bg-[var(--bg-surface)]"
         style={{
-          maxWidth: '420px',
+          maxWidth: '720px',
           margin: '0 auto',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}

@@ -17,7 +17,6 @@ const GRID_SIZE: Record<Difficulty, number> = {
 }
 
 const HIGHLIGHT_DURATION_MS = 2500
-const POINTS_PER_CORRECT = 10
 const WRONG_PENALTY = 0
 
 type Phase = 'highlight' | 'recall' | 'result'
@@ -38,6 +37,8 @@ export default function MemoryGridGame() {
   const [roundScore, setRoundScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [timerKey, setTimerKey] = useState(0)
+
+  const pointsPerCorrect = difficulty === 'easy' ? 10 : difficulty === 'medium' ? 20 : 50
 
   useEffect(() => {
     getMemorySessionMax().then(setSessionMax)
@@ -76,7 +77,7 @@ export default function MemoryGridGame() {
       setSelected(next)
 
       if (pattern.includes(index)) {
-        const points = POINTS_PER_CORRECT
+        const points = pointsPerCorrect
         setRoundScore(s => s + points)
         addScore(points)
         if (next.length === pattern.length) {
@@ -95,7 +96,7 @@ export default function MemoryGridGame() {
         setTimeout(() => syncNow(), 300)
       }
     },
-    [phase, gameOver, selected, pattern, addScore, syncNow, sessionMax],
+    [phase, gameOver, selected, pattern, addScore, syncNow, sessionMax, pointsPerCorrect],
   )
 
   const handleTimeUp = useCallback(() => {

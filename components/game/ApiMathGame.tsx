@@ -14,10 +14,14 @@ import { useScore } from '@/hooks/useScore'
 import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
 import { API_BASE_URL } from '@/src/api/apiClient'
-import type { OperationMode } from '@/types'
+import type { OperationMode, Difficulty } from '@/types'
 import { getMathSessionMax, getMathSessionPlayed, incrementMathSessionPlayed } from '@/lib/db'
 
-const POINTS_CORRECT = 100
+const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
+  easy: 10,
+  medium: 20,
+  hard: 50,
+}
 
 const VALID_OPS: OperationMode[] = ['addition', 'subtraction', 'multiplication', 'division', 'mixture', 'custom']
 
@@ -30,6 +34,7 @@ export default function ApiMathGame() {
   const searchParams = useSearchParams()
   const storeOperation = useGameStore(s => s.operation)
   const setOperation = useGameStore(s => s.setOperation)
+  const difficulty = useGameStore(s => s.difficulty)
   const opFromUrl = operationFromUrl(searchParams.get('op'))
   const operation = opFromUrl ?? storeOperation
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
@@ -48,12 +53,20 @@ export default function ApiMathGame() {
   const [typed, setTyped] = useState('')
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
+  const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
 
   useEffect(() => {
     getMathSessionMax().then(setSessionMax)
   }, [])
 
-  const effectiveGames = games.slice(0, Math.max(1, sessionMax))
+  const gamesForDifficulty = games.filter(
+    (g: BackendGame) => g.difficulty === (difficulty as Difficulty),
+  )
+  const maxQuestions = Math.min(
+    Math.max(1, sessionMax),
+    Math.max(1, gamesForDifficulty.length),
+  )
+  const effectiveGames = gamesForDifficulty.slice(0, maxQuestions)
   const current = effectiveGames[currentIndex]
 
   useEffect(() => {
@@ -90,11 +103,10 @@ export default function ApiMathGame() {
       if (played < sessionMax) incrementMathSessionPlayed()
     })
     setCurrentIndex(i => {
-      const len = Math.max(1, sessionMax)
       const next = i + 1
-      return next < Math.min(games.length, len) ? next : 0
+      return next < maxQuestions ? next : i
     })
-  }, [games.length, sessionMax])
+  }, [maxQuestions])
 
   const handleSubmit = useCallback(() => {
     if (!current || !typed.trim() || feedback !== null) return
@@ -105,7 +117,7 @@ export default function ApiMathGame() {
     setFeedback(isCorrect ? 'correct' : 'wrong')
     recordHourlyAttempt()
     if (isCorrect) {
-      addScore(POINTS_CORRECT).then(() => syncNow())
+      addScore(pointsPerCorrect).then(() => syncNow())
       setTimeout(goNext, 800)
     } else {
       // Wrong: show right answer, then clear input so user can type the correct answer; do not advance
@@ -114,7 +126,7 @@ export default function ApiMathGame() {
         setFeedback(null)
       }, 1800)
     }
-  }, [current, typed, feedback, goNext, recordHourlyAttempt, addScore, syncNow])
+  }, [current, typed, feedback, goNext, recordHourlyAttempt, addScore, syncNow, pointsPerCorrect])
 
   // Validate when input length equals answer length (correct or wrong)
   useEffect(() => {
