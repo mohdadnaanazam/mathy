@@ -50,6 +50,7 @@ export default function ApiMathGame() {
 
   const [sessionMax, setSessionMax] = useState<number>(20)
   const [sessionPlayed, setSessionPlayed] = useState<number>(0)
+  const [questionOrder, setQuestionOrder] = useState<number[]>([])
   const sessionDone = sessionPlayed >= sessionMax
   const [currentIndex, setCurrentIndex] = useState(0)
   const [typed, setTyped] = useState('')
@@ -74,7 +75,31 @@ export default function ApiMathGame() {
     Math.max(1, uniqueGamesForDifficulty.length),
   )
   const effectiveGames = uniqueGamesForDifficulty.slice(0, maxQuestions)
-  const current = effectiveGames[currentIndex]
+
+  useEffect(() => {
+    const len = effectiveGames.length
+    if (len === 0) {
+      setQuestionOrder([])
+      setCurrentIndex(0)
+      setTyped('')
+      setFeedback(null)
+      return
+    }
+    const indices = Array.from({ length: len }, (_, i) => i)
+    for (let i = indices.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[indices[i], indices[j]] = [indices[j], indices[i]]
+    }
+    setQuestionOrder(indices)
+    setCurrentIndex(0)
+    setTyped('')
+    setFeedback(null)
+  }, [effectiveGames.length])
+
+  const current =
+    questionOrder.length && currentIndex < questionOrder.length
+      ? effectiveGames[questionOrder[currentIndex]]
+      : undefined
 
   useEffect(() => {
     setCurrentIndex(0)
@@ -116,9 +141,9 @@ export default function ApiMathGame() {
     })
     setCurrentIndex(i => {
       const next = i + 1
-      return next < maxQuestions ? next : i
+      return next < questionOrder.length ? next : i
     })
-  }, [maxQuestions, sessionDone, sessionMax])
+  }, [questionOrder.length, sessionDone, sessionMax])
 
   const handleSubmit = useCallback(() => {
     if (sessionDone) return
@@ -256,7 +281,7 @@ export default function ApiMathGame() {
         >
           <div className="absolute right-2 top-2 sm:right-3 sm:top-3 flex items-center gap-1.5">
             <span className="text-[9px] sm:text-[10px] font-mono text-slate-500">
-              {currentIndex + 1} of {effectiveGames.length}
+              {Math.min(currentIndex + 1, sessionMax)} of {sessionMax}
             </span>
             <span
               className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider"
