@@ -88,45 +88,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Math game section – difficulty first, then operations */}
+      {/* Math game section – operation first, then difficulty (matches reference UI) */}
       <section
         className={`border-b border-[var(--border-subtle)] py-5 sm:py-6 md:py-8 transition-opacity duration-200 ${activeGame !== 'math' ? 'opacity-60' : ''}`}
       >
         <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-4 sm:space-y-5">
-          {/* 1. Choose difficulty (Easy / Medium / Hard) – default: Medium */}
-          <div className="flex flex-col gap-2">
-            <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'math' ? 'border-[var(--border-subtle)]' : 'border-[var(--border-subtle)]'}`}>
-              <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                Pick Easy, Medium, or Hard. Then choose an operation below.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
-                const active = mathDifficulty === d
-                return (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
-                    className="flex flex-col items-center justify-center rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 transition-all duration-200 capitalize"
-                    style={{
-                      backgroundColor: 'var(--bg-surface)',
-                      borderRadius: 12,
-                      border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
-                      color: active ? 'var(--accent-orange)' : '#e5e7eb',
-                    }}
-                  >
-                    <span className="text-xs sm:text-sm font-semibold tracking-[0.06em]">{d}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* 2. Operation icons – only visible after user has chosen Easy / Medium / Hard */}
-          {showMathOperations && (
+          {/* 1. Operation icons */}
           <div className="flex flex-col gap-3">
             <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'math' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
               <div className="section-label mb-0.5 text-xs">Choose operation</div>
@@ -171,10 +138,9 @@ export default function LandingPage() {
               })}
             </div>
           </div>
-          )}
 
           {/* Custom: choose which operations to include */}
-          {showMathOperations && activeMode === 'Custom' && (
+          {activeMode === 'Custom' && (
             <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3 space-y-1.5">
               <p className="text-[11px] text-slate-500 uppercase tracking-wider">
                 Include (e.g. only × & ÷ or only + & −)
@@ -200,6 +166,38 @@ export default function LandingPage() {
               </div>
             </div>
           )}
+
+          {/* 2. Choose difficulty (Easy / Medium / Hard) – default: Medium */}
+          <div className="flex flex-col gap-2">
+            <div className="rounded-xl border border-[var(--border-subtle)] p-3">
+              <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
+              <p className="text-[11px] sm:text-xs text-slate-400">
+                Pick Easy, Medium, or Hard, then press Play.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
+                const active = mathDifficulty === d
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
+                    className="flex flex-col items-center justify-center rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 transition-all duration-200 capitalize"
+                    style={{
+                      backgroundColor: 'var(--bg-surface)',
+                      borderRadius: 12,
+                      border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
+                      color: active ? 'var(--accent-orange)' : '#e5e7eb',
+                    }}
+                  >
+                    <span className="text-xs sm:text-sm font-semibold tracking-[0.06em]">{d}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
