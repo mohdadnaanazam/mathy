@@ -141,12 +141,10 @@ export default function LandingPage() {
     setDifficulty(mathDifficulty ?? 'medium')
     const op = operationMode ? MODE_TO_OPERATION[operationMode] : 'mixture'
     setOperation(op)
-    // If user changed "Number of games", start a new session (reset played). Otherwise keep progress.
-    if (mathGamesCount !== mathSessionMax) {
-      await resetMathSession(mathGamesCount)
-      setMathSessionMaxState(mathGamesCount)
-      setMathSessionPlayedState(0)
-    }
+    // Always start a fresh math session with the selected number of games.
+    await resetMathSession(mathGamesCount)
+    setMathSessionMaxState(mathGamesCount)
+    setMathSessionPlayedState(0)
     router.push(`/game?op=${op}`)
   }
 
