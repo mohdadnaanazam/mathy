@@ -40,6 +40,8 @@ export interface UseGameTimerResult {
   formatted: string
   /** Whether we have a valid countdown (had a fetch time). */
   hasTimer: boolean
+  /** True when user was away >1h and games cache has expired; show reload to fetch new games. */
+  isRefreshing: boolean
 }
 
 /**
@@ -75,10 +77,11 @@ export function useGameTimer(): UseGameTimerResult {
   }, [tick])
 
   const hasTimer = lastFetchAt != null && secondsRemaining > 0
+  const isRefreshing = lastFetchAt != null && secondsRemaining <= 0
   const formatted =
     hasTimer
       ? `Games refresh in ${formatGamesRefreshTime(secondsRemaining)}`
-      : lastFetchAt != null && secondsRemaining <= 0
+      : isRefreshing
         ? 'Refreshing…'
         : ''
 
@@ -87,5 +90,6 @@ export function useGameTimer(): UseGameTimerResult {
     nextRefreshAt,
     formatted,
     hasTimer: lastFetchAt != null,
+    isRefreshing,
   }
 }

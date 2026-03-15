@@ -8,6 +8,8 @@ import { OperationMode, type Difficulty } from '@/types'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useGameTimer } from '@/hooks/useGameTimer'
 import { formatTime } from '@/lib/utils'
+import { clearGameCache } from '@/lib/db'
+import { useGameRefreshStore } from '@/store/gameRefreshStore'
 
 type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
 
@@ -34,7 +36,8 @@ export default function LandingPage() {
   const customOperations = useGameStore(s => s.customOperations)
   const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
   const { used, max: maxAttempts, timeToReset, isLocked } = useAttempts()
-  const { formatted: gamesRefreshFormatted, hasTimer } = useGameTimer()
+  const { formatted: gamesRefreshFormatted, hasTimer, isRefreshing } = useGameTimer()
+  const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty>('medium')
@@ -43,7 +46,19 @@ export default function LandingPage() {
   const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
   const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
+  const [isReloadingGames, setIsReloadingGames] = useState(false)
   const showMathOperations = mathDifficulty !== null
+
+  async function handleReloadNewGames() {
+    if (!isRefreshing || isReloadingGames) return
+    setIsReloadingGames(true)
+    try {
+      await clearGameCache()
+      setLastFetchAt(null)
+    } finally {
+      setIsReloadingGames(false)
+    }
+  }
 
   function play(operationMode?: ModeLabel) {
     if (isNavigating) return
@@ -167,7 +182,7 @@ export default function LandingPage() {
             </div>
           )}
 
-          {/* 2. Choose difficulty (Easy / Medium / Hard) – default: Medium */}
+          {/* 2. Choose difficulty (Easy / Medium / Hard) – same style as memory: icon, label, grid size */}
           <div className="flex flex-col gap-2">
             <div className="rounded-xl border border-[var(--border-subtle)] p-3">
               <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
@@ -175,24 +190,41 @@ export default function LandingPage() {
                 Pick Easy, Medium, or Hard, then press Play.
               </p>
             </div>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
                 const active = mathDifficulty === d
+                const gridSize = d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'
                 return (
                   <button
                     key={d}
                     type="button"
                     onClick={() => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
-                    className="flex flex-col items-center justify-center rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 transition-all duration-200 capitalize"
+                    className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
                     style={{
                       backgroundColor: 'var(--bg-surface)',
                       borderRadius: 12,
                       border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
                       boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
-                      color: active ? 'var(--accent-orange)' : '#e5e7eb',
                     }}
                   >
-                    <span className="text-xs sm:text-sm font-semibold tracking-[0.06em]">{d}</span>
+                    <LayoutGrid
+                      size={20}
+                      strokeWidth={active ? 2.4 : 2}
+                      className="mb-1"
+                      style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
+                    />
+                    <span
+                      className="text-[10px] sm:text-xs font-semibold tracking-[0.06em]"
+                      style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
+                    >
+                      {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
+                    </span>
+                    <span
+                      className="text-[9px] sm:text-[10px] mt-0.5"
+                      style={{ color: active ? 'var(--accent-orange)' : '#64748b' }}
+                    >
+                      {gridSize}
+                    </span>
                   </button>
                 )
               })}
@@ -323,20 +355,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Refresh timing only – no duplicate; formatted already includes "Games refresh in" when hasTimer */}
+      {/* Refresh timing + reload when user was away >1h (isRefreshing) */}
       <section
         className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="mx-auto flex w-full max-w-4xl flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-3 py-3 sm:px-6 sm:py-4">
-          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.14em] text-slate-400">
-            {hasTimer && gamesRefreshFormatted
-              ? gamesRefreshFormatted
-              : `Plays reset in ${formatTime(timeToReset)}`}
-          </span>
-          <span className="text-[10px] sm:text-xs font-mono text-slate-500">
-            (15 plays per hour max)
-          </span>
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
+            <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.14em] text-slate-400">
+              {hasTimer && gamesRefreshFormatted
+                ? gamesRefreshFormatted
+                : isRefreshing
+                  ? 'Refreshing…'
+                  : `Plays reset in ${formatTime(timeToReset)}`}
+            </span>
+            <span className="text-[10px] sm:text-xs font-mono text-slate-500">
+              A new game loads every one hour.
+            </span>
+          </div>
+          {isRefreshing && (
+            <div className="flex flex-col items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleReloadNewGames}
+                disabled={isReloadingGames}
+                className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
+                style={{
+                  backgroundColor: 'var(--accent-orange)',
+                  color: '#111827',
+                  border: '1px solid var(--accent-orange-hover)',
+                }}
+              >
+                {isReloadingGames ? '…' : 'Reload'}
+              </button>
+              <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-slate-500">
+                Tap to reload a new game
+              </span>
+            </div>
+          )}
         </div>
       </section>
     </main>
