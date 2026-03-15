@@ -29,6 +29,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const apiClient = {
   get: request,
+  post: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'POST', body: body != null ? JSON.stringify(body) : undefined }),
+  patch: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'PATCH', body: body != null ? JSON.stringify(body) : undefined }),
 }
 
 export const API_BASE_URL = getBaseUrl()

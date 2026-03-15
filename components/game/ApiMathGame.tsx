@@ -1,46 +1,46 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useGameStore } from '@/store/gameStore'
 import { useAttempts } from '@/hooks/useAttempts'
+import { useGameLoader } from '@/hooks/useGameLoader'
+import { useGameTimer } from '@/hooks/useGameTimer'
 import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
-import { fetchGamesByType } from '@/src/services/gameService'
 import { API_BASE_URL } from '@/src/api/apiClient'
-
-function mapOperationToType(op: string): BackendGame['game_type'] {
-  switch (op) {
-    case 'addition':
-    case 'subtraction':
-    case 'multiplication':
-    case 'division':
-      return op
-    case 'mixture':
-    case 'custom':
-    default:
-      return 'mixed'
-  }
-}
 
 export default function ApiMathGame() {
   const operation = useGameStore(s => s.operation)
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
+  const { games, loading, error, refresh } = useGameLoader(operation)
+  const { secondsRemaining, hasTimer } = useGameTimer()
+  const prevSecondsRef = useRef(secondsRemaining)
 
-  const [games, setGames] = useState<BackendGame[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [typed, setTyped] = useState('')
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [timerKey, setTimerKey] = useState(0)
 
   const current = games[currentIndex]
 
+  useEffect(() => {
+    setCurrentIndex(0)
+    setTyped('')
+    setFeedback(null)
+  }, [operation])
+
+  // When hourly countdown hits 0, auto-fetch new games and reset timer
+  useEffect(() => {
+    if (hasTimer && secondsRemaining === 0 && prevSecondsRef.current > 0) {
+      refresh()
+    }
+    prevSecondsRef.current = secondsRemaining
+  }, [secondsRemaining, hasTimer, refresh])
+
   // Only run entrance animation when advancing to next question, not on first load.
-  // Otherwise gsap.from() resets opacity to 0 after the question is already visible, causing a flash (appear → disappear → appear).
   useGSAP(() => {
     if (currentIndex === 0) return
     gsap.from('.api-game-item', {
@@ -52,30 +52,6 @@ export default function ApiMathGame() {
     })
   }, [currentIndex, games.length])
 
-  useEffect(() => {
-    const type = mapOperationToType(operation)
-    setLoading(true)
-    setError(null)
-    setGames([])
-    setCurrentIndex(0)
-    setTyped('')
-    setFeedback(null)
-
-    fetchGamesByType(type)
-      .then(data => {
-        if (!data.length) {
-          setError('No games available. Please try again later.')
-          return
-        }
-        setGames(data)
-        setTimerKey(k => k + 1)
-      })
-      .catch(err => {
-        setError(err instanceof Error ? err.message : 'Failed to load games')
-      })
-      .finally(() => setLoading(false))
-  }, [operation])
-
   const goNext = useCallback(() => {
     setTyped('')
     setFeedback(null)
@@ -83,7 +59,7 @@ export default function ApiMathGame() {
     setCurrentIndex(i => (i + 1 < games.length ? i + 1 : 0))
   }, [games.length])
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (!current || !typed.trim() || feedback !== null) return
     const correctValue = Number(current.correct_answer)
     const given = Number(typed)
@@ -92,7 +68,21 @@ export default function ApiMathGame() {
     setFeedback(isCorrect ? 'correct' : 'wrong')
     recordHourlyAttempt()
     setTimeout(goNext, 800)
-  }
+  }, [current, typed, feedback, goNext, recordHourlyAttempt])
+
+  // Auto-submit: when typed answer matches correct answer (or wrong when same length after delay)
+  useEffect(() => {
+    if (!current || feedback !== null) return
+    const correctStr = String(current.correct_answer)
+    if (typed === correctStr) {
+      const t = setTimeout(handleSubmit, 150)
+      return () => clearTimeout(t)
+    }
+    if (typed.length === correctStr.length && typed !== correctStr) {
+      const t = setTimeout(handleSubmit, 600)
+      return () => clearTimeout(t)
+    }
+  }, [typed, current, feedback, handleSubmit])
 
   const handleDigit = (d: string) => {
     if (feedback !== null) return
@@ -211,13 +201,6 @@ export default function ApiMathGame() {
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-800 py-2.5 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
-        >
-          Submit answer
-        </button>
       </div>
 
       {/* Feedback text */}

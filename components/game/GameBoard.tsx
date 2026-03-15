@@ -10,6 +10,7 @@ import GameLockScreen from './GameLockScreen'
 import { Settings2 } from 'lucide-react'
 
 const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
+const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
 
 const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
   { label: 'Addition', value: 'addition' },
@@ -21,6 +22,7 @@ const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
   const { isLocked } = useAttempts()
+  const gameType = useGameStore(s => s.gameType)
   const operation = useGameStore(s => s.operation)
   const setOperation = useGameStore(s => s.setOperation)
   const customOperations = useGameStore(s => s.customOperations)
@@ -55,11 +57,12 @@ export default function GameBoard() {
             boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
           }}
         >
-          <MathGame />
+          {gameType === 'memory' ? <MemoryGridGame /> : <MathGame />}
         </div>
       </main>
 
-      {/* Custom game bar (replaces footer on game page) */}
+      {/* Custom game bar (math only) */}
+      {gameType === 'math' && (
       <div
         className="fixed left-0 right-0 bottom-0 z-40 border-t border-zinc-800 bg-[var(--bg-surface)]"
         style={{
@@ -110,6 +113,7 @@ export default function GameBoard() {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }

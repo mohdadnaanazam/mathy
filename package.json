@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "dexie": "^4.0.10",
     "@gsap/react": "^2.1.2",
     "@types/three": "^0.183.1",
     "clsx": "^2.1.1",

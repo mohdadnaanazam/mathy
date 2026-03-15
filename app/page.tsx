@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Minus, X, Divide, Sparkles, Settings2 } from 'lucide-react'
+import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3 } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
-import { OperationMode } from '@/types'
+import { OperationMode, type Difficulty } from '@/types'
 import { useAttempts } from '@/hooks/useAttempts'
+import { useGameTimer } from '@/hooks/useGameTimer'
 import { formatTime } from '@/lib/utils'
 
 type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
@@ -33,11 +34,20 @@ export default function LandingPage() {
   const customOperations = useGameStore(s => s.customOperations)
   const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
   const { timeToReset } = useAttempts()
+  const { formatted: gamesRefreshFormatted, hasTimer } = useGameTimer()
+  const setDifficulty = useGameStore(s => s.setDifficulty)
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
+  const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty>('medium')
 
   function play(operationMode?: ModeLabel) {
     setType('math')
     if (operationMode) setOperation(MODE_TO_OPERATION[operationMode])
+    router.push('/game')
+  }
+
+  function playMemoryGrid() {
+    setType('memory')
+    setDifficulty(memoryDifficulty)
     router.push('/game')
   }
 
@@ -149,18 +159,66 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Memory Grid Game */}
+      <section className="border-b border-[var(--border-subtle)] py-8 md:py-10">
+        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-4 space-y-4">
+          <div className="section-label mb-1 flex items-center gap-2">
+            <Grid3X3 size={16} style={{ color: 'var(--accent-cyan)' }} />
+            Memory Grid Game
+          </div>
+          <p className="text-xs text-slate-400 max-w-lg">
+            Remember the highlighted blocks, then tap them in order. Grid size depends on difficulty.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setMemoryDifficulty(d)}
+                className="rounded-full border px-4 py-2 text-sm font-semibold capitalize transition-colors"
+                style={{
+                  borderColor: memoryDifficulty === d ? 'var(--accent-cyan)' : 'var(--border-subtle)',
+                  color: memoryDifficulty === d ? 'var(--accent-cyan)' : '#94a3b8',
+                  background: memoryDifficulty === d ? 'rgba(6, 182, 212, 0.1)' : 'transparent',
+                }}
+              >
+                {d} {d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={playMemoryGrid}
+              className="rounded-full px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-90"
+              style={{
+                backgroundColor: 'var(--accent-cyan)',
+                color: '#0c0c0f',
+              }}
+            >
+              Play Memory Grid
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Energy strip */}
       <section className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-4">
-          <div className="flex items-center gap-3 text-xs font-mono tracking-[0.16em] text-slate-300">
-            <span className="uppercase text-[10px] text-slate-400">Energy</span>
-            <span className="rounded-full border border-rose-500/60 bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-200">
-              0 / 15
-            </span>
-            <span className="hidden sm:inline text-[10px] text-slate-500">•</span>
-            <span className="hidden sm:inline text-[10px] text-slate-300">
-              Resets in {formatTime(timeToReset)}
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs font-mono tracking-[0.16em] text-slate-300">
+            <div className="flex items-center gap-3">
+              <span className="uppercase text-[10px] text-slate-400">Energy</span>
+              <span className="rounded-full border border-rose-500/60 bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-200">
+                0 / 15
+              </span>
+              <span className="hidden sm:inline text-[10px] text-slate-500">•</span>
+              <span className="hidden sm:inline text-[10px] text-slate-300">
+                Resets in {formatTime(timeToReset)}
+              </span>
+            </div>
+            {hasTimer && gamesRefreshFormatted && (
+              <span className="text-[10px] text-slate-400">
+                {gamesRefreshFormatted}
+              </span>
+            )}
           </div>
           <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-400">
             Energy online

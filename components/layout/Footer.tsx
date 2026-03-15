@@ -1,10 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { useAttempts } from '@/hooks/useAttempts'
+import { useGameTimer } from '@/hooks/useGameTimer'
 import { formatTime } from '@/lib/utils'
 
 export default function Footer() {
   const { timeToReset } = useAttempts()
+  const { formatted: gamesRefreshFormatted, hasTimer } = useGameTimer()
 
   return (
     <footer
@@ -22,9 +24,16 @@ export default function Footer() {
           <Link href="/" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Home</Link>
           <Link href="/game" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Play</Link>
         </div>
-        <span className="text-[10px] font-mono text-slate-600 tracking-[0.08em]">
-          resets in {formatTime(timeToReset)}
-        </span>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-[10px] font-mono text-slate-600 tracking-[0.08em]">
+            resets in {formatTime(timeToReset)}
+          </span>
+          {hasTimer && gamesRefreshFormatted && (
+            <span className="text-[10px] font-mono text-slate-500 tracking-[0.08em]">
+              {gamesRefreshFormatted}
+            </span>
+          )}
+        </div>
       </div>
     </footer>
   )
