@@ -1,10 +1,11 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useRef, useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useAttempts } from '@/hooks/useAttempts'
+import { useGameTimer } from '@/hooks/useGameTimer'
 import { useGameStore } from '@/store/gameStore'
 import { OperationMode } from '@/types'
 import GameLockScreen from './GameLockScreen'
@@ -22,8 +23,10 @@ const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
   const searchParams = useSearchParams()
   const { isLocked } = useAttempts()
+  const { isRefreshing: gamesExpired } = useGameTimer()
   const gameType = useGameStore(s => s.gameType)
   const setGameType = useGameStore(s => s.setGameType)
   const operation = useGameStore(s => s.operation)
@@ -63,6 +66,26 @@ export default function GameBoard() {
   }, [opParam, setOperation])
 
   if (isLocked) return <GameLockScreen />
+
+  if (gamesExpired) {
+    return (
+      <div
+        className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col items-center justify-center py-12 px-4"
+        style={{ minHeight: '100dvh' }}
+      >
+        <p className="text-sm text-slate-300 text-center mb-4">
+          Games have expired. Go to home and tap Reload to load new games.
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push('/')}
+          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900"
+        >
+          Go to home
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div

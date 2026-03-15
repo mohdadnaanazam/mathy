@@ -16,10 +16,12 @@ import {
   getMemorySessionPlayed,
   resetMathSession,
   resetMemorySession,
+  resetAllProgress,
   setMathSessionPlayed,
   setMemorySessionPlayed,
   getVariantProgress,
 } from '@/lib/db'
+import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
 
 type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
@@ -47,7 +49,7 @@ export default function LandingPage() {
   const customOperations = useGameStore(s => s.customOperations)
   const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
   const { used, max: maxAttempts, timeToReset, isLocked } = useAttempts()
-  const { formatted: gamesRefreshFormatted, hasTimer, isRefreshing } = useGameTimer()
+  const { isRefreshing } = useGameTimer()
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
@@ -67,6 +69,7 @@ export default function LandingPage() {
   const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
+  const [isResettingProgress, setIsResettingProgress] = useState(false)
   const showMathOperations = mathDifficulty !== null
   const [mathVariantPlayed, setMathVariantPlayed] = useState<number>(0)
   const [mathVariantTotal, setMathVariantTotal] = useState<number>(20)
@@ -124,13 +127,43 @@ export default function LandingPage() {
     setIsReloadingGames(true)
     try {
       await clearGameCache()
-      setLastFetchAt(null)
-      await setMathSessionPlayed(0)
+      await resetAllProgress()
+      const now = await fetchAndCacheAllGames()
+      setLastFetchAt(now)
+      setMathSessionMaxState(10)
       setMathSessionPlayedState(0)
-      await setMemorySessionPlayed(0)
+      setMathGamesCount(10)
+      setMemorySessionMaxState(10)
       setMemorySessionPlayedState(0)
+      setMemoryGamesCount(10)
+      setMathVariantPlayed(0)
+      setMathVariantRemaining(20)
+      setMemoryVariantPlayed(0)
+      setMemoryVariantRemaining(20)
+    } catch (err) {
+      setLastFetchAt(null)
     } finally {
       setIsReloadingGames(false)
+    }
+  }
+
+  async function handleResetProgress() {
+    if (isResettingProgress) return
+    setIsResettingProgress(true)
+    try {
+      await resetAllProgress()
+      setMathSessionMaxState(10)
+      setMathSessionPlayedState(0)
+      setMathGamesCount(10)
+      setMemorySessionMaxState(10)
+      setMemorySessionPlayedState(0)
+      setMemoryGamesCount(10)
+      setMathVariantPlayed(0)
+      setMathVariantRemaining(20)
+      setMemoryVariantPlayed(0)
+      setMemoryVariantRemaining(20)
+    } finally {
+      setIsResettingProgress(false)
     }
   }
 
@@ -224,7 +257,7 @@ export default function LandingPage() {
                 Addition, subtraction, multiplication, division, mixture, or custom.
               </p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
               {[
                 { icon: Plus, label: 'Addition' as ModeLabel },
                 { icon: Minus, label: 'Subtraction' as ModeLabel },
@@ -514,9 +547,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Single Play button – starts the currently selected game; disabled when 15 plays used this hour */}
+      {/* Single Play button – starts the currently selected game; disabled when 15 plays used this hour or session expired */}
       <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
         <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 flex flex-col items-center gap-3">
+          {isRefreshing && (
+            <p className="text-xs text-slate-400 text-center">
+              Session expired. Tap Reload below to load new games and continue.
+            </p>
+          )}
           <div className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.12em] text-slate-400" />
           <button
             type="button"
@@ -533,11 +571,13 @@ export default function LandingPage() {
           >
             {isLocked
               ? 'Limit reached (15/hour)'
-              : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
-                ? 'Choose difficulty first'
-                : isNavigating
-                  ? 'Starting…'
-                  : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+              : isRefreshing
+                ? 'Reload to play'
+                : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
+                  ? 'Choose difficulty first'
+                  : isNavigating
+                    ? 'Starting…'
+                    : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
             {!isLocked &&
               !isNavigating &&
               !isRefreshing &&
@@ -548,44 +588,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Refresh timing + reload when user was away >1h (isRefreshing) */}
+      {/* Reload when expired; Reset Progress */}
       <section
         className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-3 py-3 sm:px-6 sm:py-4">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
-            <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.14em] text-slate-400">
-              {hasTimer && gamesRefreshFormatted
-                ? gamesRefreshFormatted
-                : isRefreshing
-                  ? 'Refreshing…'
-                  : ''}
-            </span>
-            <span className="text-[10px] sm:text-xs font-mono text-slate-500">
-              A new game loads every one hour.
-            </span>
-          </div>
+        <div className="mx-auto flex w-full max-w-4xl flex-col sm:flex-row items-center justify-center gap-3 px-3 py-3 sm:px-6 sm:py-4">
           {isRefreshing && (
-            <div className="flex flex-col items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handleReloadNewGames}
-                disabled={isReloadingGames}
-                className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
-                style={{
-                  backgroundColor: 'var(--accent-orange)',
-                  color: '#111827',
-                  border: '1px solid var(--accent-orange-hover)',
-                }}
-              >
-                {isReloadingGames ? '…' : 'Reload'}
-              </button>
-              <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-slate-500">
-                Tap to reload a new game
-              </span>
-            </div>
+            <button
+              type="button"
+              onClick={handleReloadNewGames}
+              disabled={isReloadingGames}
+              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
+              style={{
+                backgroundColor: 'var(--accent-orange)',
+                color: '#111827',
+                border: '1px solid var(--accent-orange-hover)',
+              }}
+            >
+              {isReloadingGames ? '…' : 'Reload'}
+            </button>
           )}
+          <button
+            type="button"
+            onClick={handleResetProgress}
+            disabled={isResettingProgress}
+            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60 border border-[var(--border-subtle)] bg-zinc-900 text-slate-200"
+          >
+            {isResettingProgress ? '…' : 'Reset Progress'}
+          </button>
         </div>
       </section>
     </main>

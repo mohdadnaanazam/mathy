@@ -223,3 +223,14 @@ export async function resetMemorySession(max: number): Promise<void> {
   await setMemorySessionMax(max)
   await setMemorySessionPlayed(0)
 }
+
+/** Reset all progress: variant played counts, session counters. Leaves game cache intact. */
+export async function resetAllProgress(): Promise<void> {
+  const keys = await db.meta.toCollection().keys()
+  const playedKeys = (keys as string[]).filter(k => k.startsWith('played_'))
+  await Promise.all(playedKeys.map(k => db.meta.delete(k)))
+  await setMathSessionMax(10)
+  await setMathSessionPlayed(0)
+  await setMemorySessionMax(10)
+  await setMemorySessionPlayed(0)
+}

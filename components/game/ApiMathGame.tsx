@@ -264,7 +264,8 @@ export default function ApiMathGame() {
         setTimeout(() => {
           setAnswer('')
           setFeedback(null)
-        }, 1800)
+          goNext()
+        }, 1200)
       }
     },
     [current, feedback, recordHourlyAttempt, addScore, pointsPerCorrect, syncNow, goNext],
@@ -600,7 +601,7 @@ export default function ApiMathGame() {
           >
             {feedback === 'correct'
               ? '✓ Correct!'
-              : `Wrong. Right answer: ${current.correct_answer} — type it to continue`}
+              : 'Wrong answer'}
           </motion.p>
         )}
       </AnimatePresence>
