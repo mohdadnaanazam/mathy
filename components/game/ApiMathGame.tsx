@@ -176,7 +176,15 @@ export default function ApiMathGame() {
       if (willBe >= sessionMax) {
         // Session just finished: update per-variant cumulative progress and mark complete.
         if (difficulty) {
-          addToVariantPlayed(operation, difficulty as Difficulty, sessionMax)
+          addToVariantPlayed(operation, difficulty as Difficulty, sessionMax).then(() => {
+            // Immediately refresh progress for the next-session picker UI
+            getVariantProgress(operation, difficulty as Difficulty).then(p => {
+              setNextOperation(operation)
+              setNextDifficulty(difficulty as Difficulty)
+              setNextVariantPlayed(p.played)
+              setNextVariantRemaining(p.remaining)
+            })
+          })
         }
         setSessionComplete(true)
       }
