@@ -44,6 +44,7 @@ export default function ApiMathGame() {
   const setOperation = useGameStore(s => s.setOperation)
   const difficulty = useGameStore(s => s.difficulty)
   const setDifficulty = useGameStore(s => s.setDifficulty)
+  const customOperations = useGameStore(s => s.customOperations)
   const opFromUrl = operationFromUrl(searchParams.get('op'))
   const operation = opFromUrl ?? storeOperation
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
@@ -101,9 +102,13 @@ export default function ApiMathGame() {
     })
   }, [nextOperation, nextDifficulty])
 
-  const gamesForDifficulty = games.filter(
-    (g: BackendGame) => g.difficulty === (difficulty as Difficulty),
-  )
+  const gamesForDifficulty = games.filter((g: BackendGame) => {
+    if (g.difficulty !== (difficulty as Difficulty)) return false
+    if (operation === 'custom' && customOperations?.length) {
+      return customOperations.includes(g.game_type as OperationMode)
+    }
+    return true
+  })
   // De-duplicate questions so the same prompt (e.g. "20 + 10 = ?") only appears once per batch
   const uniqueGamesForDifficulty = Array.from(
     new Map(gamesForDifficulty.map(g => [g.question, g])).values(),

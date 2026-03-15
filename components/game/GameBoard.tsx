@@ -28,15 +28,17 @@ export default function GameBoard() {
   const setGameType = useGameStore(s => s.setGameType)
   const operation = useGameStore(s => s.operation)
 
-  // Sync store from URL so navigation to /game?mode=memory works
-  useEffect(() => {
-    const mode = searchParams.get('mode')
-    if (mode === 'memory') setGameType('memory')
-  }, [searchParams, setGameType])
-
-  // Use URL for first paint so memory game shows immediately on reload (no blank flash)
+  // Read URL params once per render as simple primitives
+  // so we can use them safely in effects without depending on
+  // the full SearchParams object (which is unstable).
   const modeParam = searchParams.get('mode')
   const opParam = searchParams.get('op')
+
+  // Sync store from URL so navigation to /game?mode=memory works,
+  // but only when the primitive modeParam value actually changes.
+  useEffect(() => {
+    if (modeParam === 'memory') setGameType('memory')
+  }, [modeParam, setGameType])
   const effectiveGameType = modeParam === 'memory' ? 'memory' : gameType
 
   const setOperation = useGameStore(s => s.setOperation)
@@ -86,7 +88,7 @@ export default function GameBoard() {
         >
           {effectiveGameType === 'memory' ? (
             <MemoryGridGame />
-          ) : opParam === 'custom' ? (
+          ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
             <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
               Select which operations you want to include in your custom game using the panel below,
               then return to the home screen and press Play to start.
