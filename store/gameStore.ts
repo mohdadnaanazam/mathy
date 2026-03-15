@@ -2,22 +2,22 @@ import { create } from 'zustand'
 import { GameType, Difficulty, OperationMode } from '@/types'
 
 interface GameState {
-  gameType:        GameType
-  score:           number
-  gamesPlayed:     number
-  isLocked:        boolean
-  difficulty:      Difficulty
-  operation:       OperationMode
+  gameType:         GameType
+  score:            number
+  gamesPlayed:      number
+  isLocked:         boolean
+  difficulty:       Difficulty
+  operation:        OperationMode
   customOperations: OperationMode[]  // which ops to use when operation === 'custom'
-image.png  setGameType:     (type: GameType) => void
-  setDifficulty:   (d: Difficulty) => void
-  setOperation:    (o: OperationMode) => void
+  setGameType:      (type: GameType) => void
+  setDifficulty:    (d: Difficulty) => void
+  setOperation:     (o: OperationMode) => void
   setCustomOperations: (ops: OperationMode[]) => void
-  toggleCustomOp:  (op: OperationMode) => void
-  addScore:        (pts: number) => void
-  recordAttempt:   () => void
-  setLocked:       (locked: boolean) => void
-  reset:           () => void
+  toggleCustomOp:   (op: OperationMode) => void
+  addScore:         (pts: number) => void
+  recordAttempt:    () => void
+  setLocked:        (locked: boolean) => void
+  reset:            () => void
 }
 
 export const useGameStore = create<GameState>((set) => ({
