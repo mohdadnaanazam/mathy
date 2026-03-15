@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGSAP } from '@gsap/react'
@@ -102,29 +102,39 @@ export default function ApiMathGame() {
     })
   }, [nextOperation, nextDifficulty])
 
-  const gamesForDifficulty = games.filter((g: BackendGame) => {
-    if (g.difficulty !== (difficulty as Difficulty)) return false
-    if (operation === 'custom' && customOperations?.length) {
-      return customOperations.includes(g.game_type as OperationMode)
+  // Compute the pool of questions for this session once per
+  // (games, operation, difficulty, customOperations, sessionMax) change.
+  // This avoids reshuffling on every render (e.g. every timer tick),
+  // which previously caused the visible question to jump.
+  const effectiveGames = useMemo(() => {
+    const gamesForDifficulty = games.filter((g: BackendGame) => {
+      if (g.difficulty !== (difficulty as Difficulty)) return false
+      if (operation === 'custom' && customOperations?.length) {
+        return customOperations.includes(g.game_type as OperationMode)
+      }
+      return true
+    })
+
+    // De-duplicate questions so the same prompt (e.g. "20 + 10 = ?") only appears once per batch
+    const uniqueGamesForDifficulty = Array.from(
+      new Map(gamesForDifficulty.map(g => [g.question, g])).values(),
+    )
+
+    const maxQuestions = Math.min(
+      Math.max(1, sessionMax),
+      Math.max(1, uniqueGamesForDifficulty.length),
+    )
+
+    // Randomly sample a subset from the entire pool so sessions draw
+    // from a larger question set, even when more than maxQuestions exist.
+    const shuffledPool = [...uniqueGamesForDifficulty]
+    for (let i = shuffledPool.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffledPool[i], shuffledPool[j]] = [shuffledPool[j], shuffledPool[i]]
     }
-    return true
-  })
-  // De-duplicate questions so the same prompt (e.g. "20 + 10 = ?") only appears once per batch
-  const uniqueGamesForDifficulty = Array.from(
-    new Map(gamesForDifficulty.map(g => [g.question, g])).values(),
-  )
-  const maxQuestions = Math.min(
-    Math.max(1, sessionMax),
-    Math.max(1, uniqueGamesForDifficulty.length),
-  )
-  // Randomly sample a subset from the entire pool so sessions draw
-  // from a larger question set, even when more than maxQuestions exist.
-  const shuffledPool = [...uniqueGamesForDifficulty]
-  for (let i = shuffledPool.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffledPool[i], shuffledPool[j]] = [shuffledPool[j], shuffledPool[i]]
-  }
-  const effectiveGames = shuffledPool.slice(0, maxQuestions)
+
+    return shuffledPool.slice(0, maxQuestions)
+  }, [games, difficulty, operation, customOperations, sessionMax])
 
   useEffect(() => {
     const len = effectiveGames.length
