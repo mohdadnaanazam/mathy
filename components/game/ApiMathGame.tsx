@@ -465,7 +465,15 @@ export default function ApiMathGame() {
                   await resetMathSession(nextGamesCount)
                   setOperation(nextOperation)
                   setDifficulty(nextDifficulty)
-                  router.push(`/game?op=${nextOperation}`)
+                  // Restart session in-place instead of navigating to the
+                  // same route (which is a no-op in the App Router).
+                  setSessionMax(nextGamesCount)
+                  setSessionPlayed(0)
+                  setSessionComplete(false)
+                  setCurrentIndex(0)
+                  setAnswer('')
+                  setFeedback(null)
+                  setTimerKey(k => k + 1)
                 }}
                 className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 disabled:opacity-60"
               >
