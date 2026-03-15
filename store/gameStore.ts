@@ -9,6 +9,7 @@ interface GameState {
   difficulty:       Difficulty
   operation:        OperationMode
   customOperations: OperationMode[]  // which ops to use when operation === 'custom'
+  setGameType:      (type: GameType) => void
   setDifficulty:    (d: Difficulty) => void
   setOperation:     (o: OperationMode) => void
   setCustomOperations: (ops: OperationMode[]) => void
