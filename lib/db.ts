@@ -68,6 +68,8 @@ export const CACHE_TTL_MS_EXPORT = CACHE_TTL_MS
 
 /** Meta: last time user left the tab (for inactive detection). */
 const META_LAST_LEFT_AT = 'lastLeftAt'
+/** Meta: when the current game session started (ms since epoch). */
+const META_GAME_SESSION_STARTED_AT = 'gameSessionStartedAt'
 
 export async function setLastLeftAt(timestamp: number): Promise<void> {
   await db.meta.put({ key: META_LAST_LEFT_AT, value: timestamp })
@@ -76,6 +78,20 @@ export async function setLastLeftAt(timestamp: number): Promise<void> {
 export async function getLastLeftAt(): Promise<number | null> {
   const row = await db.meta.get(META_LAST_LEFT_AT)
   return row?.value ?? null
+}
+
+/** Store when a game session started (used for 1h expiry UI). */
+export async function setGameSessionStartedAt(timestamp: number): Promise<void> {
+  await db.meta.put({ key: META_GAME_SESSION_STARTED_AT, value: timestamp })
+}
+
+export async function getGameSessionStartedAt(): Promise<number | null> {
+  const row = await db.meta.get(META_GAME_SESSION_STARTED_AT)
+  return row?.value ?? null
+}
+
+export async function clearGameSessionStartedAt(): Promise<void> {
+  await db.meta.delete(META_GAME_SESSION_STARTED_AT)
 }
 
 export function getCacheTtlMs(): number {
