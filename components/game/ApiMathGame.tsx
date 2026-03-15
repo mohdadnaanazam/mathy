@@ -189,10 +189,11 @@ export default function ApiMathGame() {
   )
 
   const handleDigit = (d: string) => {
-    if (feedback !== null || sessionDone) return
+    if (sessionDone) return
     setTyped(prev => {
-      if (prev.length >= 6) return prev
-      const next = prev === '0' && d !== '.' ? d : prev + d
+      const currentValue = prev === 'Enter answer' ? '' : prev
+      if (currentValue.length >= 6) return currentValue
+      const next = currentValue === '0' && d !== '.' ? d : currentValue + d
       validateAnswer(next)
       return next
     })
@@ -346,17 +347,6 @@ export default function ApiMathGame() {
           </motion.p>
         )}
       </AnimatePresence>
-
-      {/* Home button – visible always, especially useful after finishing session */}
-      <div className="api-game-item w-full flex justify-center pt-1">
-        <button
-          type="button"
-          onClick={() => router.push('/')}
-          className="rounded-full px-4 py-2 text-xs sm:text-sm font-semibold uppercase tracking-[0.12em] text-slate-200 border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 transition-colors min-h-[36px]"
-        >
-          Home
-        </button>
-      </div>
     </div>
   )
 }
