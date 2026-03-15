@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3 } from 'lucide-react'
+import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3, LayoutGrid } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { OperationMode, type Difficulty } from '@/types'
@@ -159,33 +159,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Memory Grid Game - same UI style as math (orange accent) */}
+      {/* Memory Grid Game - same layout as math: label + Play on top row, then option grid */}
       <section className="border-b border-[var(--border-subtle)] py-5 sm:py-6 md:py-8">
-        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-3">
-          <div className="section-label mb-0.5 flex items-center gap-1.5 text-xs">
-            <Grid3X3 size={14} style={{ color: 'var(--accent-orange)' }} />
-            Memory Grid Game
-          </div>
-          <p className="text-[11px] sm:text-xs text-slate-400 max-w-lg">
-            Remember the highlighted blocks, then tap them in order. Grid size depends on difficulty.
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setMemoryDifficulty(d)}
-                className="rounded-xl border px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold capitalize transition-all"
-                style={{
-                  backgroundColor: 'var(--bg-surface)',
-                  border: memoryDifficulty === d ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                  boxShadow: memoryDifficulty === d ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
-                  color: memoryDifficulty === d ? 'var(--accent-orange)' : '#e5e7eb',
-                }}
-              >
-                {d} {d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'}
-              </button>
-            ))}
+        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-4 sm:space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="section-label mb-0.5 text-xs flex items-center gap-1.5">
+                <Grid3X3 size={14} style={{ color: 'var(--accent-orange)' }} />
+                Memory Grid Game
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-400">
+                Remember the highlighted blocks, then tap them in order. Grid size depends on difficulty.
+              </p>
+            </div>
             <button
               type="button"
               onClick={playMemoryGrid}
@@ -201,31 +187,51 @@ export default function LandingPage() {
               Play game &rarr;
             </button>
           </div>
+
+          {/* Difficulty options - same card style as math operation buttons */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+            {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
+              const active = memoryDifficulty === d
+              const gridSize = d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setMemoryDifficulty(d)}
+                  className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
+                  style={{
+                    backgroundColor: 'var(--bg-surface)',
+                    borderRadius: 12,
+                    border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                    boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
+                  }}
+                >
+                  <LayoutGrid
+                    size={20}
+                    strokeWidth={active ? 2.4 : 2}
+                    className="mb-1"
+                    style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
+                  />
+                  <span className="text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-slate-300" style={{ color: active ? 'var(--accent-orange)' : undefined }}>
+                    {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">
+                    {gridSize}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </section>
 
-      {/* Energy strip */}
+      {/* Refresh timing only (energy/plays removed) */}
       <section className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-3 py-2 sm:px-6 lg:px-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs font-mono tracking-[0.16em] text-slate-300">
-            <div className="flex items-center gap-3">
-              <span className="uppercase text-[10px] text-slate-400">Energy</span>
-              <span className="rounded-full border border-rose-500/60 bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-200">
-                0 / 15
-              </span>
-              <span className="hidden sm:inline text-[10px] text-slate-500">•</span>
-              <span className="hidden sm:inline text-[10px] text-slate-300">
-                Resets in {formatTime(timeToReset)}
-              </span>
-            </div>
-            {hasTimer && gamesRefreshFormatted && (
-              <span className="text-[10px] text-slate-400">
-                {gamesRefreshFormatted}
-              </span>
-            )}
-          </div>
-          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-400">
-            Energy online
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-center px-3 py-2.5 sm:px-6 lg:px-4">
+          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.14em] text-slate-400">
+            {hasTimer && gamesRefreshFormatted
+              ? `Games refresh in ${gamesRefreshFormatted}`
+              : `Plays reset in ${formatTime(timeToReset)}`}
           </span>
         </div>
       </section>
