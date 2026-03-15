@@ -75,8 +75,14 @@ export default function ApiMathGame() {
     recordHourlyAttempt()
     if (isCorrect) {
       addScore(POINTS_CORRECT).then(() => syncNow())
+      setTimeout(goNext, 800)
+    } else {
+      // Wrong: show right answer, then clear input so user can type the correct answer; do not advance
+      setTimeout(() => {
+        setTyped('')
+        setFeedback(null)
+      }, 1800)
     }
-    setTimeout(goNext, 800)
   }, [current, typed, feedback, goNext, recordHourlyAttempt, addScore, syncNow])
 
   // Validate when input length equals answer length (correct or wrong)
@@ -247,7 +253,7 @@ export default function ApiMathGame() {
           >
             {feedback === 'correct'
               ? '✓ Correct!'
-              : `✕ Incorrect. The answer was ${current.correct_answer}`}
+              : `Wrong. Right answer: ${current.correct_answer} — type it to continue`}
           </motion.p>
         )}
       </AnimatePresence>
