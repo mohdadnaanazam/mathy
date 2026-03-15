@@ -38,6 +38,8 @@ export default function LandingPage() {
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty>('medium')
+  const [memoryDefault, setMemoryDefault] = useState<number>(6)
+  const [memoryDifficultyTouched, setMemoryDifficultyTouched] = useState(false)
   const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
   const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
@@ -216,6 +218,16 @@ export default function LandingPage() {
             </p>
           </div>
 
+          {/* Difficulty helper copy */}
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3">
+            <div className="section-label mb-0.5 text-xs">
+              Choose difficulty
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-400">
+              Pick Easy, Medium, or Hard. Then tap Play to start the memory grid game.
+            </p>
+          </div>
+
           {/* Difficulty options – clicking sets active game to memory */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
@@ -225,7 +237,7 @@ export default function LandingPage() {
                 <button
                   key={d}
                   type="button"
-                  onClick={() => { setMemoryDifficulty(d); setActiveGame('memory') }}
+                  onClick={() => { setMemoryDifficulty(d); setMemoryDifficultyTouched(true); setActiveGame('memory') }}
                   className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
                   style={{
                     backgroundColor: 'var(--bg-surface)',
@@ -250,6 +262,37 @@ export default function LandingPage() {
               )
             })}
           </div>
+
+          {/* Default value control – only visible after user picks a difficulty */}
+          {memoryDifficultyTouched && (
+            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
+              <div className="flex flex-col">
+                <span className="section-label text-xs mb-0.5">Default value</span>
+                <span className="text-[11px] sm:text-xs text-slate-400">
+                  Starts at 6. Tap − or + to adjust.
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMemoryDefault(v => Math.max(1, v - 1))}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                >
+                  −
+                </button>
+                <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                  {memoryDefault}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMemoryDefault(v => Math.min(12, v + 1))}
+                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
