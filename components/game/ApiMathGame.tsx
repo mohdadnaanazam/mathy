@@ -146,55 +146,56 @@ export default function ApiMathGame() {
     })
   }, [questionOrder.length, sessionDone, sessionMax])
 
-  const handleSubmit = useCallback(() => {
-    if (sessionDone) return
-    if (!current || !typed.trim() || feedback !== null) return
-    const correctValue = Number(current.correct_answer)
-    const given = Number(typed)
-    if (Number.isNaN(correctValue) && Number.isNaN(given)) return
-    const isCorrect = !Number.isNaN(correctValue) && !Number.isNaN(given) && given === correctValue
-    setFeedback(isCorrect ? 'correct' : 'wrong')
-    recordHourlyAttempt()
-    if (isCorrect) {
-      addScore(pointsPerCorrect).then(() => syncNow())
-      setTimeout(goNext, 800)
-    } else {
-      // Wrong: show right answer, then clear input so user can type the correct answer; do not advance
-      setTimeout(() => {
-        setTyped('')
-        setFeedback(null)
-      }, 1800)
-    }
-  }, [current, typed, feedback, goNext, recordHourlyAttempt, addScore, syncNow, pointsPerCorrect, sessionDone])
+  const validateAnswer = useCallback(
+    (value: string) => {
+      if (!current || !value.trim() || sessionDone || feedback !== null) return
 
-  // Validate when input length equals answer length (correct or wrong)
-  useEffect(() => {
-    if (!current || feedback !== null || !typed.trim()) return
-    const correctNum = Number(current.correct_answer)
-    const correctStr = Number.isNaN(correctNum)
-      ? String(current.correct_answer).trim()
-      : String(correctNum)
-    const inputLen = typed.trim().length
-    const answerLen = correctStr.length
-    if (inputLen < answerLen) return
-    // Same length or user typed more digits → validate
-    if (inputLen === answerLen) {
-      const isCorrect = typed.trim() === correctStr || Number(typed) === correctNum
-      const delay = isCorrect ? 120 : 280
-      const t = setTimeout(handleSubmit, delay)
-      return () => clearTimeout(t)
-    }
-    // Optional: if they typed one more char than answer, validate immediately (e.g. extra digit)
-    if (inputLen > answerLen) {
-      const t = setTimeout(handleSubmit, 150)
-      return () => clearTimeout(t)
-    }
-  }, [typed, current, feedback, handleSubmit])
+      const trimmed = value.trim()
+      const correctNum = Number(current.correct_answer)
+      const correctStr = Number.isNaN(correctNum)
+        ? String(current.correct_answer).trim()
+        : String(correctNum)
+      const answerLen = correctStr.length
+      const userNum = Number(trimmed)
+
+      // Debug logs to confirm validation is running
+      // eslint-disable-next-line no-console
+      console.log('userAnswer:', trimmed, 'correctAnswer:', current.correct_answer)
+
+      const isCorrect =
+        !Number.isNaN(correctNum) &&
+        !Number.isNaN(userNum) &&
+        userNum === correctNum
+
+      if (isCorrect) {
+        setFeedback('correct')
+        recordHourlyAttempt()
+        addScore(pointsPerCorrect).then(() => syncNow())
+        setTimeout(goNext, 800)
+        return
+      }
+
+      // If user typed at least as many digits as the answer and it's wrong, treat as wrong.
+      if (trimmed.length >= answerLen) {
+        setFeedback('wrong')
+        recordHourlyAttempt()
+        setTimeout(() => {
+          setTyped('')
+          setFeedback(null)
+        }, 1800)
+      }
+    },
+    [current, sessionDone, feedback, recordHourlyAttempt, addScore, pointsPerCorrect, syncNow, goNext],
+  )
 
   const handleDigit = (d: string) => {
-    if (feedback !== null) return
-    if (typed.length >= 6) return
-    setTyped(prev => (prev === '0' && d !== '.' ? d : prev + d))
+    if (feedback !== null || sessionDone) return
+    setTyped(prev => {
+      if (prev.length >= 6) return prev
+      const next = prev === '0' && d !== '.' ? d : prev + d
+      validateAnswer(next)
+      return next
+    })
   }
 
   const handleBackspace = () => {
