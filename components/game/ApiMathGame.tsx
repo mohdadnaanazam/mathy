@@ -262,14 +262,6 @@ export default function ApiMathGame() {
     )
   }
 
-  if (!current && !sessionComplete) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-1 py-6 text-center">
-        <p className="text-xs sm:text-sm text-slate-300">No games loaded.</p>
-      </div>
-    )
-  }
-
   // When the session is complete (e.g. 5 of 5), stop showing questions
   // and instead show a simple "Next game" panel so the user can decide what to do next.
   if (sessionComplete) {
@@ -301,6 +293,14 @@ export default function ApiMathGame() {
             </button>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (!current) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-1 py-6 text-center">
+        <p className="text-xs sm:text-sm text-slate-300">No games loaded.</p>
       </div>
     )
   }
