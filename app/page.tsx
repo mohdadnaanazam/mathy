@@ -128,7 +128,7 @@ export default function LandingPage() {
   }
 
   function handlePlay() {
-    if (isLocked) return
+    if (isLocked || isRefreshing) return
     if (activeGame === 'math') {
       if (mathDifficulty === null) return
       play(activeMode)
@@ -140,7 +140,8 @@ export default function LandingPage() {
 
   const canPlayMath = mathDifficulty !== null
   const canPlayMemory = memoryDifficulty !== null
-  const playDisabled = isNavigating || isLocked ||
+
+  const playDisabled = isNavigating || isLocked || isRefreshing ||
     (activeGame === 'math' && !canPlayMath) ||
     (activeGame === 'memory' && !canPlayMemory)
 
@@ -293,9 +294,22 @@ export default function LandingPage() {
                   Max 20 per type and level. Tap − or + to adjust.
                 </span>
                 {mathSessionHydrated && (
-                  <span className="text-[10px] font-mono text-slate-500 mt-1">
-                    {mathSessionPlayed} / {mathSessionMax} played · {Math.max(0, mathSessionMax - mathSessionPlayed)} remaining
-                  </span>
+                  <>
+                    <span className="text-[10px] font-mono text-slate-500 mt-1">
+                      {mathSessionPlayed} / {mathSessionMax} played · {Math.max(0, mathSessionMax - mathSessionPlayed)} remaining
+                    </span>
+                    {mathSessionPlayed >= mathSessionMax && (
+                      <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
+                        You finished {activeMode} ({mathDifficulty}). Try{' '}
+                        {mathDifficulty === 'easy'
+                          ? 'Medium or Hard'
+                          : mathDifficulty === 'medium'
+                            ? 'Hard'
+                            : 'another operation or difficulty'}
+                        , or increase the number of games.
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -391,9 +405,22 @@ export default function LandingPage() {
                   Max 20 per type and level. Tap − or + to adjust.
                 </span>
                 {memorySessionHydrated && (
-                  <span className="text-[10px] font-mono text-slate-500 mt-1">
-                    {memorySessionPlayed} / {memorySessionMax} played · {Math.max(0, memorySessionMax - memorySessionPlayed)} remaining
-                  </span>
+                  <>
+                    <span className="text-[10px] font-mono text-slate-500 mt-1">
+                      {memorySessionPlayed} / {memorySessionMax} played · {Math.max(0, memorySessionMax - memorySessionPlayed)} remaining
+                    </span>
+                    {memorySessionPlayed >= memorySessionMax && (
+                      <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
+                        You finished Memory Grid ({memoryDifficulty ?? 'easy'}). Try{' '}
+                        {memoryDifficulty === 'easy'
+                          ? 'Medium or Hard'
+                          : memoryDifficulty === 'medium'
+                            ? 'Hard'
+                            : 'a different game or increase the number of rounds'}
+                        , or increase the number of games.
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -423,9 +450,7 @@ export default function LandingPage() {
       {/* Single Play button – starts the currently selected game; disabled when 15 plays used this hour */}
       <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
         <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 flex flex-col items-center gap-3">
-          <div className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.12em] text-slate-400">
-            Plays this hour: <span className="text-white font-semibold tabular-nums">{used} / {maxAttempts}</span>
-          </div>
+          <div className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.12em] text-slate-400" />
           <button
             type="button"
             onClick={handlePlay}
@@ -441,12 +466,19 @@ export default function LandingPage() {
           >
             {isLocked
               ? 'Limit reached (15/hour)'
-              : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
-                ? 'Choose difficulty first'
-                : isNavigating
-                  ? 'Starting…'
-                  : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
-            {!isLocked && !isNavigating && (canPlayMath && activeGame === 'math' || canPlayMemory && activeGame === 'memory') && ' →'}
+              : isRefreshing
+                ? 'Refreshing…'
+                : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
+                  ? 'Choose difficulty first'
+                  : isNavigating
+                    ? 'Starting…'
+                    : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+            {!isLocked &&
+              !isNavigating &&
+              !isRefreshing &&
+              ((canPlayMath && activeGame === 'math') ||
+                (canPlayMemory && activeGame === 'memory')) &&
+              ' →'}
           </button>
         </div>
       </section>
@@ -463,7 +495,7 @@ export default function LandingPage() {
                 ? gamesRefreshFormatted
                 : isRefreshing
                   ? 'Refreshing…'
-                  : `Plays reset in ${formatTime(timeToReset)}`}
+                  : ''}
             </span>
             <span className="text-[10px] sm:text-xs font-mono text-slate-500">
               A new game loads every one hour.
