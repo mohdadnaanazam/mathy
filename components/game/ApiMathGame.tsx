@@ -129,10 +129,11 @@ export default function ApiMathGame() {
   }, [currentIndex, effectiveGames.length])
 
   const goNext = useCallback(() => {
-    if (sessionDone) return
     setAnswer('')
     setFeedback(null)
     setTimerKey(k => k + 1)
+
+    // Update persisted session count up to the configured max
     getMathSessionPlayed().then(played => {
       if (played < sessionMax) {
         incrementMathSessionPlayed().then(next => {
@@ -140,11 +141,13 @@ export default function ApiMathGame() {
         })
       }
     })
+
+    // Advance to the next question if available; otherwise stay on the last one.
     setCurrentIndex(i => {
       const next = i + 1
       return next < questionOrder.length ? next : i
     })
-  }, [questionOrder.length, sessionDone, sessionMax])
+  }, [questionOrder.length, sessionMax])
 
   const validateAnswer = useCallback(
     (value: string) => {
