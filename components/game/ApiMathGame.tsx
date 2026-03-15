@@ -20,6 +20,8 @@ import {
   getMathSessionPlayed,
   incrementMathSessionPlayed,
   addToVariantPlayed,
+  getVariantProgress,
+  resetMathSession,
 } from '@/lib/db'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
@@ -41,6 +43,7 @@ export default function ApiMathGame() {
   const storeOperation = useGameStore(s => s.operation)
   const setOperation = useGameStore(s => s.setOperation)
   const difficulty = useGameStore(s => s.difficulty)
+  const setDifficulty = useGameStore(s => s.setDifficulty)
   const opFromUrl = operationFromUrl(searchParams.get('op'))
   const operation = opFromUrl ?? storeOperation
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
@@ -66,10 +69,38 @@ export default function ApiMathGame() {
   const [sessionComplete, setSessionComplete] = useState(false)
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
 
+  // Next-session picker state (used on the Session Complete screen)
+  const [nextOperation, setNextOperation] = useState<OperationMode>(operation)
+  const [nextDifficulty, setNextDifficulty] = useState<Difficulty | null>(
+    (difficulty as Difficulty) ?? null,
+  )
+  const [nextVariantPlayed, setNextVariantPlayed] = useState(0)
+  const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
+  const [nextGamesCount, setNextGamesCount] = useState(5)
+
   useEffect(() => {
     getMathSessionMax().then(setSessionMax)
     getMathSessionPlayed().then(setSessionPlayed)
   }, [])
+
+  // Keep the next-session operation in sync with the current one
+  useEffect(() => {
+    setNextOperation(operation)
+  }, [operation])
+
+  // Load per-variant progress for the "next session" picker
+  useEffect(() => {
+    if (!nextDifficulty) return
+    getVariantProgress(nextOperation, nextDifficulty).then(p => {
+      setNextVariantPlayed(p.played)
+      setNextVariantRemaining(p.remaining)
+      setNextGamesCount(prev => {
+        if (p.remaining <= 0) return 0
+        const base = prev || 5
+        return Math.min(Math.max(base, 1), p.remaining)
+      })
+    })
+  }, [nextOperation, nextDifficulty])
 
   const gamesForDifficulty = games.filter(
     (g: BackendGame) => g.difficulty === (difficulty as Difficulty),
@@ -273,24 +304,154 @@ export default function ApiMathGame() {
           </span>
         </div>
 
-        <div className="api-game-item w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 sm:px-4 sm:py-5 text-center space-y-3">
-          <p className="section-label text-xs text-slate-400 mb-1">
-            Session complete
-          </p>
-          <p className="text-sm sm:text-base text-slate-200">
-            You finished this set of questions for {operation}.
-          </p>
-          <p className="text-[11px] sm:text-xs text-slate-400">
-            Go back to the home screen to pick a difficulty and choose how many of the remaining questions you want to play next.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
-            <button
-              type="button"
-              onClick={() => router.push('/')}
-              className="rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-200"
-            >
-              Go to home
-            </button>
+        <div className="api-game-item w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 sm:px-4 sm:py-5 space-y-4">
+          {/* Completion copy */}
+          <div className="text-center space-y-2">
+            <p className="section-label text-xs text-slate-400">
+              Session complete
+            </p>
+            <p className="text-sm sm:text-base text-slate-200">
+              You finished this set of questions for {operation}.
+            </p>
+            <p className="text-[11px] sm:text-xs text-slate-400">
+              Choose your next game below, or go back to the home screen.
+            </p>
+          </div>
+
+          {/* Next game picker */}
+          <div className="mt-1 space-y-3">
+            {/* Operation selector (re-uses same labels as landing page) */}
+            <div className="space-y-1.5">
+              <p className="section-label text-[11px] text-slate-400">
+                Choose operation
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
+                {VALID_OPS.map(op => {
+                  const active = nextOperation === op
+                  return (
+                    <button
+                      key={op}
+                      type="button"
+                      onClick={() => setNextOperation(op)}
+                      className="rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 text-[11px] sm:text-xs font-semibold transition-all"
+                      style={{
+                        backgroundColor: 'var(--bg-surface)',
+                        borderRadius: 12,
+                        border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      }}
+                    >
+                      {op.charAt(0).toUpperCase() + op.slice(1)}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Difficulty selector */}
+            <div className="space-y-1.5">
+              <p className="section-label text-[11px] text-slate-400">
+                Choose difficulty
+              </p>
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
+                  const active = nextDifficulty === d
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setNextDifficulty(d)}
+                      className="rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 text-[11px] sm:text-xs font-semibold transition-all"
+                      style={{
+                        backgroundColor: 'var(--bg-surface)',
+                        borderRadius: 12,
+                        border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      }}
+                    >
+                      {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Number of games + remaining info */}
+            {nextDifficulty && (
+              <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
+                <div className="flex flex-col">
+                  <span className="section-label text-xs mb-0.5">Number of games</span>
+                  <span className="text-[11px] sm:text-xs text-slate-400">
+                    Max 20 per type and level. Tap − or + to adjust.
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-500 mt-1">
+                    {nextVariantPlayed} / 20 played · {nextVariantRemaining} remaining
+                  </span>
+                  {nextVariantRemaining <= 0 && (
+                    <span className="text-[10px] font-mono text-amber-400 mt-0.5">
+                      You finished {nextOperation} ({nextDifficulty}). Try another difficulty or operation.
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (nextVariantRemaining <= 0) return
+                      setNextGamesCount(v => Math.max(1, Math.min((v || 1) - 1, nextVariantRemaining)))
+                    }}
+                    className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                    disabled={nextVariantRemaining <= 0}
+                  >
+                    −
+                  </button>
+                  <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                    {nextGamesCount}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (nextVariantRemaining <= 0) return
+                      setNextGamesCount(v =>
+                        Math.min(Math.max((v || 1) + 1, 1), nextVariantRemaining),
+                      )
+                    }}
+                    className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                    disabled={nextVariantRemaining <= 0}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Primary: Play next game; Secondary: Go home */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
+              <button
+                type="button"
+                disabled={
+                  !nextDifficulty ||
+                  nextVariantRemaining <= 0 ||
+                  nextGamesCount <= 0
+                }
+                onClick={async () => {
+                  if (!nextDifficulty || nextVariantRemaining <= 0 || nextGamesCount <= 0) return
+                  await resetMathSession(nextGamesCount)
+                  setOperation(nextOperation)
+                  setDifficulty(nextDifficulty)
+                  router.push(`/game?op=${nextOperation}`)
+                }}
+                className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 disabled:opacity-60"
+              >
+                Play game
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.push('/')}
+                className="rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-200"
+              >
+                Go to home
+              </button>
+            </div>
           </div>
         </div>
       </div>
