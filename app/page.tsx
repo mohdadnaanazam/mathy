@@ -33,20 +33,24 @@ export default function LandingPage() {
   const setOperation = useGameStore(s => s.setOperation)
   const customOperations = useGameStore(s => s.customOperations)
   const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
-  const { timeToReset } = useAttempts()
+  const { used, max: maxAttempts, timeToReset, isLocked } = useAttempts()
   const { formatted: gamesRefreshFormatted, hasTimer } = useGameTimer()
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty>('medium')
+  const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
   const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
+  const showMathOperations = mathDifficulty !== null
 
   function play(operationMode?: ModeLabel) {
     if (isNavigating) return
     setIsNavigating(true)
     setType('math')
-    if (operationMode) setOperation(MODE_TO_OPERATION[operationMode])
-    router.push('/game')
+    setDifficulty(mathDifficulty ?? 'medium')
+    const op = operationMode ? MODE_TO_OPERATION[operationMode] : 'mixture'
+    setOperation(op)
+    router.push(`/game?op=${op}`)
   }
 
   function playMemoryGrid() {
@@ -58,6 +62,7 @@ export default function LandingPage() {
   }
 
   function handlePlay() {
+    if (isLocked) return
     if (activeGame === 'math') play(activeMode)
     else playMemoryGrid()
   }
@@ -81,11 +86,45 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Math game section – selecting an option sets this as the active game */}
+      {/* Math game section – difficulty first, then operations */}
       <section
         className={`border-b border-[var(--border-subtle)] py-5 sm:py-6 md:py-8 transition-opacity duration-200 ${activeGame !== 'math' ? 'opacity-60' : ''}`}
       >
         <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-4 sm:space-y-5">
+          {/* 1. Choose difficulty (Easy / Medium / Hard) – default: Medium */}
+          <div className="flex flex-col gap-2">
+            <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'math' ? 'border-[var(--border-subtle)]' : 'border-[var(--border-subtle)]'}`}>
+              <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
+              <p className="text-[11px] sm:text-xs text-slate-400">
+                Pick Easy, Medium, or Hard. Then choose an operation below.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
+                const active = mathDifficulty === d
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
+                    className="flex flex-col items-center justify-center rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 transition-all duration-200 capitalize"
+                    style={{
+                      backgroundColor: 'var(--bg-surface)',
+                      borderRadius: 12,
+                      border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
+                      color: active ? 'var(--accent-orange)' : '#e5e7eb',
+                    }}
+                  >
+                    <span className="text-xs sm:text-sm font-semibold tracking-[0.06em]">{d}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* 2. Operation icons – only visible after user has chosen Easy / Medium / Hard */}
+          {showMathOperations && (
           <div className="flex flex-col gap-3">
             <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'math' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
               <div className="section-label mb-0.5 text-xs">Choose operation</div>
@@ -93,8 +132,6 @@ export default function LandingPage() {
                 Addition, subtraction, multiplication, division, mixture, or custom.
               </p>
             </div>
-
-            {/* Operation icons – clicking sets active game to math */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
               {[
                 { icon: Plus, label: 'Addition' as ModeLabel },
@@ -132,9 +169,10 @@ export default function LandingPage() {
               })}
             </div>
           </div>
+          )}
 
           {/* Custom: choose which operations to include */}
-          {activeMode === 'Custom' && (
+          {showMathOperations && activeMode === 'Custom' && (
             <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3 space-y-1.5">
               <p className="text-[11px] text-slate-500 uppercase tracking-wider">
                 Include (e.g. only × & ÷ or only + & −)
@@ -215,23 +253,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Single Play button – starts the currently selected game; prevents double submit */}
+      {/* Single Play button – starts the currently selected game; disabled when 15 plays used this hour */}
       <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
-        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 flex justify-center">
+        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 flex flex-col items-center gap-3">
+          <div className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.12em] text-slate-400">
+            Plays this hour: <span className="text-white font-semibold tabular-nums">{used} / {maxAttempts}</span>
+          </div>
           <button
             type="button"
             onClick={handlePlay}
-            disabled={isNavigating}
+            disabled={isNavigating || isLocked}
             className="inline-flex items-center justify-center rounded-full px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none shrink-0"
             style={{
-              backgroundColor: 'var(--accent-orange)',
-              color: '#111827',
-              border: '1px solid var(--accent-orange-hover)',
-              boxShadow: '0 4px 16px rgba(249,115,22,0.25)',
+              backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
+              color: isLocked ? '#64748b' : '#111827',
+              border: `1px solid ${isLocked ? 'var(--border-subtle)' : 'var(--accent-orange-hover)'}`,
+              boxShadow: isLocked ? 'none' : '0 4px 16px rgba(249,115,22,0.25)',
               whiteSpace: 'nowrap',
             }}
           >
-            {isNavigating ? 'Starting…' : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`} &rarr;
+            {isLocked
+              ? 'Limit reached (15/hour)'
+              : isNavigating
+                ? 'Starting…'
+                : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+            {!isLocked && !isNavigating && ' →'}
           </button>
         </div>
       </section>
@@ -241,11 +287,14 @@ export default function LandingPage() {
         className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-center px-3 py-3 sm:px-6 sm:py-4">
+        <div className="mx-auto flex w-full max-w-4xl flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-3 py-3 sm:px-6 sm:py-4">
           <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.14em] text-slate-400">
             {hasTimer && gamesRefreshFormatted
               ? gamesRefreshFormatted
               : `Plays reset in ${formatTime(timeToReset)}`}
+          </span>
+          <span className="text-[10px] sm:text-xs font-mono text-slate-500">
+            (15 plays per hour max)
           </span>
         </div>
       </section>

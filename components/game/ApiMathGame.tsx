@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
@@ -13,13 +14,29 @@ import { useScore } from '@/hooks/useScore'
 import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
 import { API_BASE_URL } from '@/src/api/apiClient'
+import type { OperationMode } from '@/types'
 
 const POINTS_CORRECT = 100
 
+const VALID_OPS: OperationMode[] = ['addition', 'subtraction', 'multiplication', 'division', 'mixture', 'custom']
+
+function operationFromUrl(opParam: string | null): OperationMode | null {
+  if (!opParam || !VALID_OPS.includes(opParam as OperationMode)) return null
+  return opParam as OperationMode
+}
+
 export default function ApiMathGame() {
-  const operation = useGameStore(s => s.operation)
+  const searchParams = useSearchParams()
+  const storeOperation = useGameStore(s => s.operation)
+  const setOperation = useGameStore(s => s.setOperation)
+  const opFromUrl = operationFromUrl(searchParams.get('op'))
+  const operation = opFromUrl ?? storeOperation
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
   const { games, loading, error, refresh } = useGameLoader(operation)
+
+  useEffect(() => {
+    if (opFromUrl) setOperation(opFromUrl)
+  }, [opFromUrl, setOperation])
   const { secondsRemaining, hasTimer } = useGameTimer()
   const prevSecondsRef = useRef(secondsRemaining)
   const { userUuid, loading: userLoading } = useUserUUID()
@@ -197,11 +214,16 @@ export default function ApiMathGame() {
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           }}
         >
-          <div
-            className="absolute right-2 top-2 sm:right-3 sm:top-3 rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider"
-            style={{ color: '#94a3b8' }}
-          >
-            {current.game_type}
+          <div className="absolute right-2 top-2 sm:right-3 sm:top-3 flex items-center gap-1.5">
+            <span className="text-[9px] sm:text-[10px] font-mono text-slate-500">
+              {currentIndex + 1} of {games.length}
+            </span>
+            <span
+              className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider"
+              style={{ color: '#94a3b8' }}
+            >
+              {current.game_type}
+            </span>
           </div>
           <p className="section-label mb-2 sm:mb-3 text-slate-400 text-xs">
             Calculate the result

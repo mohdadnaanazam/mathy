@@ -48,6 +48,7 @@ export function useAttempts() {
   }, [hourStart, hydrated])
 
   function recordAttempt() {
+    if (used >= MAX_ATTEMPTS) return
     const next = used + 1
     setUsed(next)
     localStorage.setItem('ag_attempts_used', String(next))
