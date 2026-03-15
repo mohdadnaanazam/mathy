@@ -148,7 +148,7 @@ export default function ApiMathGame() {
 
   const validateAnswer = useCallback(
     (value: string) => {
-      if (!current || !value.trim() || sessionDone || feedback !== null) return
+      if (!current || !value.trim() || feedback !== null) return
 
       const trimmed = value.trim()
       const correctNum = Number(current.correct_answer)
@@ -185,11 +185,11 @@ export default function ApiMathGame() {
         }, 1800)
       }
     },
-    [current, sessionDone, feedback, recordHourlyAttempt, addScore, pointsPerCorrect, syncNow, goNext],
+    [current, feedback, recordHourlyAttempt, addScore, pointsPerCorrect, syncNow, goNext],
   )
 
   const handleDigit = (d: string) => {
-    if (sessionDone || feedback !== null) return
+    if (feedback !== null) return
     const base = answer === 'Enter answer' ? '' : answer
     if (base.length >= 6) return
     const next = base === '0' && d !== '.' ? d : base + d
@@ -198,7 +198,7 @@ export default function ApiMathGame() {
   }
 
   const handleBackspace = () => {
-    if (feedback !== null || sessionDone) return
+    if (feedback !== null) return
     setAnswer(prev => prev.slice(0, -1))
   }
 
