@@ -230,9 +230,23 @@ export default function ApiMathGame() {
   const effectiveGames = useMemo(() => {
     const gamesForDifficulty = games.filter((g: BackendGame) => {
       if (g.difficulty !== (difficulty as Difficulty)) return false
+
+      // Ensure loaded questions always match the currently selected operation.
+      // For standard operations (addition, subtraction, multiplication, division),
+      // restrict by game_type. For mixture, allow all. For custom, restrict to
+      // the selected customOperations.
       if (operation === 'custom' && customOperations?.length) {
         return customOperations.includes(g.game_type as OperationMode)
       }
+      if (
+        operation === 'addition' ||
+        operation === 'subtraction' ||
+        operation === 'multiplication' ||
+        operation === 'division'
+      ) {
+        return g.game_type === operation
+      }
+      // mixture (and any fallback) uses whatever the backend returned.
       return true
     })
 
