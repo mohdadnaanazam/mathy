@@ -275,10 +275,16 @@ export default function ApiMathGame() {
       // Track per-variant progress one question at a time and
       // immediately refresh the played / remaining counters so
       // the game UI stays in sync with the home screen.
+      // IMPORTANT: Do NOT call setNextOperation here — when this is
+      // the last question, the progression useEffect is the sole
+      // authority for choosing the next operation/difficulty.
       if (difficulty) {
+        const isLastQuestion = willBe >= sessionMax
         incrementVariantPlayed(operation, difficulty as Difficulty).then(() => {
           getVariantProgress(operation, difficulty as Difficulty).then(p => {
-            setNextOperation(operation)
+            if (!isLastQuestion) {
+              setNextOperation(operation)
+            }
             setNextVariantPlayed(p.played)
             setNextVariantRemaining(p.remaining)
           })
