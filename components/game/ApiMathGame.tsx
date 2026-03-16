@@ -143,6 +143,8 @@ export default function ApiMathGame() {
   // how many questions remain. This prevents skipping difficulties
   // (e.g. Easy → Hard when Medium has 0 remaining).
   // Reads from refs to avoid stale closure values.
+  // Also immediately loads variant progress for the new combo so the
+  // Play button state is correct without waiting for a separate effect.
   useEffect(() => {
     if (!sessionComplete) return
     if (!difficultyRef.current) return
@@ -167,8 +169,22 @@ export default function ApiMathGame() {
     const nextOpIdx = Math.floor(nextSlot / DIFFICULTY_ORDER.length)
     const nextDiffIdx = nextSlot % DIFFICULTY_ORDER.length
 
-    setNextOperation(OPERATION_ORDER[nextOpIdx])
-    setNextDifficulty(DIFFICULTY_ORDER[nextDiffIdx])
+    const newOp = OPERATION_ORDER[nextOpIdx]
+    const newDiff = DIFFICULTY_ORDER[nextDiffIdx]
+
+    setNextOperation(newOp)
+    setNextDifficulty(newDiff)
+
+    // Eagerly load variant progress for the new combo so the session
+    // complete screen renders with correct played/remaining immediately.
+    getVariantProgress(newOp, newDiff).then(p => {
+      setNextVariantPlayed(p.played)
+      setNextVariantRemaining(p.remaining)
+      setNextGamesCount(prev => {
+        if (p.remaining <= 0) return 0
+        return Math.min(Math.max(prev, 1), p.remaining)
+      })
+    })
   }, [sessionComplete])
 
   // Compute the pool of questions for this session once per
@@ -293,13 +309,20 @@ export default function ApiMathGame() {
       if (currentDiff) {
         const isLastQuestion = willBe >= sessionMax
         incrementVariantPlayed(currentOp, currentDiff).then(() => {
-          getVariantProgress(currentOp, currentDiff).then(p => {
-            if (!isLastQuestion) {
+          // Only update the "next session" counters for non-last questions.
+          // On the last question, the progression effect will set the next
+          // operation/difficulty, and the variant progress effect will load
+          // the correct played/remaining for that new combo. Updating here
+          // on the last question would overwrite those values with the OLD
+          // variant's data (e.g. 20/20 played, 0 remaining for easy) and
+          // cause the Play button to appear disabled.
+          if (!isLastQuestion) {
+            getVariantProgress(currentOp, currentDiff).then(p => {
               setNextOperation(currentOp)
-            }
-            setNextVariantPlayed(p.played)
-            setNextVariantRemaining(p.remaining)
-          })
+              setNextVariantPlayed(p.played)
+              setNextVariantRemaining(p.remaining)
+            })
+          }
         })
       }
 
