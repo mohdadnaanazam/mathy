@@ -11,7 +11,7 @@ function GameFallback() {
 
 export default function GamePage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground flex flex-col">
       <Suspense fallback={<GameFallback />}>
         <GameBoard />
       </Suspense>

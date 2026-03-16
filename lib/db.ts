@@ -276,3 +276,15 @@ export async function resetAllProgress(): Promise<void> {
   await setMemorySessionMax(10)
   await setMemorySessionPlayed(0)
 }
+
+/** Last activity timestamp: updated whenever the user starts or finishes a game session. */
+const META_LAST_ACTIVITY_AT = 'lastActivityAt'
+
+export async function getLastActivityAt(): Promise<number | null> {
+  const row = await db.meta.get(META_LAST_ACTIVITY_AT)
+  return row?.value ?? null
+}
+
+export async function setLastActivityAt(timestamp: number = Date.now()): Promise<void> {
+  await db.meta.put({ key: META_LAST_ACTIVITY_AT, value: timestamp })
+}

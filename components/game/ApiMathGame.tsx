@@ -127,9 +127,11 @@ export default function ApiMathGame() {
     })
   }, [nextOperation, nextDifficulty])
 
-  // After a session completes, advance using strict index-based progression:
+  // After a session completes, advance using strict sequential progression:
   // easy → medium → hard → next operation easy → ...
-  // Never loop back to the same operation after completing hard.
+  // Always picks the immediately next slot in the sequence regardless of
+  // how many questions remain. This prevents skipping difficulties
+  // (e.g. Easy → Hard when Medium has 0 remaining).
   // Reads from refs to avoid stale closure values.
   useEffect(() => {
     if (!sessionComplete) return
@@ -138,42 +140,25 @@ export default function ApiMathGame() {
     const currentOp = operationRef.current
     const currentDiff = difficultyRef.current as Difficulty
 
-    ;(async () => {
-      const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
-      const opIdx = OPERATION_ORDER.indexOf(currentOp)
+    const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
+    const opIdx = OPERATION_ORDER.indexOf(currentOp)
 
-      // If the current operation/difficulty isn't in our ordered lists, keep as-is.
-      if (diffIdx === -1 || opIdx === -1) {
-        setNextOperation(currentOp)
-        setNextDifficulty(currentDiff)
-        return
-      }
-
-      // Build a flat progression list starting from the NEXT slot after
-      // the current (operation, difficulty). This guarantees we never
-      // re-select the same slot and always move forward.
-      const totalSlots = OPERATION_ORDER.length * DIFFICULTY_ORDER.length
-      const currentSlot = opIdx * DIFFICULTY_ORDER.length + diffIdx
-
-      for (let offset = 1; offset <= totalSlots; offset++) {
-        const slot = (currentSlot + offset) % totalSlots
-        const candidateOpIdx = Math.floor(slot / DIFFICULTY_ORDER.length)
-        const candidateDiffIdx = slot % DIFFICULTY_ORDER.length
-        const candidateOp = OPERATION_ORDER[candidateOpIdx]
-        const candidateDiff = DIFFICULTY_ORDER[candidateDiffIdx]
-
-        const progress = await getVariantProgress(candidateOp, candidateDiff)
-        if (progress.remaining > 0) {
-          setNextOperation(candidateOp)
-          setNextDifficulty(candidateDiff)
-          return
-        }
-      }
-
-      // All slots exhausted — keep current selection.
+    // If the current operation/difficulty isn't in our ordered lists, keep as-is.
+    if (diffIdx === -1 || opIdx === -1) {
       setNextOperation(currentOp)
       setNextDifficulty(currentDiff)
-    })()
+      return
+    }
+
+    // Strictly advance to the next slot: easy→medium→hard→next op easy
+    const totalSlots = OPERATION_ORDER.length * DIFFICULTY_ORDER.length
+    const currentSlot = opIdx * DIFFICULTY_ORDER.length + diffIdx
+    const nextSlot = (currentSlot + 1) % totalSlots
+    const nextOpIdx = Math.floor(nextSlot / DIFFICULTY_ORDER.length)
+    const nextDiffIdx = nextSlot % DIFFICULTY_ORDER.length
+
+    setNextOperation(OPERATION_ORDER[nextOpIdx])
+    setNextDifficulty(DIFFICULTY_ORDER[nextDiffIdx])
   }, [sessionComplete])
 
   // Compute the pool of questions for this session once per
@@ -423,35 +408,35 @@ export default function ApiMathGame() {
   // and instead show a simple "Next game" panel so the user can decide what to do next.
   if (sessionComplete) {
     return (
-      <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-2 sm:px-2 sm:py-4 gap-3 sm:gap-5">
-        <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
-          <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+      <div className="w-full flex flex-col items-center mx-auto gap-5 sm:gap-6">
+        <div className="api-game-item w-full flex items-center gap-2">
+          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
             Math Game
           </span>
         </div>
 
-        <div className="api-game-item w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 sm:px-4 sm:py-5 space-y-4">
+        <div className="api-game-item w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
           {/* Completion copy */}
           <div className="text-center space-y-2">
-            <p className="section-label text-xs text-slate-400">
+            <p className="section-label justify-center text-xs text-slate-400">
               Session complete
             </p>
-            <p className="text-sm sm:text-base text-slate-200">
+            <p className="text-base sm:text-lg text-slate-200 font-medium">
               You finished this set of questions for {operation}.
             </p>
-            <p className="text-[11px] sm:text-xs text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-500">
               Choose your next game below, or go back to the home screen.
             </p>
           </div>
 
           {/* Next game picker */}
-          <div className="mt-1 space-y-3">
-            {/* Operation selector (re-uses same labels as landing page) */}
-            <div className="space-y-1.5">
-              <p className="section-label text-[11px] text-slate-400">
+          <div className="space-y-5">
+            {/* Operation selector */}
+            <div className="space-y-2.5">
+              <p className="section-label text-xs text-slate-400">
                 Choose operation
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {VALID_OPS.map(op => {
                   const active = nextOperation === op
                   return (
@@ -459,11 +444,12 @@ export default function ApiMathGame() {
                       key={op}
                       type="button"
                       onClick={() => setNextOperation(op)}
-                      className="rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 text-[11px] sm:text-xs font-semibold transition-all"
+                      className="rounded-xl px-3 py-3 text-xs sm:text-sm font-semibold transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
                       style={{
-                        backgroundColor: 'var(--bg-surface)',
+                        backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
                         borderRadius: 12,
-                        border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                        border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                        color: active ? 'var(--accent-orange)' : '#d1d5db',
                       }}
                     >
                       {op.charAt(0).toUpperCase() + op.slice(1)}
@@ -474,11 +460,11 @@ export default function ApiMathGame() {
             </div>
 
             {/* Difficulty selector */}
-            <div className="space-y-1.5">
-              <p className="section-label text-[11px] text-slate-400">
+            <div className="space-y-2.5">
+              <p className="section-label text-xs text-slate-400">
                 Choose difficulty
               </p>
-              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
                   const active = nextDifficulty === d
                   return (
@@ -486,11 +472,12 @@ export default function ApiMathGame() {
                       key={d}
                       type="button"
                       onClick={() => setNextDifficulty(d)}
-                      className="rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 text-[11px] sm:text-xs font-semibold transition-all"
+                      className="rounded-xl px-3 py-3 text-xs sm:text-sm font-semibold transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
                       style={{
-                        backgroundColor: 'var(--bg-surface)',
+                        backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
                         borderRadius: 12,
-                        border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                        border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                        color: active ? 'var(--accent-orange)' : '#d1d5db',
                       }}
                     >
                       {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
@@ -502,34 +489,34 @@ export default function ApiMathGame() {
 
             {/* Number of games + remaining info */}
             {nextDifficulty && (
-              <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
-                <div className="flex flex-col">
-                  <span className="section-label text-xs mb-0.5">Number of games</span>
-                  <span className="text-[11px] sm:text-xs text-slate-400">
-                    Max 20 per type and level. Tap − or + to adjust.
+              <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3 sm:px-5 sm:py-4">
+                <div className="flex flex-col gap-1">
+                  <span className="section-label text-xs">Number of games</span>
+                  <span className="text-xs text-slate-400">
+                    Max 20 per type and level.
                   </span>
-                  <span className="text-[10px] font-mono text-slate-500 mt-1">
+                  <span className="text-[11px] font-mono text-slate-500">
                     {nextVariantPlayed} / 20 played · {nextVariantRemaining} remaining
                   </span>
                   {nextVariantRemaining <= 0 && (
-                    <span className="text-[10px] font-mono text-amber-400 mt-0.5">
+                    <span className="text-[11px] font-mono text-amber-400">
                       You finished {nextOperation} ({nextDifficulty}). Try another difficulty or operation.
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     onClick={() => {
                       if (nextVariantRemaining <= 0) return
                       setNextGamesCount(v => Math.max(1, Math.min((v || 1) - 1, nextVariantRemaining)))
                     }}
-                    className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                    className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
                     disabled={nextVariantRemaining <= 0}
                   >
                     −
                   </button>
-                  <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                  <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">
                     {nextGamesCount}
                   </div>
                   <button
@@ -540,7 +527,7 @@ export default function ApiMathGame() {
                         Math.min(Math.max((v || 1) + 1, 1), nextVariantRemaining),
                       )
                     }}
-                    className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                    className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
                     disabled={nextVariantRemaining <= 0}
                   >
                     +
@@ -550,7 +537,7 @@ export default function ApiMathGame() {
             )}
 
             {/* Primary: Play next game; Secondary: Go home */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 disabled={
@@ -563,8 +550,6 @@ export default function ApiMathGame() {
                   await resetMathSession(nextGamesCount)
                   setOperation(nextOperation)
                   setDifficulty(nextDifficulty)
-                  // Restart session in-place instead of navigating to the
-                  // same route (which is a no-op in the App Router).
                   setSessionMax(nextGamesCount)
                   setSessionPlayed(0)
                   setSessionComplete(false)
@@ -573,7 +558,7 @@ export default function ApiMathGame() {
                   setFeedback(null)
                   setTimerKey(k => k + 1)
                 }}
-                className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 disabled:opacity-60"
+                className="w-full sm:w-auto rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-8 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-900 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
               >
                 Play game
               </button>
@@ -581,7 +566,7 @@ export default function ApiMathGame() {
               <button
                 type="button"
                 onClick={() => router.push('/')}
-                className="rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-200"
+                className="w-full sm:w-auto rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-6 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-300 transition-all hover:border-zinc-600 hover:text-white active:scale-[0.98]"
               >
                 Go to home
               </button>
@@ -601,22 +586,22 @@ export default function ApiMathGame() {
   }
 
   return (
-    <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-1 sm:px-2 sm:py-3 gap-2 sm:gap-4">
+    <div className="w-full flex flex-col items-center mx-auto gap-4 sm:gap-5">
       {/* Section title: Math Game */}
-      <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
-        <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+      <div className="api-game-item w-full flex items-center gap-2">
+        <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
           Math Game
         </span>
       </div>
 
-      {/* Timer + Score row (score persisted in IndexedDB, loads on return) */}
-      <div className="api-game-item w-full flex items-center justify-between flex-wrap gap-1.5 mb-1">
+      {/* Timer + Score row */}
+      <div className="api-game-item w-full flex items-center justify-between gap-3">
         <Timer key={timerKey} seconds={90} onTimeUp={handleTimeUp} type="math" />
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2.5">
           <span className="section-label text-slate-400 text-xs">
             Total
           </span>
-          <span className="text-xs sm:text-sm font-semibold text-white tabular-nums">
+          <span className="text-sm sm:text-base font-semibold text-white tabular-nums">
             {score}
           </span>
         </div>
@@ -630,51 +615,49 @@ export default function ApiMathGame() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="api-game-item relative w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center px-3 py-4 sm:px-4 sm:py-5"
+          className="api-game-item relative w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center px-4 py-8 sm:px-6 sm:py-10"
           style={{
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
           }}
         >
-          <div className="absolute right-2 top-2 sm:right-3 sm:top-3 flex items-center gap-1.5">
-            <span className="text-[9px] sm:text-[10px] font-mono text-slate-500">
-              {Math.min(currentIndex + 1, sessionMax)} of {sessionMax}
+          <div className="absolute right-3 top-3 sm:right-4 sm:top-4 flex items-center gap-2">
+            <span className="text-[10px] sm:text-xs font-mono text-slate-500">
+              {Math.min(currentIndex + 1, sessionMax)} / {sessionMax}
             </span>
             <span
-              className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider"
-              style={{ color: '#94a3b8' }}
+              className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-slate-400"
             >
               {current.game_type}
             </span>
           </div>
-          <p className="section-label mb-2 sm:mb-3 text-slate-400 text-xs">
+          <p className="section-label justify-center mb-3 sm:mb-4 text-slate-400 text-xs">
             Calculate the result
           </p>
-          <div className="text-[clamp(24px,6.5vw,52px)] font-bold leading-none text-white">
+          <div className="text-[clamp(28px,7vw,56px)] font-bold leading-tight text-white">
             {current.question}
           </div>
         </motion.div>
       </AnimatePresence>
 
       {/* Typed answer input + keypad */}
-      <div className="api-game-item w-full space-y-2">
-        <div
-          className="text-center font-mono uppercase text-[10px] sm:text-[11px] tracking-widest text-slate-400"
-        >
+      <div className="api-game-item w-full space-y-3">
+        <div className="text-center font-mono uppercase text-[10px] sm:text-xs tracking-widest text-slate-500">
           Type your answer
         </div>
         <input
           value={answer}
           readOnly
           placeholder="Enter answer"
-          className="w-full rounded-lg sm:rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-center font-mono text-sm text-zinc-300"
+          className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 px-4 py-3 text-center font-mono text-base sm:text-lg text-zinc-200 focus:outline-none"
         />
-        <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'].map(key => (
             <button
               key={key}
               type="button"
               onClick={() => (key === '⌫' ? handleBackspace() : handleDigit(key))}
-              className="rounded-lg sm:rounded-xl bg-zinc-900/80 border border-zinc-800 py-2 sm:py-2.5 text-center text-sm font-semibold text-zinc-100 active:bg-zinc-800 min-h-[40px] sm:min-h-[44px] touch-manipulative"
+              className="rounded-xl bg-zinc-900/80 border border-zinc-800 py-3 sm:py-3.5 text-center text-base sm:text-lg font-semibold text-zinc-100 transition-colors hover:bg-zinc-800 active:bg-zinc-700 min-h-[48px] sm:min-h-[52px]"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               {key}
             </button>
@@ -690,7 +673,7 @@ export default function ApiMathGame() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="rounded-full border px-3 py-1.5 text-xs sm:text-sm font-semibold"
+            className="rounded-full border px-5 py-2 text-sm font-semibold"
             style={{
               color: feedback === 'correct' ? '#22c55e' : '#94a3b8',
               borderColor: feedback === 'correct' ? 'rgba(34,197,94,0.3)' : '#27272a',

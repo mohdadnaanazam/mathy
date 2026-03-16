@@ -101,12 +101,12 @@ export default function GameBoard() {
       {/* Game only */}
       <main
         id="live-game-area"
-        className="flex-1 mx-auto w-full max-w-[720px] md:max-w-[880px] lg:max-w-[1040px] px-2 py-4 sm:px-4 sm:py-6 flex items-center justify-center"
+        className="flex-1 mx-auto w-full max-w-lg md:max-w-xl lg:max-w-2xl px-4 sm:px-6 py-6 sm:py-10 flex items-start justify-center"
       >
         <div
-          className="card relative w-full border-zinc-800 bg-zinc-900/30 px-2 py-3 sm:px-4 sm:py-4"
+          className="card relative w-full border-zinc-800 bg-zinc-900/40 px-4 py-5 sm:px-6 sm:py-6 rounded-2xl"
           style={{
-            boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset',
           }}
         >
           {effectiveGameType === 'memory' ? (

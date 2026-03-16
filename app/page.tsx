@@ -25,6 +25,7 @@ import {
 } from '@/lib/db'
 import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
+import { useSessionExpiry } from '@/hooks/useSessionExpiry'
 
 type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
 
@@ -54,6 +55,7 @@ export default function LandingPage() {
   const { isRefreshing } = useGameTimer()
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const setDifficulty = useGameStore(s => s.setDifficulty)
+  const { isSessionExpired, isResetting: isExpiryResetting, resetAndResume, recordActivity } = useSessionExpiry()
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty | null>(null)
   const [memoryGamesCount, setMemoryGamesCount] = useState<number>(10)
@@ -224,6 +226,7 @@ export default function LandingPage() {
   async function play(operationMode?: ModeLabel) {
     if (isNavigating) return
     setIsNavigating(true)
+    await recordActivity()
     setType('math')
     setDifficulty(mathDifficulty ?? 'medium')
     const op = operationMode ? MODE_TO_OPERATION[operationMode] : 'mixture'
@@ -243,6 +246,7 @@ export default function LandingPage() {
   async function playMemoryGrid() {
     if (isNavigating || memoryDifficulty === null) return
     setIsNavigating(true)
+    await recordActivity()
     setType('memory')
     setDifficulty(memoryDifficulty)
     await setLastPlayedSettings({
@@ -286,23 +290,24 @@ export default function LandingPage() {
     isNavigating ||
     isLocked ||
     isRefreshing ||
+    isSessionExpired ||
     (activeGame === 'math' && !canPlayMath) ||
     (activeGame === 'memory' && !canPlayMemory)
 
   return (
     <main
-      className="min-h-screen overflow-x-hidden relative pt-16 sm:pt-20 md:pt-24 bg-[var(--bg-surface)]"
+      className="min-h-screen overflow-x-hidden relative bg-[var(--bg-surface)]"
       style={{
         paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom, 0px) + 6rem))',
       }}
     >
       {/* Hero */}
-      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-6 sm:py-8 md:py-10">
-        <div className="mx-auto max-w-4xl px-3 sm:px-6 lg:px-4">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight mb-1.5">
+      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-8 sm:py-10 md:py-14">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight mb-2">
             Train your brain
           </h1>
-          <p className="text-xs sm:text-sm md:text-base text-slate-400 max-w-lg">
+          <p className="text-sm sm:text-base text-slate-400 max-w-md">
             Quick math duels. No signup. Pick a mode and play.
           </p>
         </div>
@@ -310,9 +315,9 @@ export default function LandingPage() {
 
       {/* Math game section – operation first, then difficulty (matches reference UI) */}
       <section
-        className={`border-b border-[var(--border-subtle)] py-5 sm:py-6 md:py-8 transition-opacity duration-200 ${activeGame !== 'math' ? 'opacity-60' : ''}`}
+        className={`border-b border-[var(--border-subtle)] py-6 sm:py-8 md:py-10 transition-opacity duration-200 ${activeGame !== 'math' ? 'opacity-50' : ''}`}
       >
-        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-4 sm:space-y-5">
+        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 space-y-5 sm:space-y-6">
           {/* 1. Operation icons */}
           <div className="flex flex-col gap-3">
             <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'math' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
@@ -321,7 +326,7 @@ export default function LandingPage() {
                 Addition, subtraction, multiplication, division, mixture, or custom.
               </p>
             </div>
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5">
               {[
                 { icon: Plus, label: 'Addition' as ModeLabel },
                 { icon: Minus, label: 'Subtraction' as ModeLabel },
@@ -336,12 +341,12 @@ export default function LandingPage() {
                     key={item.label}
                     type="button"
                     onClick={() => { setActiveMode(item.label); setActiveGame('math') }}
-                    className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
+                    className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
                     style={{
-                      backgroundColor: 'var(--bg-surface)',
+                      backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
                       borderRadius: 12,
-                      border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
+                      border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
                     }}
                   >
                     <item.icon
@@ -395,7 +400,7 @@ export default function LandingPage() {
                 Pick Easy, Medium, or Hard, then press Play.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
               {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
                 const active = mathDifficulty === d
                 return (
@@ -403,18 +408,18 @@ export default function LandingPage() {
                     key={d}
                     type="button"
                     onClick={() => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
-                    className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
+                    className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
                     style={{
-                      backgroundColor: 'var(--bg-surface)',
+                      backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
                       borderRadius: 12,
-                      border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
+                      border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
                     }}
                   >
                     <Calculator
                       size={20}
                       strokeWidth={active ? 2.4 : 2}
-                      className="mb-1"
+                      className="mb-1.5"
                       style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
                     />
                     <span
@@ -431,8 +436,8 @@ export default function LandingPage() {
 
           {/* Number of games: only visible after user has chosen a difficulty */}
           {mathDifficulty !== null && (
-            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
-              <div className="flex flex-col">
+            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex flex-col gap-1">
                 <span className="section-label text-xs mb-0.5">Number of games</span>
                 <span className="text-[11px] sm:text-xs text-slate-400">
                   Max 20 per type and level. Tap − or + to adjust.
@@ -456,19 +461,19 @@ export default function LandingPage() {
                   </>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => {
                     if (mathVariantExhausted) return
                     setMathGamesCount(v => Math.max(1, Math.min(v - 1, mathVariantRemaining)))
                   }}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
                   disabled={mathVariantExhausted}
                 >
                   −
                 </button>
-                <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">
                   {mathGamesCount}
                 </div>
                 <button
@@ -479,7 +484,7 @@ export default function LandingPage() {
                       Math.min(Math.max(v + 1, 1), mathVariantRemaining),
                     )
                   }}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
                   disabled={mathVariantExhausted}
                 >
                   +
@@ -492,9 +497,9 @@ export default function LandingPage() {
 
       {/* Memory Grid Game section – selecting an option sets this as the active game */}
       <section
-        className={`border-b border-[var(--border-subtle)] py-5 sm:py-6 md:py-8 transition-opacity duration-200 ${activeGame !== 'memory' ? 'opacity-60' : ''}`}
+        className={`border-b border-[var(--border-subtle)] py-6 sm:py-8 md:py-10 transition-opacity duration-200 ${activeGame !== 'memory' ? 'opacity-50' : ''}`}
       >
-        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 space-y-4 sm:space-y-5">
+        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 space-y-5 sm:space-y-6">
           <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'memory' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
             <div className="section-label mb-0.5 text-xs flex items-center gap-1.5">
               <Grid3X3 size={14} style={{ color: 'var(--accent-orange)' }} />
@@ -516,7 +521,7 @@ export default function LandingPage() {
           </div>
 
           {/* Difficulty options – clicking sets active game to memory; required before Play */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
             {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
               const active = memoryDifficulty === d
               const gridSize = d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'
@@ -525,18 +530,18 @@ export default function LandingPage() {
                   key={d}
                   type="button"
                   onClick={() => { setMemoryDifficulty(d); setActiveGame('memory') }}
-                  className="flex flex-col items-center justify-center rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 transition-all duration-200"
+                  className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
                   style={{
-                    backgroundColor: 'var(--bg-surface)',
+                    backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
                     borderRadius: 12,
-                    border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                    boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.2)' : 'none',
+                    border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                    boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
                   }}
                 >
                   <LayoutGrid
                     size={20}
                     strokeWidth={active ? 2.4 : 2}
-                    className="mb-1"
+                    className="mb-1.5"
                     style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
                   />
                   <span className="text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-slate-300" style={{ color: active ? 'var(--accent-orange)' : undefined }}>
@@ -552,8 +557,8 @@ export default function LandingPage() {
 
           {/* Number of games for memory: same rules as math, only visible after difficulty chosen */}
           {memoryDifficulty !== null && (
-            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
-              <div className="flex flex-col">
+            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex flex-col gap-1">
                 <span className="section-label text-xs mb-0.5">Number of games</span>
                 <span className="text-[11px] sm:text-xs text-slate-400">
                   Max 20 per type and level. Tap − or + to adjust.
@@ -577,19 +582,19 @@ export default function LandingPage() {
                   </>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => {
                     if (memoryVariantExhausted) return
                     setMemoryGamesCount(v => Math.max(1, Math.min(v - 1, memoryVariantRemaining)))
                   }}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
                   disabled={memoryVariantExhausted}
                 >
                   −
                 </button>
-                <div className="min-w-[2.25rem] text-center font-mono text-sm text-white">
+                <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">
                   {memoryGamesCount}
                 </div>
                 <button
@@ -600,7 +605,7 @@ export default function LandingPage() {
                       Math.min(Math.max(v + 1, 1), memoryVariantRemaining),
                     )
                   }}
-                  className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 disabled:opacity-40"
+                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
                   disabled={memoryVariantExhausted}
                 >
                   +
@@ -612,8 +617,8 @@ export default function LandingPage() {
       </section>
 
       {/* Single Play button – starts the currently selected game; disabled when 15 plays used this hour or session expired */}
-      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
-        <div className="mx-auto w-full max-w-4xl px-3 sm:px-6 lg:px-4 flex flex-col items-center gap-3">
+      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-6">
+        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-3">
           {isRefreshing && (
             <p className="text-xs text-slate-400 text-center">
               Session expired. Tap Reload below to load new games and continue.
@@ -624,7 +629,7 @@ export default function LandingPage() {
             type="button"
             onClick={handlePlay}
             disabled={playDisabled}
-            className="inline-flex items-center justify-center rounded-full px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none shrink-0"
+            className="inline-flex items-center justify-center rounded-full px-10 py-3.5 sm:px-12 sm:py-4 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shrink-0"
             style={{
               backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
               color: isLocked ? '#64748b' : '#111827',
@@ -635,16 +640,19 @@ export default function LandingPage() {
           >
             {isLocked
               ? 'Limit reached (15/hour)'
-              : isRefreshing
-                ? 'Reload to play'
-                : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
-                  ? 'Choose difficulty first'
-                  : isNavigating
-                    ? 'Starting…'
-                    : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+              : isSessionExpired
+                ? 'Reset progress to play'
+                : isRefreshing
+                  ? 'Reload to play'
+                  : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
+                    ? 'Choose difficulty first'
+                    : isNavigating
+                      ? 'Starting…'
+                      : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
             {!isLocked &&
               !isNavigating &&
               !isRefreshing &&
+              !isSessionExpired &&
               ((canPlayMath && activeGame === 'math') ||
                 (canPlayMemory && activeGame === 'memory')) &&
               ' →'}
@@ -657,7 +665,41 @@ export default function LandingPage() {
         className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="mx-auto flex w-full max-w-4xl flex-col sm:flex-row items-center justify-center gap-3 px-3 py-3 sm:px-6 sm:py-4">
+        <div className="mx-auto flex w-full max-w-2xl flex-col sm:flex-row items-center justify-center gap-3 px-4 py-4 sm:px-6 sm:py-5">
+          {/* 1-hour inactivity expiry: must reset progress before playing */}
+          {isSessionExpired && (
+            <>
+              <p className="text-xs text-amber-400 text-center w-full sm:w-auto">
+                You've been away for over an hour. Reset your progress to continue playing.
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  await resetAndResume()
+                  // Refresh local UI counters to reflect the reset
+                  setMathSessionMaxState(10)
+                  setMathSessionPlayedState(0)
+                  setMathGamesCount(10)
+                  setMemorySessionMaxState(10)
+                  setMemorySessionPlayedState(0)
+                  setMemoryGamesCount(10)
+                  setMathVariantPlayed(0)
+                  setMathVariantRemaining(20)
+                  setMemoryVariantPlayed(0)
+                  setMemoryVariantRemaining(20)
+                }}
+                disabled={isExpiryResetting}
+                className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
+                style={{
+                  backgroundColor: 'var(--accent-orange)',
+                  color: '#111827',
+                  border: '1px solid var(--accent-orange-hover)',
+                }}
+              >
+                {isExpiryResetting ? 'Resetting…' : 'Reset Progress'}
+              </button>
+            </>
+          )}
           {isRefreshing && (
             <button
               type="button"
