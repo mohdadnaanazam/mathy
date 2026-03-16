@@ -16,15 +16,26 @@ export interface MetaEntry {
   value: number
 }
 
+export interface MetaTextEntry {
+  key: string
+  value: string
+}
+
 class MathyDb extends Dexie {
   gameCache!: Dexie.Table<GameCacheEntry, string>
   meta!: Dexie.Table<MetaEntry, string>
+  metaText!: Dexie.Table<MetaTextEntry, string>
 
   constructor() {
     super(DB_NAME)
     this.version(1).stores({
       gameCache: 'gameType',
       meta: 'key',
+    })
+    this.version(2).stores({
+      gameCache: 'gameType',
+      meta: 'key',
+      metaText: 'key',
     })
   }
 }
@@ -70,6 +81,10 @@ export const CACHE_TTL_MS_EXPORT = CACHE_TTL_MS
 const META_LAST_LEFT_AT = 'lastLeftAt'
 /** Meta: when the current game session started (ms since epoch). */
 const META_GAME_SESSION_STARTED_AT = 'gameSessionStartedAt'
+/** MetaText: last played selections to hydrate home screen. */
+const META_LAST_PLAYED_GAME_TYPE = 'lastPlayedGameType'
+const META_LAST_PLAYED_OPERATION = 'lastPlayedOperation'
+const META_LAST_PLAYED_DIFFICULTY = 'lastPlayedDifficulty'
 
 export async function setLastLeftAt(timestamp: number): Promise<void> {
   await db.meta.put({ key: META_LAST_LEFT_AT, value: timestamp })
@@ -92,6 +107,33 @@ export async function getGameSessionStartedAt(): Promise<number | null> {
 
 export async function clearGameSessionStartedAt(): Promise<void> {
   await db.meta.delete(META_GAME_SESSION_STARTED_AT)
+}
+
+export async function setLastPlayedSettings(settings: {
+  gameType: string
+  operation?: string | null
+  difficulty?: string | null
+}): Promise<void> {
+  await db.metaText.put({ key: META_LAST_PLAYED_GAME_TYPE, value: settings.gameType })
+  await db.metaText.put({ key: META_LAST_PLAYED_OPERATION, value: settings.operation ?? '' })
+  await db.metaText.put({ key: META_LAST_PLAYED_DIFFICULTY, value: settings.difficulty ?? '' })
+}
+
+export async function getLastPlayedSettings(): Promise<{
+  gameType: string | null
+  operation: string | null
+  difficulty: string | null
+}> {
+  const [gt, op, diff] = await Promise.all([
+    db.metaText.get(META_LAST_PLAYED_GAME_TYPE),
+    db.metaText.get(META_LAST_PLAYED_OPERATION),
+    db.metaText.get(META_LAST_PLAYED_DIFFICULTY),
+  ])
+  return {
+    gameType: gt?.value ?? null,
+    operation: op?.value ? op.value : null,
+    difficulty: diff?.value ? diff.value : null,
+  }
 }
 
 export function getCacheTtlMs(): number {

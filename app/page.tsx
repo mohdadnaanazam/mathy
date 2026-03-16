@@ -14,9 +14,11 @@ import {
   getMathSessionPlayed,
   getMemorySessionMax,
   getMemorySessionPlayed,
+  getLastPlayedSettings,
   resetMathSession,
   resetMemorySession,
   resetAllProgress,
+  setLastPlayedSettings,
   setMathSessionPlayed,
   setMemorySessionPlayed,
   getVariantProgress,
@@ -74,6 +76,54 @@ export default function LandingPage() {
   const [mathVariantPlayed, setMathVariantPlayed] = useState<number>(0)
   const [mathVariantTotal, setMathVariantTotal] = useState<number>(20)
   const [mathVariantRemaining, setMathVariantRemaining] = useState<number>(20)
+
+  useEffect(() => {
+    // Hydrate last played selections so Home reflects the last game the user played.
+    getLastPlayedSettings().then((last) => {
+      if (!last.gameType) return
+
+      if (last.gameType === 'memory') {
+        setActiveGame('memory')
+        setType('memory')
+        if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
+          setMemoryDifficulty(last.difficulty as Difficulty)
+          setDifficulty(last.difficulty as Difficulty)
+        }
+        return
+      }
+
+      // Math
+      setActiveGame('math')
+      setType('math')
+      if (
+        last.operation === 'addition' ||
+        last.operation === 'subtraction' ||
+        last.operation === 'multiplication' ||
+        last.operation === 'division' ||
+        last.operation === 'mixture' ||
+        last.operation === 'custom'
+      ) {
+        const label =
+          last.operation === 'addition'
+            ? 'Addition'
+            : last.operation === 'subtraction'
+              ? 'Subtraction'
+              : last.operation === 'multiplication'
+                ? 'Multiplication'
+                : last.operation === 'division'
+                  ? 'Division'
+                  : last.operation === 'mixture'
+                    ? 'Mixture'
+                    : 'Custom'
+        setActiveMode(label as ModeLabel)
+        setOperation(last.operation as OperationMode)
+      }
+      if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
+        setMathDifficulty(last.difficulty as Difficulty)
+        setDifficulty(last.difficulty as Difficulty)
+      }
+    })
+  }, [setDifficulty, setOperation, setType])
 
   // Hydrate math & memory session progress from IndexedDB so played/remaining show correctly after return
   function hydrateSessions() {
@@ -178,6 +228,11 @@ export default function LandingPage() {
     setDifficulty(mathDifficulty ?? 'medium')
     const op = operationMode ? MODE_TO_OPERATION[operationMode] : 'mixture'
     setOperation(op)
+    await setLastPlayedSettings({
+      gameType: 'math',
+      operation: op,
+      difficulty: (mathDifficulty ?? 'medium') as Difficulty,
+    })
     // Always start a fresh math session with the selected number of games.
     await resetMathSession(mathGamesCount)
     setMathSessionMaxState(mathGamesCount)
@@ -190,6 +245,11 @@ export default function LandingPage() {
     setIsNavigating(true)
     setType('memory')
     setDifficulty(memoryDifficulty)
+    await setLastPlayedSettings({
+      gameType: 'memory',
+      operation: null,
+      difficulty: memoryDifficulty,
+    })
     if (memoryGamesCount !== memorySessionMax) {
       await resetMemorySession(memoryGamesCount)
       setMemorySessionMaxState(memoryGamesCount)
