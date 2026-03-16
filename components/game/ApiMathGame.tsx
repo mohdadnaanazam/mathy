@@ -550,6 +550,11 @@ export default function ApiMathGame() {
                   await resetMathSession(nextGamesCount)
                   setOperation(nextOperation)
                   setDifficulty(nextDifficulty)
+                  // Update the URL so opFromUrl reflects the new operation.
+                  // Without this, the derived `operation` (opFromUrl ?? storeOperation)
+                  // would still return the old URL param, causing the progression
+                  // logic to read stale values on the next session completion.
+                  router.replace(`/game?op=${nextOperation}`, { scroll: false })
                   setSessionMax(nextGamesCount)
                   setSessionPlayed(0)
                   setSessionComplete(false)
