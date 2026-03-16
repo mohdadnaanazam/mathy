@@ -79,7 +79,14 @@ export default function ApiMathGame() {
   const [nextGamesCount, setNextGamesCount] = useState(5)
 
   const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
-  const OPERATION_ORDER: OperationMode[] = ['addition', 'subtraction', 'multiplication', 'division']
+  const OPERATION_ORDER: OperationMode[] = [
+    'addition',
+    'subtraction',
+    'multiplication',
+    'division',
+    'mixture',
+    'custom',
+  ]
 
   useEffect(() => {
     getMathSessionMax().then(setSessionMax)
@@ -150,15 +157,32 @@ export default function ApiMathGame() {
           return
         }
       } else if (currentDifficulty === 'hard') {
-        // When finishing Hard, backfill any skipped lower difficulties
-        // before moving to the next operation. Prefer Medium, then Easy.
-        for (const d of ['medium', 'easy'] as Difficulty[]) {
-          if (await hasRemaining(operation, d)) {
-            setNextOperation(operation)
-            setNextDifficulty(d)
-            return
+        // When finishing Hard, move to the next operation and start from Easy.
+        const opIndex = OPERATION_ORDER.indexOf(operation)
+        if (opIndex === -1) {
+          setNextOperation(operation)
+          setNextDifficulty('easy')
+          return
+        }
+
+        const opCandidates: OperationMode[] = [
+          ...OPERATION_ORDER.slice(opIndex + 1),
+          ...OPERATION_ORDER.slice(0, opIndex + 1),
+        ]
+
+        for (const op of opCandidates) {
+          for (const d of DIFFICULTY_ORDER) {
+            if (await hasRemaining(op, d)) {
+              setNextOperation(op)
+              setNextDifficulty(d)
+              return
+            }
           }
         }
+        // If everything is exhausted, stay on current operation at Easy.
+        setNextOperation(operation)
+        setNextDifficulty('easy')
+        return
       }
 
       // 2. Current operation is fully completed (no remaining difficulties).
