@@ -101,7 +101,7 @@ export default function GameBoard() {
       {/* Game only */}
       <main
         id="live-game-area"
-        className="mx-auto w-full max-w-[720px] md:max-w-[880px] lg:max-w-[1040px] px-2 py-4 sm:px-4 sm:py-6"
+        className="flex-1 mx-auto w-full max-w-[720px] md:max-w-[880px] lg:max-w-[1040px] px-2 py-4 sm:px-4 sm:py-6 flex items-center justify-center"
       >
         <div
           className="card relative w-full border-zinc-800 bg-zinc-900/30 px-2 py-3 sm:px-4 sm:py-4"

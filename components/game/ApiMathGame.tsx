@@ -79,6 +79,7 @@ export default function ApiMathGame() {
   const [nextGamesCount, setNextGamesCount] = useState(5)
 
   const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
+  const OPERATION_ORDER: OperationMode[] = ['addition', 'subtraction', 'multiplication', 'division']
 
   useEffect(() => {
     getMathSessionMax().then(setSessionMax)
@@ -104,33 +105,60 @@ export default function ApiMathGame() {
     })
   }, [nextOperation, nextDifficulty])
 
-  // After a session completes, automatically advance difficulty:
-  // easy → medium → hard. If the next difficulty is exhausted (20/20),
-  // choose the next available difficulty with remaining > 0.
+  // After a session completes, automatically advance through
+  // difficulties and operations in a strict order:
+  // Per operation: easy → medium → hard.
+  // Only when all three difficulties for the current operation are completed
+  // do we move to the next operation in OPERATION_ORDER.
+  // If the user manually skipped a difficulty (e.g. played hard before medium),
+  // we will return to the first incomplete difficulty for that operation.
   useEffect(() => {
     if (!sessionComplete) return
     if (!difficulty) return
 
     const currentDifficulty = difficulty as Difficulty
-    const currentIdx = DIFFICULTY_ORDER.indexOf(currentDifficulty)
-    const candidates: Difficulty[] =
-      currentIdx === -1
-        ? ['medium', 'hard', 'easy']
-        : currentIdx === 0
-          ? ['medium', 'hard', 'easy']
-          : currentIdx === 1
-            ? ['hard', 'easy', 'medium']
-            : ['hard', 'easy', 'medium']
-
     ;(async () => {
-      for (const d of candidates) {
-        const p = await getVariantProgress(operation, d)
-        if (p.remaining > 0) {
+      // 1. For the current operation, find the first difficulty (easy→medium→hard)
+      // that still has remaining games. This handles skipped difficulties.
+      for (const d of DIFFICULTY_ORDER) {
+        const progress = await getVariantProgress(operation, d)
+        if (progress.remaining > 0) {
+          setNextOperation(operation)
           setNextDifficulty(d)
           return
         }
       }
-      // If everything is exhausted, keep the current difficulty selected.
+
+      // 2. Current operation is fully completed (all three difficulties done).
+      // Move to the next operation in OPERATION_ORDER that still has any remaining
+      // difficulty, again preferring easy→medium→hard within that operation.
+      const opIndex = OPERATION_ORDER.indexOf(operation)
+      if (opIndex === -1) {
+        // If current operation isn't in our ordered list (e.g. mixture/custom),
+        // keep the current selections.
+        setNextOperation(operation)
+        setNextDifficulty(currentDifficulty)
+        return
+      }
+
+      const opCandidates: OperationMode[] = [
+        ...OPERATION_ORDER.slice(opIndex + 1),
+        ...OPERATION_ORDER.slice(0, opIndex + 1),
+      ]
+
+      for (const op of opCandidates) {
+        for (const d of DIFFICULTY_ORDER) {
+          const progress = await getVariantProgress(op, d)
+          if (progress.remaining > 0) {
+            setNextOperation(op)
+            setNextDifficulty(d)
+            return
+          }
+        }
+      }
+
+      // 3. All operations and difficulties are completed; keep the current selection.
+      setNextOperation(operation)
       setNextDifficulty(currentDifficulty)
     })()
   }, [sessionComplete, operation, difficulty])
