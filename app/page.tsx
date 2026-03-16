@@ -151,7 +151,11 @@ export default function LandingPage() {
     if (isResettingProgress) return
     setIsResettingProgress(true)
     try {
+      // Reset should clear stored questions too (but keep total score).
+      await clearGameCache()
       await resetAllProgress()
+      const now = await fetchAndCacheAllGames()
+      setLastFetchAt(now)
       setMathSessionMaxState(10)
       setMathSessionPlayedState(0)
       setMathGamesCount(10)
@@ -609,14 +613,16 @@ export default function LandingPage() {
               {isReloadingGames ? '…' : 'Reload'}
             </button>
           )}
-          <button
-            type="button"
-            onClick={handleResetProgress}
-            disabled={isResettingProgress}
-            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60 border border-[var(--border-subtle)] bg-zinc-900 text-slate-200"
-          >
-            {isResettingProgress ? '…' : 'Reset Progress'}
-          </button>
+          {isRefreshing && (
+            <button
+              type="button"
+              onClick={handleResetProgress}
+              disabled={isResettingProgress}
+              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60 border border-[var(--border-subtle)] bg-zinc-900 text-slate-200"
+            >
+              {isResettingProgress ? '…' : 'Reset Progress'}
+            </button>
+          )}
         </div>
       </section>
     </main>
