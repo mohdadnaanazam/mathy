@@ -80,6 +80,8 @@ export default function ApiMathGame() {
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
   const [sessionComplete, setSessionComplete] = useState(false)
+  // Incremented when a new session starts to force effectiveGames to reshuffle
+  const [shuffleKey, setShuffleKey] = useState(0)
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
 
   // Next-session picker state (used on the Session Complete screen)
@@ -233,7 +235,7 @@ export default function ApiMathGame() {
     }
 
     return shuffledPool.slice(0, maxQuestions)
-  }, [games, difficulty, operation, customOperations, sessionMax])
+  }, [games, difficulty, operation, customOperations, sessionMax, shuffleKey])
 
   useEffect(() => {
     const len = effectiveGames.length
@@ -253,7 +255,7 @@ export default function ApiMathGame() {
     setCurrentIndex(0)
     setAnswer('')
     setFeedback(null)
-  }, [effectiveGames.length])
+  }, [effectiveGames])
 
   const current =
     questionOrder.length && currentIndex < questionOrder.length
@@ -284,7 +286,7 @@ export default function ApiMathGame() {
       duration: 0.8,
       ease: 'power3.out',
     })
-  }, [currentIndex, effectiveGames.length])
+  }, [currentIndex, effectiveGames])
 
   const goNext = useCallback(() => {
     setAnswer('')
@@ -597,6 +599,7 @@ export default function ApiMathGame() {
                   setSessionMax(nextGamesCount)
                   setSessionPlayed(0)
                   setSessionComplete(false)
+                  setShuffleKey(k => k + 1)
                   setCurrentIndex(0)
                   setAnswer('')
                   setFeedback(null)
