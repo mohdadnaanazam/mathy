@@ -138,9 +138,11 @@ export default function LandingPage() {
   }
   useEffect(() => {
     hydrateSessions()
-  }, [])
+  }, [isSessionExpired])
 
   // Hydrate per-variant progress (operation + difficulty) whenever either changes.
+  // Also re-hydrate when session expiry state changes (after a reset, isSessionExpired
+  // flips to false and we need to re-read the now-cleared IndexedDB values).
   useEffect(() => {
     if (!mathDifficulty) return
     const op = MODE_TO_OPERATION[activeMode]
@@ -153,9 +155,10 @@ export default function LandingPage() {
         p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
       )
     })
-  }, [activeMode, mathDifficulty])
+  }, [activeMode, mathDifficulty, isSessionExpired])
 
   // Hydrate per-difficulty Memory Grid progress (easy / medium / hard separately).
+  // Also re-hydrate after session expiry reset.
   useEffect(() => {
     if (!memoryDifficulty) return
     getVariantProgress('memory', memoryDifficulty).then(p => {
@@ -166,7 +169,7 @@ export default function LandingPage() {
         p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
       )
     })
-  }, [memoryDifficulty])
+  }, [memoryDifficulty, isSessionExpired])
 
   useEffect(() => {
     const onVisibility = () => { if (document.visibilityState === 'visible') hydrateSessions() }
@@ -623,6 +626,38 @@ export default function LandingPage() {
             <p className="text-xs text-slate-400 text-center">
               Session expired. Tap Reload below to load new games and continue.
             </p>
+          )}
+          {isSessionExpired && (
+            <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-center space-y-2">
+              <p className="text-xs text-amber-400">
+                You've been away for over an hour. Reset your progress to continue playing.
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  await resetAndResume()
+                  setMathSessionMaxState(10)
+                  setMathSessionPlayedState(0)
+                  setMathGamesCount(10)
+                  setMemorySessionMaxState(10)
+                  setMemorySessionPlayedState(0)
+                  setMemoryGamesCount(10)
+                  setMathVariantPlayed(0)
+                  setMathVariantRemaining(20)
+                  setMemoryVariantPlayed(0)
+                  setMemoryVariantRemaining(20)
+                }}
+                disabled={isExpiryResetting}
+                className="inline-flex items-center justify-center rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
+                style={{
+                  backgroundColor: 'var(--accent-orange)',
+                  color: '#111827',
+                  border: '1px solid var(--accent-orange-hover)',
+                }}
+              >
+                {isExpiryResetting ? 'Resetting…' : 'Reset Progress'}
+              </button>
+            </div>
           )}
           <div className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.12em] text-slate-400" />
           <button
