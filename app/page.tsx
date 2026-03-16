@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Grid3X3, CheckCircle } from 'lucide-react'
+import { Grid3X3, CheckCircle, Calculator, Minus, Plus } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { OperationMode, type Difficulty } from '@/types'
@@ -46,11 +46,121 @@ const MODE_TO_OPERATION: Record<ModeLabel, OperationMode> = {
 }
 
 const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
-  { label: 'Addition', value: 'addition' },
-  { label: 'Subtraction', value: 'subtraction' },
-  { label: 'Multiplication', value: 'multiplication' },
-  { label: 'Division', value: 'division' },
+  { label: '+', value: 'addition' },
+  { label: '−', value: 'subtraction' },
+  { label: '×', value: 'multiplication' },
+  { label: '÷', value: 'division' },
 ]
+
+/* ── Reusable sub-components ─────────────────────────────────────────── */
+
+function DifficultyPills({
+  value,
+  onChange,
+  gridSizes,
+}: {
+  value: Difficulty | null
+  onChange: (d: Difficulty) => void
+  gridSizes?: Record<Difficulty, string>
+}) {
+  return (
+    <div className="flex gap-1.5">
+      {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
+        const active = value === d
+        return (
+          <button
+            key={d}
+            type="button"
+            onClick={() => onChange(d)}
+            className="flex-1 py-1.5 rounded-lg text-center transition-all duration-150 active:scale-[0.97]"
+            style={{
+              backgroundColor: active ? 'var(--accent-orange-muted)' : 'rgba(39,39,42,0.5)',
+              border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+              color: active ? 'var(--accent-orange)' : '#a1a1aa',
+            }}
+          >
+            <span className="text-[10px] sm:text-xs font-semibold tracking-wide">
+              {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
+            </span>
+            {gridSizes && (
+              <span className="block text-[9px] mt-0.5" style={{ color: active ? 'var(--accent-orange)' : '#71717a' }}>
+                {gridSizes[d]}
+              </span>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function GameStepper({
+  count,
+  onDecrement,
+  onIncrement,
+  disabled,
+}: {
+  count: number
+  onDecrement: () => void
+  onIncrement: () => void
+  disabled: boolean
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-slate-500 mr-1">Games</span>
+      <button
+        type="button"
+        onClick={onDecrement}
+        disabled={disabled}
+        className="h-7 w-7 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-slate-300 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-30"
+      >
+        <Minus size={12} />
+      </button>
+      <span className="min-w-[1.5rem] text-center font-mono text-sm text-white font-semibold">
+        {count}
+      </span>
+      <button
+        type="button"
+        onClick={onIncrement}
+        disabled={disabled}
+        className="h-7 w-7 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-slate-300 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-30"
+      >
+        <Plus size={12} />
+      </button>
+    </div>
+  )
+}
+
+function ProgressLine({
+  played,
+  total,
+  remaining,
+  exhausted,
+  refreshReady,
+  refreshFormatted,
+}: {
+  played: number
+  total: number
+  remaining: number
+  exhausted: boolean
+  refreshReady: boolean
+  refreshFormatted: string
+}) {
+  return (
+    <div className="mt-1.5">
+      <span className="text-[10px] font-mono text-slate-500">
+        {played}/{total} played · {remaining} left
+      </span>
+      {exhausted && (
+        <span className="text-[10px] font-mono text-amber-400 ml-2">
+          {refreshReady ? '🎉 New games ready!' : `Unlock in ${refreshFormatted}`}
+        </span>
+      )}
+    </div>
+  )
+}
+
+/* ── Main page component ─────────────────────────────────────────────── */
 
 export default function LandingPage() {
   const router = useRouter()
@@ -63,7 +173,8 @@ export default function LandingPage() {
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const { isSessionExpired, isResetting: isExpiryResetting, resetAndResume, recordActivity } = useSessionExpiry()
-  const { secondsLeft: refreshSecondsLeft, formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
+  const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
+
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty | null>(null)
   const [memoryGamesCount, setMemoryGamesCount] = useState<number>(5)
@@ -82,11 +193,9 @@ export default function LandingPage() {
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const showMathOperations = mathDifficulty !== null
   const [mathVariantPlayed, setMathVariantPlayed] = useState<number>(0)
   const [mathVariantTotal, setMathVariantTotal] = useState<number>(20)
   const [mathVariantRemaining, setMathVariantRemaining] = useState<number>(20)
-  // True/False Math state
   const [tfDifficulty, setTfDifficulty] = useState<Difficulty | null>(null)
   const [tfGamesCount, setTfGamesCount] = useState<number>(5)
   const [tfSessionMax, setTfSessionMaxState] = useState<number>(10)
@@ -98,139 +207,89 @@ export default function LandingPage() {
 
   const DEFAULT_GAME_COUNT = 5
 
+  /* ── Effects (unchanged logic) ───────────────────────────────────── */
+
   useEffect(() => {
-    // Hydrate last played selections so Home reflects the last game the user played.
     getLastPlayedSettings().then((last) => {
       if (!last.gameType) return
-
       if (last.gameType === 'memory') {
-        setActiveGame('memory')
-        setType('memory')
+        setActiveGame('memory'); setType('memory')
         if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
-          setMemoryDifficulty(last.difficulty as Difficulty)
-          setDifficulty(last.difficulty as Difficulty)
+          setMemoryDifficulty(last.difficulty as Difficulty); setDifficulty(last.difficulty as Difficulty)
         }
         return
       }
-
       if (last.gameType === 'true_false') {
-        setActiveGame('truefalse')
-        setType('true_false')
+        setActiveGame('truefalse'); setType('true_false')
         if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
-          setTfDifficulty(last.difficulty as Difficulty)
-          setDifficulty(last.difficulty as Difficulty)
+          setTfDifficulty(last.difficulty as Difficulty); setDifficulty(last.difficulty as Difficulty)
         }
         return
       }
-
-      // Math
-      setActiveGame('math')
-      setType('math')
+      setActiveGame('math'); setType('math')
       if (
-        last.operation === 'addition' ||
-        last.operation === 'subtraction' ||
-        last.operation === 'multiplication' ||
-        last.operation === 'division' ||
-        last.operation === 'mixture' ||
-        last.operation === 'custom'
+        last.operation === 'addition' || last.operation === 'subtraction' ||
+        last.operation === 'multiplication' || last.operation === 'division' ||
+        last.operation === 'mixture' || last.operation === 'custom'
       ) {
         const label =
-          last.operation === 'addition'
-            ? 'Addition'
-            : last.operation === 'subtraction'
-              ? 'Subtraction'
-              : last.operation === 'multiplication'
-                ? 'Multiplication'
-                : last.operation === 'division'
-                  ? 'Division'
-                  : last.operation === 'mixture'
-                    ? 'Mixture'
-                    : 'Custom'
+          last.operation === 'addition' ? 'Addition'
+            : last.operation === 'subtraction' ? 'Subtraction'
+              : last.operation === 'multiplication' ? 'Multiplication'
+                : last.operation === 'division' ? 'Division'
+                  : last.operation === 'mixture' ? 'Mixture' : 'Custom'
         setActiveMode(label as ModeLabel)
         setOperation(last.operation as OperationMode)
       }
       if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
-        setMathDifficulty(last.difficulty as Difficulty)
-        setDifficulty(last.difficulty as Difficulty)
+        setMathDifficulty(last.difficulty as Difficulty); setDifficulty(last.difficulty as Difficulty)
       }
     })
-
-    // Restore persisted game count (or use default for first visit)
     getSelectedGameCount().then(saved => {
       const count = saved ?? DEFAULT_GAME_COUNT
-      setMathGamesCount(count)
-      setMemoryGamesCount(count)
-      setTfGamesCount(count)
+      setMathGamesCount(count); setMemoryGamesCount(count); setTfGamesCount(count)
     })
   }, [setDifficulty, setOperation, setType])
 
-  // Hydrate math & memory session progress from IndexedDB so played/remaining show correctly after return
   function hydrateSessions() {
     Promise.all([
       getMathSessionMax().then(m => setMathSessionMaxState(m)),
       getMathSessionPlayed().then(p => setMathSessionPlayedState(p)),
     ]).then(() => setMathSessionHydrated(true))
-
     Promise.all([
       getMemorySessionMax().then(m => setMemorySessionMaxState(m)),
       getMemorySessionPlayed().then(p => setMemorySessionPlayedState(p)),
     ]).then(() => setMemorySessionHydrated(true))
-
     Promise.all([
       getTrueFalseSessionMax().then(m => setTfSessionMaxState(m)),
       getTrueFalseSessionPlayed().then(p => setTfSessionPlayedState(p)),
     ]).then(() => setTfSessionHydrated(true))
   }
-  useEffect(() => {
-    hydrateSessions()
-    setMounted(true)
-  }, [isSessionExpired])
 
-  // Hydrate per-variant progress (operation + difficulty) whenever either changes.
-  // Also re-hydrate when session expiry state changes (after a reset, isSessionExpired
-  // flips to false and we need to re-read the now-cleared IndexedDB values).
+  useEffect(() => { hydrateSessions(); setMounted(true) }, [isSessionExpired])
+
   useEffect(() => {
     if (!mathDifficulty) return
     const op = MODE_TO_OPERATION[activeMode]
     getVariantProgress(op, mathDifficulty).then(p => {
-      setMathVariantPlayed(p.played)
-      setMathVariantTotal(p.total)
-      setMathVariantRemaining(p.remaining)
-      // Clamp stepper so it never exceeds remaining (but stays at least 1 when remaining > 0).
-      // Do NOT replace the user's chosen count with a default — just clamp it.
-      setMathGamesCount(prev => {
-        if (p.remaining <= 0) return 0
-        return Math.min(Math.max(prev, 1), p.remaining)
-      })
+      setMathVariantPlayed(p.played); setMathVariantTotal(p.total); setMathVariantRemaining(p.remaining)
+      setMathGamesCount(prev => p.remaining <= 0 ? 0 : Math.min(Math.max(prev, 1), p.remaining))
     })
   }, [activeMode, mathDifficulty, isSessionExpired])
 
-  // Hydrate per-difficulty Memory Grid progress (easy / medium / hard separately).
-  // Also re-hydrate after session expiry reset.
   useEffect(() => {
     if (!memoryDifficulty) return
     getVariantProgress('memory', memoryDifficulty).then(p => {
-      setMemoryVariantPlayed(p.played)
-      setMemoryVariantTotal(p.total)
-      setMemoryVariantRemaining(p.remaining)
-      setMemoryGamesCount(prev => {
-        if (p.remaining <= 0) return 0
-        return Math.min(Math.max(prev, 1), p.remaining)
-      })
+      setMemoryVariantPlayed(p.played); setMemoryVariantTotal(p.total); setMemoryVariantRemaining(p.remaining)
+      setMemoryGamesCount(prev => p.remaining <= 0 ? 0 : Math.min(Math.max(prev, 1), p.remaining))
     })
   }, [memoryDifficulty, isSessionExpired])
 
-  // Hydrate per-difficulty True/False Math progress.
   useEffect(() => {
     if (!tfDifficulty) return
     getVariantProgress('true_false_math', tfDifficulty).then(p => {
-      setTfVariantPlayed(p.played)
-      setTfVariantTotal(p.total)
-      setTfVariantRemaining(p.remaining)
-      setTfGamesCount(prev => {
-        if (p.remaining <= 0) return 0
-        return Math.min(Math.max(prev, 1), p.remaining)
-      })
+      setTfVariantPlayed(p.played); setTfVariantTotal(p.total); setTfVariantRemaining(p.remaining)
+      setTfGamesCount(prev => p.remaining <= 0 ? 0 : Math.min(Math.max(prev, 1), p.remaining))
     })
   }, [tfDifficulty, isSessionExpired])
 
@@ -240,6 +299,8 @@ export default function LandingPage() {
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
 
+  /* ── Handlers (unchanged logic) ──────────────────────────────────── */
+
   async function handleReloadNewGames() {
     if (isReloadingGames) return
     setIsReloadingGames(true)
@@ -248,25 +309,15 @@ export default function LandingPage() {
       await resetAllProgress()
       const now = await fetchAndCacheAllGames()
       setLastFetchAt(now)
-      setMathSessionMaxState(DEFAULT_GAME_COUNT)
-      setMathSessionPlayedState(0)
-      setMathGamesCount(DEFAULT_GAME_COUNT)
-      setMemorySessionMaxState(DEFAULT_GAME_COUNT)
-      setMemorySessionPlayedState(0)
-      setMemoryGamesCount(DEFAULT_GAME_COUNT)
-      setMathVariantPlayed(0)
-      setMathVariantRemaining(20)
-      setMemoryVariantPlayed(0)
-      setMemoryVariantRemaining(20)
-      setTfSessionMaxState(DEFAULT_GAME_COUNT)
-      setTfSessionPlayedState(0)
-      setTfGamesCount(DEFAULT_GAME_COUNT)
-      setTfVariantPlayed(0)
-      setTfVariantRemaining(20)
+      setMathSessionMaxState(DEFAULT_GAME_COUNT); setMathSessionPlayedState(0); setMathGamesCount(DEFAULT_GAME_COUNT)
+      setMemorySessionMaxState(DEFAULT_GAME_COUNT); setMemorySessionPlayedState(0); setMemoryGamesCount(DEFAULT_GAME_COUNT)
+      setMathVariantPlayed(0); setMathVariantRemaining(20)
+      setMemoryVariantPlayed(0); setMemoryVariantRemaining(20)
+      setTfSessionMaxState(DEFAULT_GAME_COUNT); setTfSessionPlayedState(0); setTfGamesCount(DEFAULT_GAME_COUNT)
+      setTfVariantPlayed(0); setTfVariantRemaining(20)
       await setSelectedGameCount(DEFAULT_GAME_COUNT)
     } catch {
-      // Even on failure, stop the spinner. Don't null out lastFetchAt
-      // since that would hide the reload button entirely.
+      // Even on failure, stop the spinner
     } finally {
       setIsReloadingGames(false)
     }
@@ -276,20 +327,13 @@ export default function LandingPage() {
     if (isNavigating) return
     setIsNavigating(true)
     await recordActivity()
-    setType('math')
-    setDifficulty(mathDifficulty ?? 'medium')
+    setType('math'); setDifficulty(mathDifficulty ?? 'medium')
     const op = operationMode ? MODE_TO_OPERATION[operationMode] : 'mixture'
     setOperation(op)
-    await setLastPlayedSettings({
-      gameType: 'math',
-      operation: op,
-      difficulty: (mathDifficulty ?? 'medium') as Difficulty,
-    })
+    await setLastPlayedSettings({ gameType: 'math', operation: op, difficulty: (mathDifficulty ?? 'medium') as Difficulty })
     await setSelectedGameCount(mathGamesCount)
-    // Always start a fresh math session with the selected number of games.
     await resetMathSession(mathGamesCount)
-    setMathSessionMaxState(mathGamesCount)
-    setMathSessionPlayedState(0)
+    setMathSessionMaxState(mathGamesCount); setMathSessionPlayedState(0)
     router.push(`/game?op=${op}`)
   }
 
@@ -297,17 +341,11 @@ export default function LandingPage() {
     if (isNavigating || memoryDifficulty === null) return
     setIsNavigating(true)
     await recordActivity()
-    setType('memory')
-    setDifficulty(memoryDifficulty)
-    await setLastPlayedSettings({
-      gameType: 'memory',
-      operation: null,
-      difficulty: memoryDifficulty,
-    })
+    setType('memory'); setDifficulty(memoryDifficulty)
+    await setLastPlayedSettings({ gameType: 'memory', operation: null, difficulty: memoryDifficulty })
     if (memoryGamesCount !== memorySessionMax) {
       await resetMemorySession(memoryGamesCount)
-      setMemorySessionMaxState(memoryGamesCount)
-      setMemorySessionPlayedState(0)
+      setMemorySessionMaxState(memoryGamesCount); setMemorySessionPlayedState(0)
     }
     router.push('/game?mode=memory')
   }
@@ -316,576 +354,329 @@ export default function LandingPage() {
     if (isNavigating || tfDifficulty === null) return
     setIsNavigating(true)
     await recordActivity()
-    setType('true_false')
-    setDifficulty(tfDifficulty)
-    await setLastPlayedSettings({
-      gameType: 'true_false',
-      operation: null,
-      difficulty: tfDifficulty,
-    })
+    setType('true_false'); setDifficulty(tfDifficulty)
+    await setLastPlayedSettings({ gameType: 'true_false', operation: null, difficulty: tfDifficulty })
     await setSelectedGameCount(tfGamesCount)
     await resetTrueFalseSession(tfGamesCount)
-    setTfSessionMaxState(tfGamesCount)
-    setTfSessionPlayedState(0)
+    setTfSessionMaxState(tfGamesCount); setTfSessionPlayedState(0)
     router.push('/game?mode=truefalse')
   }
 
-  function handlePlay() {
-    if (isLocked || isRefreshing) return
-
-    if (activeGame === 'math') {
-      if (mathDifficulty === null) return
-      if (mathVariantRemaining <= 0) return
-      play(activeMode)
-      return
+  function handleCardPlay(game: 'math' | 'memory' | 'truefalse') {
+    if (isLocked || isRefreshing || isSessionExpired) return
+    if (game === 'math') {
+      if (mathDifficulty === null || mathVariantRemaining <= 0) return
+      setActiveGame('math'); play(activeMode)
+    } else if (game === 'truefalse') {
+      if (tfDifficulty === null || tfVariantRemaining <= 0) return
+      setActiveGame('truefalse'); playTrueFalse()
+    } else {
+      if (memoryDifficulty === null || memoryVariantRemaining <= 0) return
+      setActiveGame('memory'); playMemoryGrid()
     }
-
-    if (activeGame === 'truefalse') {
-      if (tfDifficulty === null) return
-      if (tfVariantRemaining <= 0) return
-      playTrueFalse()
-      return
-    }
-
-    // Memory grid
-    if (memoryDifficulty === null) return
-    if (memoryVariantRemaining <= 0) return
-    playMemoryGrid()
   }
 
   const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
   const canPlayMemory = memoryDifficulty !== null && memoryVariantRemaining > 0
   const canPlayTf = tfDifficulty !== null && tfVariantRemaining > 0
-  const memoryVariantExhausted = memoryVariantRemaining <= 0
   const mathVariantExhausted = mathVariantRemaining <= 0
+  const memoryVariantExhausted = memoryVariantRemaining <= 0
   const tfVariantExhausted = tfVariantRemaining <= 0
+  const globalBlocked = isNavigating || isLocked || isRefreshing || isSessionExpired
 
-  const playDisabled =
-    isNavigating ||
-    isLocked ||
-    isRefreshing ||
-    isSessionExpired ||
-    (activeGame === 'math' && !canPlayMath) ||
-    (activeGame === 'memory' && !canPlayMemory) ||
-    (activeGame === 'truefalse' && !canPlayTf)
+  /* ── Render ──────────────────────────────────────────────────────── */
 
   return (
-    <main
-      className="min-h-screen overflow-x-hidden relative bg-[var(--bg-surface)]"
-      style={{
-        paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom, 0px) + 6rem))',
-      }}
-    >
-      {/* Hero */}
-      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-8 sm:py-10 md:py-14">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight mb-2">
-            Train your brain
-          </h1>
-          <p className="text-sm sm:text-base text-slate-400 max-w-md">
-            Quick math duels. No signup. Pick a mode and play.
-          </p>
-        </div>
-      </section>
-
-      {/* Math game section – operation first, then difficulty (matches reference UI) */}
-      <section
-        className={`border-b border-[var(--border-subtle)] py-6 sm:py-8 md:py-10 transition-opacity duration-200 ${activeGame !== 'math' ? 'opacity-50' : ''}`}
-      >
-        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 space-y-5 sm:space-y-6">
-          {/* 1. Operation icons */}
-          <div className="flex flex-col gap-3">
-            <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'math' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
-              <div className="section-label mb-0.5 text-xs">Choose operation</div>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                Addition, subtraction, multiplication, division, mixture, or custom.
-              </p>
-            </div>
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5">
-              {[
-                { symbol: '+', label: 'Addition' as ModeLabel },
-                { symbol: '−', label: 'Subtraction' as ModeLabel },
-                { symbol: '×', label: 'Multiplication' as ModeLabel },
-                { symbol: '÷', label: 'Division' as ModeLabel },
-                { symbol: 'Mix', label: 'Mixture' as ModeLabel },
-                { symbol: '⚙', label: 'Custom' as ModeLabel },
-              ].map(item => {
-                const active = activeMode === item.label
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => { setActiveMode(item.label); setActiveGame('math') }}
-                    className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
-                    style={{
-                      backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
-                      borderRadius: 12,
-                      border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
-                    }}
-                  >
-                    <span
-                      className="text-xl font-bold mb-1"
-                      style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
-                    >
-                      {item.symbol}
-                    </span>
-                    <span className="text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-slate-300">
-                      {item.label}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+    <main className="min-h-screen overflow-x-hidden bg-[var(--bg-surface)]">
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <header className="border-b border-[var(--border-subtle)] py-5 sm:py-6">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 flex items-end justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Mathy</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Train your brain daily</p>
           </div>
-
-          {/* Custom: choose which operations to include */}
-          {activeMode === 'Custom' && (
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3 space-y-1.5">
-              <p className="text-[11px] text-slate-500 uppercase tracking-wider">
-                Include (e.g. only × & ÷ or only + & −)
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {CUSTOM_OP_CHOICES.map(({ label, value }) => {
-                  const on = customOperations.includes(value)
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => { toggleCustomOp(value); setActiveGame('math') }}
-                      className={`text-xs sm:text-sm px-2.5 py-1.5 rounded-full border transition-colors ${
-                        on
-                          ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)] text-[var(--accent-orange)]'
-                          : 'border-zinc-700 bg-zinc-800/50 text-slate-500'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* 2. Choose difficulty (Easy / Medium / Hard) – math icon, no grid size */}
-          <div className="flex flex-col gap-2">
-            <div className="rounded-xl border border-[var(--border-subtle)] p-3">
-              <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                Pick Easy, Medium, or Hard, then press Play.
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
-                const active = mathDifficulty === d
-                return (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
-                    className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
-                    style={{
-                      backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
-                      borderRadius: 12,
-                      border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                      boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
-                    }}
-                  >
-                    <span
-                      className="text-[10px] sm:text-xs font-semibold tracking-[0.06em]"
-                      style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
-                    >
-                      {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Number of games: only visible after user has chosen a difficulty */}
-          {mathDifficulty !== null && (
-            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3 sm:px-5 sm:py-4">
-              <div className="flex flex-col gap-1">
-                <span className="section-label text-xs mb-0.5">Number of games</span>
-                <span className="text-[11px] sm:text-xs text-slate-400">
-                  Max 20 per type and level. Tap − or + to adjust.
-                </span>
-                {mathSessionHydrated && (
-                  <>
-                    <span className="text-[10px] font-mono text-slate-500 mt-1">
-                      {mathVariantPlayed} / {mathVariantTotal} played · {mathVariantRemaining} remaining
-                    </span>
-                    {mathVariantExhausted && (
-                      <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
-                        {refreshReady
-                          ? '🎉 New games available! Tap Reload to play.'
-                          : `Next games unlock in ${refreshFormatted}`}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (mathVariantExhausted) return
-                    setMathGamesCount(v => Math.max(1, Math.min(v - 1, mathVariantRemaining)))
-                  }}
-                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
-                  disabled={mathVariantExhausted}
-                >
-                  −
-                </button>
-                <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">
-                  {mathGamesCount}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (mathVariantExhausted) return
-                    setMathGamesCount(v =>
-                      Math.min(Math.max(v + 1, 1), mathVariantRemaining),
-                    )
-                  }}
-                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
-                  disabled={mathVariantExhausted}
-                >
-                  +
-                </button>
-              </div>
-            </div>
+          {isLocked && (
+            <span className="text-[10px] font-mono text-amber-400">
+              Limit {used}/{maxAttempts} · resets {timeToReset}
+            </span>
           )}
         </div>
-      </section>
+      </header>
 
-      {/* Memory Grid Game section – selecting an option sets this as the active game */}
-      <section
-        className={`border-b border-[var(--border-subtle)] py-6 sm:py-8 md:py-10 transition-opacity duration-200 ${activeGame !== 'memory' ? 'opacity-50' : ''}`}
-      >
-        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 space-y-5 sm:space-y-6">
-          <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'memory' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
-            <div className="section-label mb-0.5 text-xs flex items-center gap-1.5">
-              <Grid3X3 size={14} style={{ color: 'var(--accent-orange)' }} />
-              Memory Grid Game
-            </div>
-            <p className="text-[11px] sm:text-xs text-slate-400">
-              Remember the highlighted blocks, then tap them in order. Grid size depends on difficulty.
-            </p>
-          </div>
-
-          {/* Difficulty helper copy */}
-          <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3">
-            <div className="section-label mb-0.5 text-xs">
-              Choose difficulty
-            </div>
-            <p className="text-[11px] sm:text-xs text-slate-400">
-              Pick Easy, Medium, or Hard. Then tap Play to start the memory grid game.
-            </p>
-          </div>
-
-          {/* Difficulty options – clicking sets active game to memory; required before Play */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-            {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
-              const active = memoryDifficulty === d
-              const gridSize = d === 'easy' ? '3×3' : d === 'medium' ? '4×4' : '5×5'
-              return (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => { setMemoryDifficulty(d); setActiveGame('memory') }}
-                  className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
-                    borderRadius: 12,
-                    border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                    boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
-                  }}
-                >
-                  <span className="text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-slate-300" style={{ color: active ? 'var(--accent-orange)' : undefined }}>
-                    {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">
-                    {gridSize}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Number of games for memory: same rules as math, only visible after difficulty chosen */}
-          {memoryDifficulty !== null && (
-            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3 sm:px-5 sm:py-4">
-              <div className="flex flex-col gap-1">
-                <span className="section-label text-xs mb-0.5">Number of games</span>
-                <span className="text-[11px] sm:text-xs text-slate-400">
-                  Max 20 per type and level. Tap − or + to adjust.
-                </span>
-                {memorySessionHydrated && (
-                  <>
-                    <span className="text-[10px] font-mono text-slate-500 mt-1">
-                      {memoryVariantPlayed} / {memoryVariantTotal} played · {memoryVariantRemaining} remaining
-                    </span>
-                    {memoryVariantExhausted && (
-                      <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
-                        {refreshReady
-                          ? '🎉 New games available! Tap Reload to play.'
-                          : `Next games unlock in ${refreshFormatted}`}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (memoryVariantExhausted) return
-                    setMemoryGamesCount(v => Math.max(1, Math.min(v - 1, memoryVariantRemaining)))
-                  }}
-                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
-                  disabled={memoryVariantExhausted}
-                >
-                  −
-                </button>
-                <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">
-                  {memoryGamesCount}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (memoryVariantExhausted) return
-                    setMemoryGamesCount(v =>
-                      Math.min(Math.max(v + 1, 1), memoryVariantRemaining),
-                    )
-                  }}
-                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
-                  disabled={memoryVariantExhausted}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* True / False Math section */}
-      <section
-        className={`border-b border-[var(--border-subtle)] py-6 sm:py-8 md:py-10 transition-opacity duration-200 ${activeGame !== 'truefalse' ? 'opacity-50' : ''}`}
-      >
-        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 space-y-5 sm:space-y-6">
-          <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'truefalse' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
-            <div className="section-label mb-0.5 text-xs flex items-center gap-1.5">
-              <CheckCircle size={14} style={{ color: 'var(--accent-orange)' }} />
-              True / False Math
-            </div>
-            <p className="text-[11px] sm:text-xs text-slate-400">
-              Is the equation correct? Answer TRUE or FALSE. Wrong results are close to the real answer.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3">
-            <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
-            <p className="text-[11px] sm:text-xs text-slate-400">
-              Pick Easy, Medium, or Hard. Then tap Play to start.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-            {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
-              const active = tfDifficulty === d
-              return (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => { setTfDifficulty(d); setActiveGame('truefalse') }}
-                  className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
-                    borderRadius: 12,
-                    border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
-                    boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
-                  }}
-                >
-                  <span
-                    className="text-[10px] sm:text-xs font-semibold tracking-[0.06em]"
-                    style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
-                  >
-                    {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-
-          {tfDifficulty !== null && (
-            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3 sm:px-5 sm:py-4">
-              <div className="flex flex-col gap-1">
-                <span className="section-label text-xs mb-0.5">Number of games</span>
-                <span className="text-[11px] sm:text-xs text-slate-400">
-                  Max 20 per difficulty. Tap − or + to adjust.
-                </span>
-                {tfSessionHydrated && (
-                  <>
-                    <span className="text-[10px] font-mono text-slate-500 mt-1">
-                      {tfVariantPlayed} / {tfVariantTotal} played · {tfVariantRemaining} remaining
-                    </span>
-                    {tfVariantExhausted && (
-                      <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
-                        {refreshReady
-                          ? '🎉 New games available! Tap Reload to play.'
-                          : `Next games unlock in ${refreshFormatted}`}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (tfVariantExhausted) return
-                    setTfGamesCount(v => Math.max(1, Math.min(v - 1, tfVariantRemaining)))
-                  }}
-                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
-                  disabled={tfVariantExhausted}
-                >
-                  −
-                </button>
-                <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">
-                  {tfGamesCount}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (tfVariantExhausted) return
-                    setTfGamesCount(v => Math.min(Math.max(v + 1, 1), tfVariantRemaining))
-                  }}
-                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
-                  disabled={tfVariantExhausted}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Session expiry banner — stays inline in content flow */}
-      {mounted && isSessionExpired && (
-        <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
-          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
-            <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 flex items-center justify-between gap-3">
-              <p className="text-xs text-amber-400">
-                You've been away for over an hour. Reset your progress to continue playing.
-              </p>
+      {/* ── Status banners (session expiry / reload) ────────────────── */}
+      {mounted && (isSessionExpired || isRefreshing) && (
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
+          {isSessionExpired ? (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-2.5 flex items-center justify-between gap-3">
+              <p className="text-[11px] text-amber-400">Session expired. Reset to continue.</p>
               <button
                 type="button"
                 onClick={async () => {
                   await resetAndResume()
-                  setMathSessionMaxState(DEFAULT_GAME_COUNT)
-                  setMathSessionPlayedState(0)
-                  setMathGamesCount(DEFAULT_GAME_COUNT)
-                  setMemorySessionMaxState(DEFAULT_GAME_COUNT)
-                  setMemorySessionPlayedState(0)
-                  setMemoryGamesCount(DEFAULT_GAME_COUNT)
-                  setMathVariantPlayed(0)
-                  setMathVariantRemaining(20)
-                  setMemoryVariantPlayed(0)
-                  setMemoryVariantRemaining(20)
-                  setTfSessionMaxState(DEFAULT_GAME_COUNT)
-                  setTfSessionPlayedState(0)
-                  setTfGamesCount(DEFAULT_GAME_COUNT)
-                  setTfVariantPlayed(0)
-                  setTfVariantRemaining(20)
+                  setMathSessionMaxState(DEFAULT_GAME_COUNT); setMathSessionPlayedState(0); setMathGamesCount(DEFAULT_GAME_COUNT)
+                  setMemorySessionMaxState(DEFAULT_GAME_COUNT); setMemorySessionPlayedState(0); setMemoryGamesCount(DEFAULT_GAME_COUNT)
+                  setMathVariantPlayed(0); setMathVariantRemaining(20)
+                  setMemoryVariantPlayed(0); setMemoryVariantRemaining(20)
+                  setTfSessionMaxState(DEFAULT_GAME_COUNT); setTfSessionPlayedState(0); setTfGamesCount(DEFAULT_GAME_COUNT)
+                  setTfVariantPlayed(0); setTfVariantRemaining(20)
                   await setSelectedGameCount(DEFAULT_GAME_COUNT)
                 }}
                 disabled={isExpiryResetting}
-                className="shrink-0 inline-flex items-center justify-center rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
-                style={{
-                  backgroundColor: 'var(--accent-orange)',
-                  color: '#111827',
-                  border: '1px solid var(--accent-orange-hover)',
-                }}
+                className="shrink-0 rounded-full px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider disabled:opacity-60"
+                style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
               >
-                {isExpiryResetting ? 'Resetting…' : 'Reset Progress'}
+                {isExpiryResetting ? 'Resetting…' : 'Reset'}
               </button>
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* Floating sticky Play button */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <div
-          className="pointer-events-auto w-full"
-          style={{
-            background: 'linear-gradient(to top, var(--bg-surface) 60%, transparent)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-          }}
-        >
-          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-2 py-3 sm:py-4">
-            {/* Refresh countdown banner */}
-            {mounted && (mathVariantExhausted || memoryVariantExhausted || tfVariantExhausted) && (
-              <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
-            )}
-            {mounted && isRefreshing && !isSessionExpired && (
+          ) : (
+            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-2.5">
+              <span className="text-[11px] text-slate-400">Games expired. Reload for new questions.</span>
               <button
                 type="button"
                 onClick={handleReloadNewGames}
                 disabled={isReloadingGames}
-                className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
+                className="shrink-0 rounded-full px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider disabled:opacity-60"
+                style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
+              >
+                {isReloadingGames ? 'Loading…' : 'Reload'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Refresh countdown banner ────────────────────────────────── */}
+      {mounted && (mathVariantExhausted || memoryVariantExhausted || tfVariantExhausted) && (
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
+          <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
+        </div>
+      )}
+
+      {/* ── Game cards ──────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4 space-y-3">
+
+        {/* ─── Math Game Card ─────────────────────────────────────────── */}
+        <div
+          className="rounded-2xl border p-4 transition-colors"
+          style={{
+            borderColor: activeGame === 'math' ? 'var(--accent-orange)' : 'var(--border-subtle)',
+            backgroundColor: activeGame === 'math' ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
+          }}
+          onClick={() => setActiveGame('math')}
+        >
+          {/* Title row */}
+          <div className="flex items-center gap-2 mb-1">
+            <Calculator size={16} style={{ color: 'var(--accent-orange)' }} />
+            <span className="text-sm font-semibold text-white">Math Challenge</span>
+          </div>
+          <p className="text-[11px] text-slate-500 mb-3">
+            Solve equations. Pick an operation and difficulty, then play.
+          </p>
+
+          {/* Operation selector */}
+          <div className="flex flex-wrap gap-1 mb-3">
+            {([
+              { symbol: '+', label: 'Addition' as ModeLabel },
+              { symbol: '−', label: 'Subtraction' as ModeLabel },
+              { symbol: '×', label: 'Multiplication' as ModeLabel },
+              { symbol: '÷', label: 'Division' as ModeLabel },
+              { symbol: 'Mix', label: 'Mixture' as ModeLabel },
+              { symbol: '⚙', label: 'Custom' as ModeLabel },
+            ]).map(item => {
+              const active = activeMode === item.label && activeGame === 'math'
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setActiveMode(item.label); setActiveGame('math') }}
+                  className="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-semibold transition-all active:scale-[0.97]"
+                  style={{
+                    backgroundColor: active ? 'var(--accent-orange-muted)' : 'rgba(39,39,42,0.5)',
+                    border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                    color: active ? 'var(--accent-orange)' : '#a1a1aa',
+                  }}
+                >
+                  {item.symbol}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Custom ops */}
+          {activeMode === 'Custom' && activeGame === 'math' && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {CUSTOM_OP_CHOICES.map(({ label, value }) => {
+                const on = customOperations.includes(value)
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); toggleCustomOp(value) }}
+                    className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
+                      on
+                        ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)] text-[var(--accent-orange)]'
+                        : 'border-zinc-700 bg-zinc-800/50 text-slate-500'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+              <span className="text-[9px] text-slate-600 self-center ml-1">Include</span>
+            </div>
+          )}
+
+          {/* Difficulty */}
+          <DifficultyPills
+            value={activeGame === 'math' ? mathDifficulty : null}
+            onChange={(d) => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
+          />
+
+          {/* Controls row: stepper + play */}
+          {mathDifficulty !== null && (
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border-subtle)]">
+              <div>
+                <GameStepper
+                  count={mathGamesCount}
+                  onDecrement={() => { if (!mathVariantExhausted) setMathGamesCount(v => Math.max(1, Math.min(v - 1, mathVariantRemaining))) }}
+                  onIncrement={() => { if (!mathVariantExhausted) setMathGamesCount(v => Math.min(Math.max(v + 1, 1), mathVariantRemaining)) }}
+                  disabled={mathVariantExhausted}
+                />
+                {mathSessionHydrated && (
+                  <ProgressLine
+                    played={mathVariantPlayed} total={mathVariantTotal} remaining={mathVariantRemaining}
+                    exhausted={mathVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
+                  />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); handleCardPlay('math') }}
+                disabled={globalBlocked || !canPlayMath}
+                className="rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
                 style={{
                   backgroundColor: 'var(--accent-orange)',
                   color: '#111827',
-                  border: '1px solid var(--accent-orange-hover)',
+                  boxShadow: canPlayMath && !globalBlocked ? '0 4px 16px rgba(249,115,22,0.3)' : 'none',
                 }}
               >
-                {isReloadingGames ? '…' : 'Reload'}
+                {isNavigating && activeGame === 'math' ? 'Starting…' : 'Play →'}
               </button>
-            )}
-            <button
-              type="button"
-              onClick={handlePlay}
-              disabled={playDisabled}
-              className="w-full max-w-xs inline-flex items-center justify-center rounded-full px-10 py-3.5 sm:px-12 sm:py-4 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shrink-0"
-              style={{
-                backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
-                color: isLocked ? '#64748b' : '#111827',
-                border: `1px solid ${isLocked ? 'var(--border-subtle)' : 'var(--accent-orange-hover)'}`,
-                boxShadow: isLocked ? 'none' : '0 4px 20px rgba(249,115,22,0.35)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {isLocked
-                ? 'Limit reached (15/hour)'
-                : mounted && isSessionExpired
-                  ? 'Reset progress to play'
-                  : mounted && isRefreshing
-                    ? 'Reload to play'
-                    : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
-                      ? 'Choose difficulty first'
-                      : isNavigating
-                        ? 'Starting…'
-                        : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'} game`}
-              {!isLocked &&
-                !isNavigating &&
-                !isRefreshing &&
-                !isSessionExpired &&
-                ((canPlayMath && activeGame === 'math') ||
-                  (canPlayMemory && activeGame === 'memory') ||
-                  (canPlayTf && activeGame === 'truefalse')) &&
-                ' →'}
-            </button>
-          </div>
+            </div>
+          )}
         </div>
+
+        {/* ─── Memory Grid Card ───────────────────────────────────────── */}
+        <div
+          className="rounded-2xl border p-4 transition-colors"
+          style={{
+            borderColor: activeGame === 'memory' ? 'var(--accent-orange)' : 'var(--border-subtle)',
+            backgroundColor: activeGame === 'memory' ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
+          }}
+          onClick={() => setActiveGame('memory')}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Grid3X3 size={16} style={{ color: 'var(--accent-orange)' }} />
+            <span className="text-sm font-semibold text-white">Memory Grid</span>
+          </div>
+          <p className="text-[11px] text-slate-500 mb-3">
+            Remember highlighted blocks, then tap them in order.
+          </p>
+
+          <DifficultyPills
+            value={activeGame === 'memory' ? memoryDifficulty : null}
+            onChange={(d) => { setMemoryDifficulty(d); setActiveGame('memory') }}
+            gridSizes={{ easy: '3×3', medium: '4×4', hard: '5×5' }}
+          />
+
+          {memoryDifficulty !== null && (
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border-subtle)]">
+              <div>
+                <GameStepper
+                  count={memoryGamesCount}
+                  onDecrement={() => { if (!memoryVariantExhausted) setMemoryGamesCount(v => Math.max(1, Math.min(v - 1, memoryVariantRemaining))) }}
+                  onIncrement={() => { if (!memoryVariantExhausted) setMemoryGamesCount(v => Math.min(Math.max(v + 1, 1), memoryVariantRemaining)) }}
+                  disabled={memoryVariantExhausted}
+                />
+                {memorySessionHydrated && (
+                  <ProgressLine
+                    played={memoryVariantPlayed} total={memoryVariantTotal} remaining={memoryVariantRemaining}
+                    exhausted={memoryVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
+                  />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); handleCardPlay('memory') }}
+                disabled={globalBlocked || !canPlayMemory}
+                className="rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+                style={{
+                  backgroundColor: 'var(--accent-orange)',
+                  color: '#111827',
+                  boxShadow: canPlayMemory && !globalBlocked ? '0 4px 16px rgba(249,115,22,0.3)' : 'none',
+                }}
+              >
+                {isNavigating && activeGame === 'memory' ? 'Starting…' : 'Play →'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ─── True / False Card ──────────────────────────────────────── */}
+        <div
+          className="rounded-2xl border p-4 transition-colors"
+          style={{
+            borderColor: activeGame === 'truefalse' ? 'var(--accent-orange)' : 'var(--border-subtle)',
+            backgroundColor: activeGame === 'truefalse' ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
+          }}
+          onClick={() => setActiveGame('truefalse')}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle size={16} style={{ color: 'var(--accent-orange)' }} />
+            <span className="text-sm font-semibold text-white">True / False Math</span>
+          </div>
+          <p className="text-[11px] text-slate-500 mb-3">
+            Is the equation correct? Answer TRUE or FALSE.
+          </p>
+
+          <DifficultyPills
+            value={activeGame === 'truefalse' ? tfDifficulty : null}
+            onChange={(d) => { setTfDifficulty(d); setActiveGame('truefalse') }}
+          />
+
+          {tfDifficulty !== null && (
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border-subtle)]">
+              <div>
+                <GameStepper
+                  count={tfGamesCount}
+                  onDecrement={() => { if (!tfVariantExhausted) setTfGamesCount(v => Math.max(1, Math.min(v - 1, tfVariantRemaining))) }}
+                  onIncrement={() => { if (!tfVariantExhausted) setTfGamesCount(v => Math.min(Math.max(v + 1, 1), tfVariantRemaining)) }}
+                  disabled={tfVariantExhausted}
+                />
+                {tfSessionHydrated && (
+                  <ProgressLine
+                    played={tfVariantPlayed} total={tfVariantTotal} remaining={tfVariantRemaining}
+                    exhausted={tfVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
+                  />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); handleCardPlay('truefalse') }}
+                disabled={globalBlocked || !canPlayTf}
+                className="rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+                style={{
+                  backgroundColor: 'var(--accent-orange)',
+                  color: '#111827',
+                  boxShadow: canPlayTf && !globalBlocked ? '0 4px 16px rgba(249,115,22,0.3)' : 'none',
+                }}
+              >
+                {isNavigating && activeGame === 'truefalse' ? 'Starting…' : 'Play →'}
+              </button>
+            </div>
+          )}
+        </div>
+
       </div>
     </main>
   )
