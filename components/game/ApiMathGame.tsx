@@ -28,6 +28,8 @@ import {
   setSelectedGameCount,
   setLastPlayedSettings,
 } from '@/lib/db'
+import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
+import RefreshBanner from '@/components/ui/RefreshBanner'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -83,6 +85,7 @@ export default function ApiMathGame() {
   // Incremented when a new session starts to force effectiveGames to reshuffle
   const [shuffleKey, setShuffleKey] = useState(0)
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
+  const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
 
   // Next-session picker state (used on the Session Complete screen)
   const [nextOperation, setNextOperation] = useState<OperationMode>(operation)
@@ -535,7 +538,9 @@ export default function ApiMathGame() {
                   </span>
                   {nextVariantRemaining <= 0 && (
                     <span className="text-[11px] font-mono text-amber-400">
-                      You finished {nextOperation} ({nextDifficulty}). Try another difficulty or operation.
+                      {refreshReady
+                        ? '🎉 New games available! Go home and tap Reload.'
+                        : `Next games unlock in ${refreshFormatted}`}
                     </span>
                   )}
                 </div>
@@ -569,6 +574,11 @@ export default function ApiMathGame() {
                   </button>
                 </div>
               </div>
+            )}
+
+            {/* Refresh countdown banner */}
+            {nextVariantRemaining <= 0 && (
+              <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
             )}
 
             {/* Primary: Play next game; Secondary: Go home */}

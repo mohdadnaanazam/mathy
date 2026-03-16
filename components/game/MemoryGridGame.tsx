@@ -18,6 +18,8 @@ import {
   setLastPlayedSettings,
   incrementVariantPlayed,
 } from '@/lib/db'
+import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
+import RefreshBanner from '@/components/ui/RefreshBanner'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
 
@@ -73,6 +75,7 @@ export default function MemoryGridGame() {
   const gameCountHydrated = useRef(false)
 
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty] ?? 10
+  const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
 
   // --- Hydration effects ---
   useEffect(() => {
@@ -327,13 +330,9 @@ export default function MemoryGridGame() {
               </span>
               {nextVariantExhausted && (
                 <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
-                  You finished Memory Grid ({difficulty}). Try{' '}
-                  {difficulty === 'easy'
-                    ? 'Medium or Hard'
-                    : difficulty === 'medium'
-                      ? 'Hard'
-                      : 'another game'}
-                  .
+                  {refreshReady
+                    ? '🎉 New games available! Go home and tap Reload.'
+                    : `Next games unlock in ${refreshFormatted}`}
                 </span>
               )}
             </div>
@@ -367,6 +366,11 @@ export default function MemoryGridGame() {
               </button>
             </div>
           </div>
+
+          {/* Refresh countdown banner */}
+          {nextVariantExhausted && (
+            <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
+          )}
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
             <button

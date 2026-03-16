@@ -8,6 +8,7 @@ const GAME_TYPES: BackendGame['game_type'][] = [
   'multiplication',
   'division',
   'mixed',
+  'true_false_math',
 ]
 
 /**

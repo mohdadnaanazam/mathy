@@ -275,6 +275,8 @@ export async function resetAllProgress(): Promise<void> {
   await setMathSessionPlayed(0)
   await setMemorySessionMax(10)
   await setMemorySessionPlayed(0)
+  await setTrueFalseSessionMax(10)
+  await setTrueFalseSessionPlayed(0)
   // Clear persisted game count so next session uses the default
   await db.meta.delete(META_SELECTED_GAME_COUNT)
 }
@@ -301,4 +303,38 @@ export async function getSelectedGameCount(): Promise<number | null> {
 
 export async function setSelectedGameCount(count: number): Promise<void> {
   await db.meta.put({ key: META_SELECTED_GAME_COUNT, value: count })
+}
+
+/** True/False Math session progress: same pattern as math and memory. */
+const META_TF_SESSION_MAX = 'trueFalseSessionMax'
+const META_TF_SESSION_PLAYED = 'trueFalseSessionPlayed'
+
+export async function getTrueFalseSessionMax(): Promise<number> {
+  const row = await db.meta.get(META_TF_SESSION_MAX)
+  return row?.value ?? 10
+}
+
+export async function getTrueFalseSessionPlayed(): Promise<number> {
+  const row = await db.meta.get(META_TF_SESSION_PLAYED)
+  return row?.value ?? 0
+}
+
+export async function setTrueFalseSessionMax(max: number): Promise<void> {
+  await db.meta.put({ key: META_TF_SESSION_MAX, value: max })
+}
+
+export async function setTrueFalseSessionPlayed(played: number): Promise<void> {
+  await db.meta.put({ key: META_TF_SESSION_PLAYED, value: played })
+}
+
+export async function incrementTrueFalseSessionPlayed(): Promise<number> {
+  const played = await getTrueFalseSessionPlayed()
+  const next = played + 1
+  await setTrueFalseSessionPlayed(next)
+  return next
+}
+
+export async function resetTrueFalseSession(max: number): Promise<void> {
+  await setTrueFalseSessionMax(max)
+  await setTrueFalseSessionPlayed(0)
 }

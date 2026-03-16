@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3, LayoutGrid, Calculator } from 'lucide-react'
+import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3, LayoutGrid, Calculator, CheckCircle } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { OperationMode, type Difficulty } from '@/types'
@@ -13,13 +13,17 @@ import {
   getMathSessionPlayed,
   getMemorySessionMax,
   getMemorySessionPlayed,
+  getTrueFalseSessionMax,
+  getTrueFalseSessionPlayed,
   getLastPlayedSettings,
   resetMathSession,
   resetMemorySession,
+  resetTrueFalseSession,
   resetAllProgress,
   setLastPlayedSettings,
   setMathSessionPlayed,
   setMemorySessionPlayed,
+  setTrueFalseSessionPlayed,
   getVariantProgress,
   getSelectedGameCount,
   setSelectedGameCount,
@@ -27,6 +31,8 @@ import {
 import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
 import { useSessionExpiry } from '@/hooks/useSessionExpiry'
+import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
+import RefreshBanner from '@/components/ui/RefreshBanner'
 
 type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
 
@@ -57,6 +63,7 @@ export default function LandingPage() {
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const { isSessionExpired, isResetting: isExpiryResetting, resetAndResume, recordActivity } = useSessionExpiry()
+  const { secondsLeft: refreshSecondsLeft, formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty | null>(null)
   const [memoryGamesCount, setMemoryGamesCount] = useState<number>(5)
@@ -71,13 +78,22 @@ export default function LandingPage() {
   const [mathSessionMax, setMathSessionMaxState] = useState<number>(10)
   const [mathSessionPlayed, setMathSessionPlayedState] = useState<number>(0)
   const [mathSessionHydrated, setMathSessionHydrated] = useState(false)
-  const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
+  const [activeGame, setActiveGame] = useState<'math' | 'memory' | 'truefalse'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
   const showMathOperations = mathDifficulty !== null
   const [mathVariantPlayed, setMathVariantPlayed] = useState<number>(0)
   const [mathVariantTotal, setMathVariantTotal] = useState<number>(20)
   const [mathVariantRemaining, setMathVariantRemaining] = useState<number>(20)
+  // True/False Math state
+  const [tfDifficulty, setTfDifficulty] = useState<Difficulty | null>(null)
+  const [tfGamesCount, setTfGamesCount] = useState<number>(5)
+  const [tfSessionMax, setTfSessionMaxState] = useState<number>(10)
+  const [tfSessionPlayed, setTfSessionPlayedState] = useState<number>(0)
+  const [tfSessionHydrated, setTfSessionHydrated] = useState(false)
+  const [tfVariantPlayed, setTfVariantPlayed] = useState<number>(0)
+  const [tfVariantTotal, setTfVariantTotal] = useState<number>(20)
+  const [tfVariantRemaining, setTfVariantRemaining] = useState<number>(20)
 
   const DEFAULT_GAME_COUNT = 5
 
@@ -91,6 +107,16 @@ export default function LandingPage() {
         setType('memory')
         if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
           setMemoryDifficulty(last.difficulty as Difficulty)
+          setDifficulty(last.difficulty as Difficulty)
+        }
+        return
+      }
+
+      if (last.gameType === 'true_false') {
+        setActiveGame('truefalse')
+        setType('true_false')
+        if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
+          setTfDifficulty(last.difficulty as Difficulty)
           setDifficulty(last.difficulty as Difficulty)
         }
         return
@@ -133,6 +159,7 @@ export default function LandingPage() {
       const count = saved ?? DEFAULT_GAME_COUNT
       setMathGamesCount(count)
       setMemoryGamesCount(count)
+      setTfGamesCount(count)
     })
   }, [setDifficulty, setOperation, setType])
 
@@ -144,6 +171,9 @@ export default function LandingPage() {
     getMemorySessionMax().then(m => { setMemorySessionMaxState(m) })
     getMemorySessionPlayed().then(p => setMemorySessionPlayedState(p))
     setMemorySessionHydrated(true)
+    getTrueFalseSessionMax().then(m => { setTfSessionMaxState(m) })
+    getTrueFalseSessionPlayed().then(p => setTfSessionPlayedState(p))
+    setTfSessionHydrated(true)
   }
   useEffect(() => {
     hydrateSessions()
@@ -183,6 +213,20 @@ export default function LandingPage() {
     })
   }, [memoryDifficulty, isSessionExpired])
 
+  // Hydrate per-difficulty True/False Math progress.
+  useEffect(() => {
+    if (!tfDifficulty) return
+    getVariantProgress('true_false_math', tfDifficulty).then(p => {
+      setTfVariantPlayed(p.played)
+      setTfVariantTotal(p.total)
+      setTfVariantRemaining(p.remaining)
+      setTfGamesCount(prev => {
+        if (p.remaining <= 0) return 0
+        return Math.min(Math.max(prev, 1), p.remaining)
+      })
+    })
+  }, [tfDifficulty, isSessionExpired])
+
   useEffect(() => {
     const onVisibility = () => { if (document.visibilityState === 'visible') hydrateSessions() }
     document.addEventListener('visibilitychange', onVisibility)
@@ -207,6 +251,11 @@ export default function LandingPage() {
       setMathVariantRemaining(20)
       setMemoryVariantPlayed(0)
       setMemoryVariantRemaining(20)
+      setTfSessionMaxState(DEFAULT_GAME_COUNT)
+      setTfSessionPlayedState(0)
+      setTfGamesCount(DEFAULT_GAME_COUNT)
+      setTfVariantPlayed(0)
+      setTfVariantRemaining(20)
       await setSelectedGameCount(DEFAULT_GAME_COUNT)
     } catch (err) {
       setLastFetchAt(null)
@@ -255,29 +304,53 @@ export default function LandingPage() {
     router.push('/game?mode=memory')
   }
 
+  async function playTrueFalse() {
+    if (isNavigating || tfDifficulty === null) return
+    setIsNavigating(true)
+    await recordActivity()
+    setType('true_false')
+    setDifficulty(tfDifficulty)
+    await setLastPlayedSettings({
+      gameType: 'true_false',
+      operation: null,
+      difficulty: tfDifficulty,
+    })
+    await setSelectedGameCount(tfGamesCount)
+    await resetTrueFalseSession(tfGamesCount)
+    setTfSessionMaxState(tfGamesCount)
+    setTfSessionPlayedState(0)
+    router.push('/game?mode=truefalse')
+  }
+
   function handlePlay() {
     if (isLocked || isRefreshing) return
 
     if (activeGame === 'math') {
       if (mathDifficulty === null) return
-      // Prevent starting a math session when this variant is already exhausted (20 / 20).
       if (mathVariantRemaining <= 0) return
       play(activeMode)
       return
     }
 
+    if (activeGame === 'truefalse') {
+      if (tfDifficulty === null) return
+      if (tfVariantRemaining <= 0) return
+      playTrueFalse()
+      return
+    }
+
     // Memory grid
     if (memoryDifficulty === null) return
-    // Prevent starting when this difficulty has 0 remaining (per-difficulty progress).
     if (memoryVariantRemaining <= 0) return
     playMemoryGrid()
   }
 
   const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
   const canPlayMemory = memoryDifficulty !== null && memoryVariantRemaining > 0
+  const canPlayTf = tfDifficulty !== null && tfVariantRemaining > 0
   const memoryVariantExhausted = memoryVariantRemaining <= 0
-
   const mathVariantExhausted = mathVariantRemaining <= 0
+  const tfVariantExhausted = tfVariantRemaining <= 0
 
   const playDisabled =
     isNavigating ||
@@ -285,7 +358,8 @@ export default function LandingPage() {
     isRefreshing ||
     isSessionExpired ||
     (activeGame === 'math' && !canPlayMath) ||
-    (activeGame === 'memory' && !canPlayMemory)
+    (activeGame === 'memory' && !canPlayMemory) ||
+    (activeGame === 'truefalse' && !canPlayTf)
 
   return (
     <main
@@ -442,13 +516,9 @@ export default function LandingPage() {
                     </span>
                     {mathVariantExhausted && (
                       <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
-                        You finished {activeMode} ({mathDifficulty}). Try{' '}
-                        {mathDifficulty === 'easy'
-                          ? 'Medium or Hard'
-                          : mathDifficulty === 'medium'
-                            ? 'Hard'
-                            : 'another operation or difficulty'}
-                        , or increase the number of games.
+                        {refreshReady
+                          ? '🎉 New games available! Tap Reload to play.'
+                          : `Next games unlock in ${refreshFormatted}`}
                       </span>
                     )}
                   </>
@@ -563,13 +633,9 @@ export default function LandingPage() {
                     </span>
                     {memoryVariantExhausted && (
                       <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
-                        You finished Memory Grid ({memoryDifficulty ?? 'easy'}). Try{' '}
-                        {memoryDifficulty === 'easy'
-                          ? 'Medium or Hard'
-                          : memoryDifficulty === 'medium'
-                            ? 'Hard'
-                            : 'a different game or increase the number of rounds'}
-                        , or increase the number of games.
+                        {refreshReady
+                          ? '🎉 New games available! Tap Reload to play.'
+                          : `Next games unlock in ${refreshFormatted}`}
                       </span>
                     )}
                   </>
@@ -609,6 +675,115 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* True / False Math section */}
+      <section
+        className={`border-b border-[var(--border-subtle)] py-6 sm:py-8 md:py-10 transition-opacity duration-200 ${activeGame !== 'truefalse' ? 'opacity-50' : ''}`}
+      >
+        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 space-y-5 sm:space-y-6">
+          <div className={`rounded-xl border p-3 transition-colors ${activeGame === 'truefalse' ? 'border-[var(--accent-orange)] bg-[var(--accent-orange-muted)]/20' : 'border-[var(--border-subtle)]'}`}>
+            <div className="section-label mb-0.5 text-xs flex items-center gap-1.5">
+              <CheckCircle size={14} style={{ color: 'var(--accent-orange)' }} />
+              True / False Math
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-400">
+              Is the equation correct? Answer TRUE or FALSE. Wrong results are close to the real answer.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-zinc-900/30 p-3">
+            <div className="section-label mb-0.5 text-xs">Choose difficulty</div>
+            <p className="text-[11px] sm:text-xs text-slate-400">
+              Pick Easy, Medium, or Hard. Then tap Play to start.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+            {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => {
+              const active = tfDifficulty === d
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => { setTfDifficulty(d); setActiveGame('truefalse') }}
+                  className="flex flex-col items-center justify-center rounded-xl px-2 py-3 sm:px-3 sm:py-3.5 transition-all duration-150 hover:border-zinc-600 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
+                    borderRadius: 12,
+                    border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                    boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
+                  }}
+                >
+                  <CheckCircle
+                    size={20}
+                    strokeWidth={active ? 2.4 : 2}
+                    className="mb-1.5"
+                    style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
+                  />
+                  <span
+                    className="text-[10px] sm:text-xs font-semibold tracking-[0.06em]"
+                    style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
+                  >
+                    {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {tfDifficulty !== null && (
+            <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex flex-col gap-1">
+                <span className="section-label text-xs mb-0.5">Number of games</span>
+                <span className="text-[11px] sm:text-xs text-slate-400">
+                  Max 20 per difficulty. Tap − or + to adjust.
+                </span>
+                {tfSessionHydrated && (
+                  <>
+                    <span className="text-[10px] font-mono text-slate-500 mt-1">
+                      {tfVariantPlayed} / {tfVariantTotal} played · {tfVariantRemaining} remaining
+                    </span>
+                    {tfVariantExhausted && (
+                      <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
+                        {refreshReady
+                          ? '🎉 New games available! Tap Reload to play.'
+                          : `Next games unlock in ${refreshFormatted}`}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (tfVariantExhausted) return
+                    setTfGamesCount(v => Math.max(1, Math.min(v - 1, tfVariantRemaining)))
+                  }}
+                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
+                  disabled={tfVariantExhausted}
+                >
+                  −
+                </button>
+                <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">
+                  {tfGamesCount}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (tfVariantExhausted) return
+                    setTfGamesCount(v => Math.min(Math.max(v + 1, 1), tfVariantRemaining))
+                  }}
+                  className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
+                  disabled={tfVariantExhausted}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Session expiry banner — stays inline in content flow */}
       {isSessionExpired && (
         <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
@@ -631,6 +806,11 @@ export default function LandingPage() {
                   setMathVariantRemaining(20)
                   setMemoryVariantPlayed(0)
                   setMemoryVariantRemaining(20)
+                  setTfSessionMaxState(DEFAULT_GAME_COUNT)
+                  setTfSessionPlayedState(0)
+                  setTfGamesCount(DEFAULT_GAME_COUNT)
+                  setTfVariantPlayed(0)
+                  setTfVariantRemaining(20)
                   await setSelectedGameCount(DEFAULT_GAME_COUNT)
                 }}
                 disabled={isExpiryResetting}
@@ -662,6 +842,10 @@ export default function LandingPage() {
           }}
         >
           <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-2 py-3 sm:py-4">
+            {/* Refresh countdown banner */}
+            {(mathVariantExhausted || memoryVariantExhausted || tfVariantExhausted) && (
+              <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
+            )}
             {isRefreshing && !isSessionExpired && (
               <button
                 type="button"
@@ -700,13 +884,14 @@ export default function LandingPage() {
                       ? 'Choose difficulty first'
                       : isNavigating
                         ? 'Starting…'
-                        : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+                        : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'} game`}
               {!isLocked &&
                 !isNavigating &&
                 !isRefreshing &&
                 !isSessionExpired &&
                 ((canPlayMath && activeGame === 'math') ||
-                  (canPlayMemory && activeGame === 'memory')) &&
+                  (canPlayMemory && activeGame === 'memory') ||
+                  (canPlayTf && activeGame === 'truefalse')) &&
                 ' →'}
             </button>
           </div>

@@ -1,6 +1,6 @@
 // Shared TypeScript types for the AI Gaming Platform
 
-export type GameType = 'math' | 'memory'
+export type GameType = 'math' | 'memory' | 'true_false'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type OperationMode =
   | 'addition'

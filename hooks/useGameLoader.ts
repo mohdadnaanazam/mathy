@@ -19,6 +19,7 @@ const MAP_OP_TO_TYPE: Record<string, BackendGame['game_type']> = {
   division: 'division',
   mixture: 'mixed',
   custom: 'mixed',
+  true_false_math: 'true_false_math',
 }
 
 function mapOperationToType(op: string): BackendGame['game_type'] {
