@@ -28,8 +28,8 @@ const GRID_SIZE: Record<Difficulty, number> = {
 }
 
 const HIGHLIGHT_DURATION_MS = 2500
-const AUTO_ADVANCE_CORRECT_MS = 1000
-const AUTO_ADVANCE_WRONG_MS = 1500
+const AUTO_ADVANCE_CORRECT_MS = 1800
+const AUTO_ADVANCE_WRONG_MS = 2200
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -68,18 +68,31 @@ export default function MemoryGridGame() {
   const [nextVariantPlayed, setNextVariantPlayed] = useState(0)
   const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
   const [nextGamesCount, setNextGamesCount] = useState(5)
+  // Track whether we've hydrated the game count from IndexedDB so we don't
+  // let the progression effect overwrite it with a clamped default.
+  const gameCountHydrated = useRef(false)
 
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty] ?? 10
 
   // --- Hydration effects ---
   useEffect(() => {
-    getMemorySessionMax().then(setSessionMax)
+    getMemorySessionMax().then(max => {
+      setSessionMax(max)
+      // Seed nextGamesCount from the session max the user actually played with,
+      // so it doesn't reset to 5 on session complete.
+      if (!gameCountHydrated.current) {
+        setNextGamesCount(max)
+      }
+    })
   }, [])
 
-  // Hydrate nextGamesCount from persisted selection on mount
+  // Hydrate nextGamesCount from persisted selection on mount (overrides sessionMax seed)
   useEffect(() => {
     getSelectedGameCount().then(saved => {
-      if (saved != null && saved > 0) setNextGamesCount(saved)
+      if (saved != null && saved > 0) {
+        setNextGamesCount(saved)
+        gameCountHydrated.current = true
+      }
     })
   }, [])
 
@@ -109,6 +122,8 @@ export default function MemoryGridGame() {
   }, [phase, pattern.length])
 
   // --- Round completion handler (shared by correct & wrong) ---
+  // Sets roundResult for feedback, does DB bookkeeping, then schedules
+  // the next round (or session complete) after a visible delay.
   const finishRound = useCallback(
     async (wasCorrect: boolean) => {
       const currentDiff = difficultyRef.current as Difficulty
@@ -124,10 +139,11 @@ export default function MemoryGridGame() {
       if (played < sessionMax) {
         const next = await incrementMemorySessionPlayed()
         if (next >= sessionMax) {
-          // Don't update nextVariant counters here — the progression effect handles it
-          setSessionComplete(true)
+          // Show feedback for a moment, then transition to session complete
+          const delay = wasCorrect ? AUTO_ADVANCE_CORRECT_MS : AUTO_ADVANCE_WRONG_MS
+          setTimeout(() => setSessionComplete(true), delay)
         } else {
-          // Auto-advance to next round after delay
+          // Show feedback, then auto-advance to next round
           const delay = wasCorrect ? AUTO_ADVANCE_CORRECT_MS : AUTO_ADVANCE_WRONG_MS
           setTimeout(() => {
             setTimerKey(k => k + 1)
@@ -135,7 +151,8 @@ export default function MemoryGridGame() {
           }, delay)
         }
       } else {
-        setSessionComplete(true)
+        const delay = wasCorrect ? AUTO_ADVANCE_CORRECT_MS : AUTO_ADVANCE_WRONG_MS
+        setTimeout(() => setSessionComplete(true), delay)
       }
 
       setTimeout(() => syncNow(), 300)
@@ -406,26 +423,27 @@ export default function MemoryGridGame() {
       </div>
 
       {/* Phase instruction + feedback */}
-      <div className="min-h-[28px] flex items-center justify-center">
+      <div className="min-h-[40px] flex items-center justify-center">
         <AnimatePresence mode="wait">
           {roundResult ? (
-            <motion.p
-              key={roundResult}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="rounded-full border px-5 py-1.5 text-xs sm:text-sm font-semibold"
+            <motion.div
+              key={`result-${roundIndex}-${roundResult}`}
+              initial={{ opacity: 0, scale: 0.9, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25 }}
+              className="rounded-xl border px-6 py-2.5 text-sm sm:text-base font-bold text-center"
               style={{
                 color: roundResult === 'correct' ? '#22c55e' : '#f87171',
-                borderColor: roundResult === 'correct' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
-                background: roundResult === 'correct' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+                borderColor: roundResult === 'correct' ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)',
+                background: roundResult === 'correct' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
               }}
             >
               {roundResult === 'correct' ? '✓ Correct!' : '✗ Wrong block'}
-            </motion.p>
+            </motion.div>
           ) : (
             <motion.p
-              key={phase}
+              key={`phase-${phase}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="section-label text-slate-400 text-xs"
