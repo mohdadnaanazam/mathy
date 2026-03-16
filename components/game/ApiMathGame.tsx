@@ -114,99 +114,48 @@ export default function ApiMathGame() {
     })
   }, [nextOperation, nextDifficulty])
 
-  // After a session completes, automatically advance through
-  // difficulties and operations in a strict order:
-  // Per operation: easy → medium → hard.
-  // Only when all three difficulties for the current operation are completed
-  // do we move to the next operation in OPERATION_ORDER.
-  // If the user manually skipped a difficulty (e.g. played hard before medium),
-  // we backfill the missing difficulties before moving to the next operation.
+  // After a session completes, advance using strict index-based progression:
+  // easy → medium → hard → next operation easy → ...
+  // Never loop back to the same operation after completing hard.
   useEffect(() => {
     if (!sessionComplete) return
     if (!difficulty) return
 
     ;(async () => {
-      const currentDifficulty = difficulty as Difficulty
+      const diffIdx = DIFFICULTY_ORDER.indexOf(difficulty as Difficulty)
+      const opIdx = OPERATION_ORDER.indexOf(operation)
 
-      // Helper to check remaining questions for a given (operation, difficulty).
-      const hasRemaining = async (op: OperationMode, d: Difficulty) => {
-        const progress = await getVariantProgress(op, d)
-        return progress.remaining > 0
-      }
-
-      // 1. Within the current operation, choose the next difficulty strictly
-      // based on what was just completed, without re-selecting the same level.
-      if (currentDifficulty === 'easy') {
-        // Prefer Medium after Easy; if exhausted, fall through to Hard.
-        for (const d of ['medium', 'hard'] as Difficulty[]) {
-          if (await hasRemaining(operation, d)) {
-            setNextOperation(operation)
-            setNextDifficulty(d)
-            return
-          }
-        }
-      } else if (currentDifficulty === 'medium') {
-        // Prefer Hard after Medium; never re-select Medium here.
-        if (await hasRemaining(operation, 'hard')) {
-          setNextOperation(operation)
-          setNextDifficulty('hard')
-          return
-        }
-        // If Hard is exhausted, we can still offer Easy if it has remaining.
-        if (await hasRemaining(operation, 'easy')) {
-          setNextOperation(operation)
-          setNextDifficulty('easy')
-          return
-        }
-      } else if (currentDifficulty === 'hard') {
-        // When finishing Hard, always advance to the NEXT operation and
-        // reset difficulty to Easy, regardless of remaining games for
-        // the current operation. This prevents loops like
-        // Subtraction Hard -> Subtraction Easy.
-        const opIndex = OPERATION_ORDER.indexOf(operation)
-        if (opIndex === -1) {
-          setNextOperation(operation)
-          setNextDifficulty('easy')
-          return
-        }
-
-        const nextOp = OPERATION_ORDER[(opIndex + 1) % OPERATION_ORDER.length]
-        setNextOperation(nextOp)
-        setNextDifficulty('easy')
-        return
-      }
-
-      // 2. Current operation is fully completed (no remaining difficulties).
-      // Move to the next operation in OPERATION_ORDER that still has any remaining
-      // difficulty, again preferring easy→medium→hard within that operation.
-      const opIndex = OPERATION_ORDER.indexOf(operation)
-      if (opIndex === -1) {
-        // If current operation isn't in our ordered list (e.g. mixture/custom),
-        // keep the current selections.
+      // If the current operation/difficulty isn't in our ordered lists, keep as-is.
+      if (diffIdx === -1 || opIdx === -1) {
         setNextOperation(operation)
-        setNextDifficulty(currentDifficulty)
+        setNextDifficulty(difficulty as Difficulty)
         return
       }
 
-      const opCandidates: OperationMode[] = [
-        ...OPERATION_ORDER.slice(opIndex + 1),
-        ...OPERATION_ORDER.slice(0, opIndex + 1),
-      ]
+      // Build a flat progression list starting from the NEXT slot after
+      // the current (operation, difficulty). This guarantees we never
+      // re-select the same slot and always move forward.
+      const totalSlots = OPERATION_ORDER.length * DIFFICULTY_ORDER.length
+      const currentSlot = opIdx * DIFFICULTY_ORDER.length + diffIdx
 
-      for (const op of opCandidates) {
-        for (const d of DIFFICULTY_ORDER) {
-          const progress = await getVariantProgress(op, d)
-          if (progress.remaining > 0) {
-            setNextOperation(op)
-            setNextDifficulty(d)
-            return
-          }
+      for (let offset = 1; offset <= totalSlots; offset++) {
+        const slot = (currentSlot + offset) % totalSlots
+        const candidateOpIdx = Math.floor(slot / DIFFICULTY_ORDER.length)
+        const candidateDiffIdx = slot % DIFFICULTY_ORDER.length
+        const candidateOp = OPERATION_ORDER[candidateOpIdx]
+        const candidateDiff = DIFFICULTY_ORDER[candidateDiffIdx]
+
+        const progress = await getVariantProgress(candidateOp, candidateDiff)
+        if (progress.remaining > 0) {
+          setNextOperation(candidateOp)
+          setNextDifficulty(candidateDiff)
+          return
         }
       }
 
-      // 3. All operations and difficulties are completed; keep the current selection.
+      // All slots exhausted — keep current selection.
       setNextOperation(operation)
-      setNextDifficulty(currentDifficulty)
+      setNextDifficulty(difficulty as Difficulty)
     })()
   }, [sessionComplete, operation, difficulty])
 
