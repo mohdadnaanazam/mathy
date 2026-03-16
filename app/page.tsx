@@ -362,32 +362,56 @@ export default function LandingPage() {
     router.push('/game?mode=truefalse')
   }
 
-  function handleCardPlay(game: 'math' | 'memory' | 'truefalse') {
+  function handlePlay() {
     if (isLocked || isRefreshing || isSessionExpired) return
-    if (game === 'math') {
+    if (activeGame === 'math') {
       if (mathDifficulty === null || mathVariantRemaining <= 0) return
-      setActiveGame('math'); play(activeMode)
-    } else if (game === 'truefalse') {
+      play(activeMode)
+    } else if (activeGame === 'truefalse') {
       if (tfDifficulty === null || tfVariantRemaining <= 0) return
-      setActiveGame('truefalse'); playTrueFalse()
+      playTrueFalse()
     } else {
       if (memoryDifficulty === null || memoryVariantRemaining <= 0) return
-      setActiveGame('memory'); playMemoryGrid()
+      playMemoryGrid()
     }
   }
 
   const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
   const canPlayMemory = memoryDifficulty !== null && memoryVariantRemaining > 0
   const canPlayTf = tfDifficulty !== null && tfVariantRemaining > 0
+  const canPlayActive =
+    (activeGame === 'math' && canPlayMath) ||
+    (activeGame === 'memory' && canPlayMemory) ||
+    (activeGame === 'truefalse' && canPlayTf)
   const mathVariantExhausted = mathVariantRemaining <= 0
   const memoryVariantExhausted = memoryVariantRemaining <= 0
   const tfVariantExhausted = tfVariantRemaining <= 0
-  const globalBlocked = isNavigating || isLocked || isRefreshing || isSessionExpired
+
+  const playDisabled =
+    isNavigating || isLocked || isRefreshing || isSessionExpired ||
+    (activeGame === 'math' && !canPlayMath) ||
+    (activeGame === 'memory' && !canPlayMemory) ||
+    (activeGame === 'truefalse' && !canPlayTf)
+
+  const playLabel = isLocked
+    ? 'Limit reached'
+    : mounted && isSessionExpired
+      ? 'Reset progress to play'
+      : mounted && isRefreshing
+        ? 'Reload to play'
+        : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
+          ? 'Choose difficulty'
+          : isNavigating
+            ? 'Starting…'
+            : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
 
   /* ── Render ──────────────────────────────────────────────────────── */
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[var(--bg-surface)]">
+    <main
+      className="min-h-screen overflow-x-hidden bg-[var(--bg-surface)]"
+      style={{ paddingBottom: 'max(8rem, calc(env(safe-area-inset-bottom, 0px) + 8rem))' }}
+    >
       {/* ── Header ──────────────────────────────────────────────────── */}
       <header className="border-b border-[var(--border-subtle)] py-5 sm:py-6">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 flex items-end justify-between">
@@ -528,40 +552,25 @@ export default function LandingPage() {
 
           {/* Difficulty */}
           <DifficultyPills
-            value={activeGame === 'math' ? mathDifficulty : null}
+            value={mathDifficulty}
             onChange={(d) => { setMathDifficulty(d); setDifficulty(d); setActiveGame('math') }}
           />
 
-          {/* Controls row: stepper + play */}
-          {mathDifficulty !== null && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border-subtle)]">
-              <div>
-                <GameStepper
-                  count={mathGamesCount}
-                  onDecrement={() => { if (!mathVariantExhausted) setMathGamesCount(v => Math.max(1, Math.min(v - 1, mathVariantRemaining))) }}
-                  onIncrement={() => { if (!mathVariantExhausted) setMathGamesCount(v => Math.min(Math.max(v + 1, 1), mathVariantRemaining)) }}
-                  disabled={mathVariantExhausted}
+          {/* Controls row: stepper */}
+          {activeGame === 'math' && mathDifficulty !== null && (
+            <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+              <GameStepper
+                count={mathGamesCount}
+                onDecrement={() => { if (!mathVariantExhausted) setMathGamesCount(v => Math.max(1, Math.min(v - 1, mathVariantRemaining))) }}
+                onIncrement={() => { if (!mathVariantExhausted) setMathGamesCount(v => Math.min(Math.max(v + 1, 1), mathVariantRemaining)) }}
+                disabled={mathVariantExhausted}
+              />
+              {mathSessionHydrated && (
+                <ProgressLine
+                  played={mathVariantPlayed} total={mathVariantTotal} remaining={mathVariantRemaining}
+                  exhausted={mathVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
                 />
-                {mathSessionHydrated && (
-                  <ProgressLine
-                    played={mathVariantPlayed} total={mathVariantTotal} remaining={mathVariantRemaining}
-                    exhausted={mathVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
-                  />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); handleCardPlay('math') }}
-                disabled={globalBlocked || !canPlayMath}
-                className="rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
-                style={{
-                  backgroundColor: 'var(--accent-orange)',
-                  color: '#111827',
-                  boxShadow: canPlayMath && !globalBlocked ? '0 4px 16px rgba(249,115,22,0.3)' : 'none',
-                }}
-              >
-                {isNavigating && activeGame === 'math' ? 'Starting…' : 'Play →'}
-              </button>
+              )}
             </div>
           )}
         </div>
@@ -584,40 +593,25 @@ export default function LandingPage() {
           </p>
 
           <DifficultyPills
-            value={activeGame === 'memory' ? memoryDifficulty : null}
+            value={memoryDifficulty}
             onChange={(d) => { setMemoryDifficulty(d); setActiveGame('memory') }}
             gridSizes={{ easy: '3×3', medium: '4×4', hard: '5×5' }}
           />
 
-          {memoryDifficulty !== null && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border-subtle)]">
-              <div>
-                <GameStepper
-                  count={memoryGamesCount}
-                  onDecrement={() => { if (!memoryVariantExhausted) setMemoryGamesCount(v => Math.max(1, Math.min(v - 1, memoryVariantRemaining))) }}
-                  onIncrement={() => { if (!memoryVariantExhausted) setMemoryGamesCount(v => Math.min(Math.max(v + 1, 1), memoryVariantRemaining)) }}
-                  disabled={memoryVariantExhausted}
+          {activeGame === 'memory' && memoryDifficulty !== null && (
+            <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+              <GameStepper
+                count={memoryGamesCount}
+                onDecrement={() => { if (!memoryVariantExhausted) setMemoryGamesCount(v => Math.max(1, Math.min(v - 1, memoryVariantRemaining))) }}
+                onIncrement={() => { if (!memoryVariantExhausted) setMemoryGamesCount(v => Math.min(Math.max(v + 1, 1), memoryVariantRemaining)) }}
+                disabled={memoryVariantExhausted}
+              />
+              {memorySessionHydrated && (
+                <ProgressLine
+                  played={memoryVariantPlayed} total={memoryVariantTotal} remaining={memoryVariantRemaining}
+                  exhausted={memoryVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
                 />
-                {memorySessionHydrated && (
-                  <ProgressLine
-                    played={memoryVariantPlayed} total={memoryVariantTotal} remaining={memoryVariantRemaining}
-                    exhausted={memoryVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
-                  />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); handleCardPlay('memory') }}
-                disabled={globalBlocked || !canPlayMemory}
-                className="rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
-                style={{
-                  backgroundColor: 'var(--accent-orange)',
-                  color: '#111827',
-                  boxShadow: canPlayMemory && !globalBlocked ? '0 4px 16px rgba(249,115,22,0.3)' : 'none',
-                }}
-              >
-                {isNavigating && activeGame === 'memory' ? 'Starting…' : 'Play →'}
-              </button>
+              )}
             </div>
           )}
         </div>
@@ -640,43 +634,62 @@ export default function LandingPage() {
           </p>
 
           <DifficultyPills
-            value={activeGame === 'truefalse' ? tfDifficulty : null}
+            value={tfDifficulty}
             onChange={(d) => { setTfDifficulty(d); setActiveGame('truefalse') }}
           />
 
-          {tfDifficulty !== null && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border-subtle)]">
-              <div>
-                <GameStepper
-                  count={tfGamesCount}
-                  onDecrement={() => { if (!tfVariantExhausted) setTfGamesCount(v => Math.max(1, Math.min(v - 1, tfVariantRemaining))) }}
-                  onIncrement={() => { if (!tfVariantExhausted) setTfGamesCount(v => Math.min(Math.max(v + 1, 1), tfVariantRemaining)) }}
-                  disabled={tfVariantExhausted}
+          {activeGame === 'truefalse' && tfDifficulty !== null && (
+            <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+              <GameStepper
+                count={tfGamesCount}
+                onDecrement={() => { if (!tfVariantExhausted) setTfGamesCount(v => Math.max(1, Math.min(v - 1, tfVariantRemaining))) }}
+                onIncrement={() => { if (!tfVariantExhausted) setTfGamesCount(v => Math.min(Math.max(v + 1, 1), tfVariantRemaining)) }}
+                disabled={tfVariantExhausted}
+              />
+              {tfSessionHydrated && (
+                <ProgressLine
+                  played={tfVariantPlayed} total={tfVariantTotal} remaining={tfVariantRemaining}
+                  exhausted={tfVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
                 />
-                {tfSessionHydrated && (
-                  <ProgressLine
-                    played={tfVariantPlayed} total={tfVariantTotal} remaining={tfVariantRemaining}
-                    exhausted={tfVariantExhausted} refreshReady={refreshReady} refreshFormatted={refreshFormatted}
-                  />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); handleCardPlay('truefalse') }}
-                disabled={globalBlocked || !canPlayTf}
-                className="rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
-                style={{
-                  backgroundColor: 'var(--accent-orange)',
-                  color: '#111827',
-                  boxShadow: canPlayTf && !globalBlocked ? '0 4px 16px rgba(249,115,22,0.3)' : 'none',
-                }}
-              >
-                {isNavigating && activeGame === 'truefalse' ? 'Starting…' : 'Play →'}
-              </button>
+              )}
             </div>
           )}
         </div>
 
+      </div>
+
+      {/* ── Floating sticky Play button ─────────────────────────────── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <div
+          className="pointer-events-auto w-full"
+          style={{
+            background: 'linear-gradient(to top, var(--bg-surface) 60%, transparent)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        >
+          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-3 sm:py-4 flex justify-center">
+            <button
+              type="button"
+              onClick={handlePlay}
+              disabled={playDisabled}
+              className="w-full max-w-xs inline-flex items-center justify-center rounded-full px-10 py-3.5 sm:px-12 sm:py-4 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+              style={{
+                backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
+                color: isLocked ? '#64748b' : '#111827',
+                border: `1px solid ${isLocked ? 'var(--border-subtle)' : 'var(--accent-orange-hover)'}`,
+                boxShadow: isLocked ? 'none' : '0 4px 20px rgba(249,115,22,0.35)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {playLabel}
+              {!isLocked && !isNavigating && !isRefreshing && !isSessionExpired && canPlayActive && ' →'}
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   )
