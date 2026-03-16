@@ -165,9 +165,12 @@ export default function ApiMathGame() {
           return
         }
 
+        // Only consider operations AFTER the current one for automatic progression.
+        // We intentionally do not wrap back to the same operation here so that
+        // finishing Hard always advances to the next operation.
         const opCandidates: OperationMode[] = [
           ...OPERATION_ORDER.slice(opIndex + 1),
-          ...OPERATION_ORDER.slice(0, opIndex + 1),
+          ...OPERATION_ORDER.slice(0, opIndex),
         ]
 
         for (const op of opCandidates) {
@@ -179,7 +182,8 @@ export default function ApiMathGame() {
             }
           }
         }
-        // If everything is exhausted, stay on current operation at Easy.
+        // If everything is exhausted across all operations, stay on current
+        // operation at Easy as a safe fallback.
         setNextOperation(operation)
         setNextDifficulty('easy')
         return
