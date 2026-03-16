@@ -636,17 +636,17 @@ export default function ApiMathGame() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="api-game-item relative w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center px-4 py-8 sm:px-6 sm:py-10"
+          className="api-game-item relative w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 text-center px-4 py-5 sm:px-6 sm:py-8"
           style={{
             boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
           }}
         >
-          <div className="absolute right-3 top-3 sm:right-4 sm:top-4 flex items-center gap-2">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
             <span className="text-[10px] sm:text-xs font-mono text-slate-500">
               {Math.min(currentIndex + 1, sessionMax)} / {sessionMax}
             </span>
             <span
-              className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-slate-400"
+              className="rounded-full border border-zinc-700 bg-zinc-800/60 px-2 py-0.5 text-[9px] sm:text-[11px] font-mono uppercase tracking-wider text-slate-400"
             >
               {current.game_type}
             </span>
