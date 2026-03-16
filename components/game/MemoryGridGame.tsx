@@ -223,23 +223,16 @@ export default function MemoryGridGame() {
     })
   }, [sessionComplete, difficulty])
 
-  // After a session completes, advance difficulty: easy → medium → hard → wrap to easy.
-  // Eagerly loads variant progress for the new difficulty so the session complete
-  // screen renders with correct played/remaining immediately.
+  // When session completes, reload the CURRENT variant's progress so the
+  // session-complete screen shows accurate played/remaining for what the
+  // user just finished. The user can manually change difficulty from the picker.
   useEffect(() => {
     if (!sessionComplete) return
-
     const currentDiff = difficultyRef.current as Difficulty
-    const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
-    if (diffIdx === -1) return
-
-    const nextDiffIdx = (diffIdx + 1) % DIFFICULTY_ORDER.length
-    const newDiff = DIFFICULTY_ORDER[nextDiffIdx]
-
-    setDifficulty(newDiff)
-
-    // Eagerly load variant progress for the new difficulty
-    getVariantProgress('memory', newDiff).then(p => {
+    if (!currentDiff) return
+    // Keep the current difficulty selected (don't auto-advance)
+    setDifficulty(currentDiff)
+    getVariantProgress('memory', currentDiff).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
       setNextGamesCount(prev => {

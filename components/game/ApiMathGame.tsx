@@ -142,47 +142,20 @@ export default function ApiMathGame() {
     })
   }, [nextOperation, nextDifficulty])
 
-  // After a session completes, advance using strict sequential progression:
-  // easy → medium → hard → next operation easy → ...
-  // Always picks the immediately next slot in the sequence regardless of
-  // how many questions remain. This prevents skipping difficulties
-  // (e.g. Easy → Hard when Medium has 0 remaining).
-  // Reads from refs to avoid stale closure values.
-  // Also immediately loads variant progress for the new combo so the
-  // Play button state is correct without waiting for a separate effect.
+  // When a session completes, reload the CURRENT variant's progress so the
+  // session-complete screen shows the accurate played/remaining for what the
+  // user just finished. The user can then manually pick a different
+  // operation/difficulty from the picker if they want.
   useEffect(() => {
     if (!sessionComplete) return
-    if (!difficultyRef.current) return
-
     const currentOp = operationRef.current
     const currentDiff = difficultyRef.current as Difficulty
+    if (!currentDiff) return
 
-    const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
-    const opIdx = OPERATION_ORDER.indexOf(currentOp)
+    setNextOperation(currentOp)
+    setNextDifficulty(currentDiff)
 
-    // If the current operation/difficulty isn't in our ordered lists, keep as-is.
-    if (diffIdx === -1 || opIdx === -1) {
-      setNextOperation(currentOp)
-      setNextDifficulty(currentDiff)
-      return
-    }
-
-    // Strictly advance to the next slot: easy→medium→hard→next op easy
-    const totalSlots = OPERATION_ORDER.length * DIFFICULTY_ORDER.length
-    const currentSlot = opIdx * DIFFICULTY_ORDER.length + diffIdx
-    const nextSlot = (currentSlot + 1) % totalSlots
-    const nextOpIdx = Math.floor(nextSlot / DIFFICULTY_ORDER.length)
-    const nextDiffIdx = nextSlot % DIFFICULTY_ORDER.length
-
-    const newOp = OPERATION_ORDER[nextOpIdx]
-    const newDiff = DIFFICULTY_ORDER[nextDiffIdx]
-
-    setNextOperation(newOp)
-    setNextDifficulty(newDiff)
-
-    // Eagerly load variant progress for the new combo so the session
-    // complete screen renders with correct played/remaining immediately.
-    getVariantProgress(newOp, newDiff).then(p => {
+    getVariantProgress(currentOp, currentDiff).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
       setNextGamesCount(prev => {

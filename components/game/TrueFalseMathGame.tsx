@@ -95,16 +95,15 @@ export default function TrueFalseMathGame() {
     })
   }, [nextDifficulty])
 
-  // After session completes, advance difficulty: easy → medium → hard → wrap
+  // When session completes, reload the CURRENT variant's progress so the
+  // session-complete screen shows accurate played/remaining for what the
+  // user just finished.
   useEffect(() => {
     if (!sessionComplete) return
     const currentDiff = difficultyRef.current as Difficulty
-    const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
-    if (diffIdx === -1) return
-    const nextIdx = (diffIdx + 1) % DIFFICULTY_ORDER.length
-    const newDiff = DIFFICULTY_ORDER[nextIdx]
-    setNextDifficulty(newDiff)
-    getVariantProgress('true_false_math', newDiff).then(p => {
+    if (!currentDiff) return
+    setNextDifficulty(currentDiff)
+    getVariantProgress('true_false_math', currentDiff).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
       setNextGamesCount(prev => {
