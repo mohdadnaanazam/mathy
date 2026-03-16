@@ -52,6 +52,14 @@ export default function ApiMathGame() {
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
   const { games, loading, error, refresh } = useGameLoader(operation)
 
+  // Refs to always hold the latest operation and difficulty so that
+  // async callbacks (goNext via setTimeout, progression useEffect)
+  // never read stale closure values.
+  const operationRef = useRef(operation)
+  operationRef.current = operation
+  const difficultyRef = useRef(difficulty)
+  difficultyRef.current = difficulty
+
   useEffect(() => {
     if (opFromUrl) setOperation(opFromUrl)
   }, [opFromUrl, setOperation])
@@ -122,18 +130,22 @@ export default function ApiMathGame() {
   // After a session completes, advance using strict index-based progression:
   // easy → medium → hard → next operation easy → ...
   // Never loop back to the same operation after completing hard.
+  // Reads from refs to avoid stale closure values.
   useEffect(() => {
     if (!sessionComplete) return
-    if (!difficulty) return
+    if (!difficultyRef.current) return
+
+    const currentOp = operationRef.current
+    const currentDiff = difficultyRef.current as Difficulty
 
     ;(async () => {
-      const diffIdx = DIFFICULTY_ORDER.indexOf(difficulty as Difficulty)
-      const opIdx = OPERATION_ORDER.indexOf(operation)
+      const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
+      const opIdx = OPERATION_ORDER.indexOf(currentOp)
 
       // If the current operation/difficulty isn't in our ordered lists, keep as-is.
       if (diffIdx === -1 || opIdx === -1) {
-        setNextOperation(operation)
-        setNextDifficulty(difficulty as Difficulty)
+        setNextOperation(currentOp)
+        setNextDifficulty(currentDiff)
         return
       }
 
@@ -159,10 +171,10 @@ export default function ApiMathGame() {
       }
 
       // All slots exhausted — keep current selection.
-      setNextOperation(operation)
-      setNextDifficulty(difficulty as Difficulty)
+      setNextOperation(currentOp)
+      setNextDifficulty(currentDiff)
     })()
-  }, [sessionComplete, operation, difficulty])
+  }, [sessionComplete])
 
   // Compute the pool of questions for this session once per
   // (games, operation, difficulty, customOperations, sessionMax) change.
@@ -268,6 +280,11 @@ export default function ApiMathGame() {
     setFeedback(null)
     setTimerKey(k => k + 1)
 
+    // Read latest values from refs to avoid stale closures
+    // (goNext can be called from setTimeout inside validateAnswer).
+    const currentOp = operationRef.current
+    const currentDiff = difficultyRef.current as Difficulty
+
     // Update persisted session count up to the configured max
     getMathSessionPlayed().then(played => {
       const willBe = Math.min(sessionMax, played + 1)
@@ -278,12 +295,12 @@ export default function ApiMathGame() {
       // IMPORTANT: Do NOT call setNextOperation here — when this is
       // the last question, the progression useEffect is the sole
       // authority for choosing the next operation/difficulty.
-      if (difficulty) {
+      if (currentDiff) {
         const isLastQuestion = willBe >= sessionMax
-        incrementVariantPlayed(operation, difficulty as Difficulty).then(() => {
-          getVariantProgress(operation, difficulty as Difficulty).then(p => {
+        incrementVariantPlayed(currentOp, currentDiff).then(() => {
+          getVariantProgress(currentOp, currentDiff).then(p => {
             if (!isLastQuestion) {
-              setNextOperation(operation)
+              setNextOperation(currentOp)
             }
             setNextVariantPlayed(p.played)
             setNextVariantRemaining(p.remaining)
@@ -307,7 +324,7 @@ export default function ApiMathGame() {
       const next = i + 1
       return next < questionOrder.length ? next : i
     })
-  }, [questionOrder.length, sessionMax, operation, difficulty])
+  }, [questionOrder.length, sessionMax])
 
   const validateAnswer = useCallback(
     (value: string) => {
