@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { OperationMode, type Difficulty } from '@/types'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useGameTimer } from '@/hooks/useGameTimer'
-import { formatTime } from '@/lib/utils'
 import {
   clearGameCache,
   getMathSessionMax,
@@ -22,6 +21,8 @@ import {
   setMathSessionPlayed,
   setMemorySessionPlayed,
   getVariantProgress,
+  getSelectedGameCount,
+  setSelectedGameCount,
 } from '@/lib/db'
 import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
@@ -58,7 +59,7 @@ export default function LandingPage() {
   const { isSessionExpired, isResetting: isExpiryResetting, resetAndResume, recordActivity } = useSessionExpiry()
   const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
   const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty | null>(null)
-  const [memoryGamesCount, setMemoryGamesCount] = useState<number>(10)
+  const [memoryGamesCount, setMemoryGamesCount] = useState<number>(5)
   const [memorySessionMax, setMemorySessionMaxState] = useState<number>(10)
   const [memorySessionPlayed, setMemorySessionPlayedState] = useState<number>(0)
   const [memorySessionHydrated, setMemorySessionHydrated] = useState(false)
@@ -66,18 +67,19 @@ export default function LandingPage() {
   const [memoryVariantTotal, setMemoryVariantTotal] = useState<number>(20)
   const [memoryVariantRemaining, setMemoryVariantRemaining] = useState<number>(20)
   const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
-  const [mathGamesCount, setMathGamesCount] = useState<number>(10)
+  const [mathGamesCount, setMathGamesCount] = useState<number>(5)
   const [mathSessionMax, setMathSessionMaxState] = useState<number>(10)
   const [mathSessionPlayed, setMathSessionPlayedState] = useState<number>(0)
   const [mathSessionHydrated, setMathSessionHydrated] = useState(false)
   const [activeGame, setActiveGame] = useState<'math' | 'memory'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
-  const [isResettingProgress, setIsResettingProgress] = useState(false)
   const showMathOperations = mathDifficulty !== null
   const [mathVariantPlayed, setMathVariantPlayed] = useState<number>(0)
   const [mathVariantTotal, setMathVariantTotal] = useState<number>(20)
   const [mathVariantRemaining, setMathVariantRemaining] = useState<number>(20)
+
+  const DEFAULT_GAME_COUNT = 5
 
   useEffect(() => {
     // Hydrate last played selections so Home reflects the last game the user played.
@@ -125,14 +127,21 @@ export default function LandingPage() {
         setDifficulty(last.difficulty as Difficulty)
       }
     })
+
+    // Restore persisted game count (or use default for first visit)
+    getSelectedGameCount().then(saved => {
+      const count = saved ?? DEFAULT_GAME_COUNT
+      setMathGamesCount(count)
+      setMemoryGamesCount(count)
+    })
   }, [setDifficulty, setOperation, setType])
 
   // Hydrate math & memory session progress from IndexedDB so played/remaining show correctly after return
   function hydrateSessions() {
-    getMathSessionMax().then(m => { setMathSessionMaxState(m); setMathGamesCount(m) })
+    getMathSessionMax().then(m => { setMathSessionMaxState(m) })
     getMathSessionPlayed().then(p => setMathSessionPlayedState(p))
     setMathSessionHydrated(true)
-    getMemorySessionMax().then(m => { setMemorySessionMaxState(m); setMemoryGamesCount(m) })
+    getMemorySessionMax().then(m => { setMemorySessionMaxState(m) })
     getMemorySessionPlayed().then(p => setMemorySessionPlayedState(p))
     setMemorySessionHydrated(true)
   }
@@ -150,10 +159,12 @@ export default function LandingPage() {
       setMathVariantPlayed(p.played)
       setMathVariantTotal(p.total)
       setMathVariantRemaining(p.remaining)
-      // Clamp stepper so it never exceeds remaining (but stays at least 1 when remaining > 0)
-      setMathGamesCount(prev =>
-        p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
-      )
+      // Clamp stepper so it never exceeds remaining (but stays at least 1 when remaining > 0).
+      // Do NOT replace the user's chosen count with a default — just clamp it.
+      setMathGamesCount(prev => {
+        if (p.remaining <= 0) return 0
+        return Math.min(Math.max(prev, 1), p.remaining)
+      })
     })
   }, [activeMode, mathDifficulty, isSessionExpired])
 
@@ -165,9 +176,10 @@ export default function LandingPage() {
       setMemoryVariantPlayed(p.played)
       setMemoryVariantTotal(p.total)
       setMemoryVariantRemaining(p.remaining)
-      setMemoryGamesCount(prev =>
-        p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
-      )
+      setMemoryGamesCount(prev => {
+        if (p.remaining <= 0) return 0
+        return Math.min(Math.max(prev, 1), p.remaining)
+      })
     })
   }, [memoryDifficulty, isSessionExpired])
 
@@ -185,44 +197,21 @@ export default function LandingPage() {
       await resetAllProgress()
       const now = await fetchAndCacheAllGames()
       setLastFetchAt(now)
-      setMathSessionMaxState(10)
+      setMathSessionMaxState(DEFAULT_GAME_COUNT)
       setMathSessionPlayedState(0)
-      setMathGamesCount(10)
-      setMemorySessionMaxState(10)
+      setMathGamesCount(DEFAULT_GAME_COUNT)
+      setMemorySessionMaxState(DEFAULT_GAME_COUNT)
       setMemorySessionPlayedState(0)
-      setMemoryGamesCount(10)
+      setMemoryGamesCount(DEFAULT_GAME_COUNT)
       setMathVariantPlayed(0)
       setMathVariantRemaining(20)
       setMemoryVariantPlayed(0)
       setMemoryVariantRemaining(20)
+      await setSelectedGameCount(DEFAULT_GAME_COUNT)
     } catch (err) {
       setLastFetchAt(null)
     } finally {
       setIsReloadingGames(false)
-    }
-  }
-
-  async function handleResetProgress() {
-    if (isResettingProgress) return
-    setIsResettingProgress(true)
-    try {
-      // Reset should clear stored questions too (but keep total score).
-      await clearGameCache()
-      await resetAllProgress()
-      const now = await fetchAndCacheAllGames()
-      setLastFetchAt(now)
-      setMathSessionMaxState(10)
-      setMathSessionPlayedState(0)
-      setMathGamesCount(10)
-      setMemorySessionMaxState(10)
-      setMemorySessionPlayedState(0)
-      setMemoryGamesCount(10)
-      setMathVariantPlayed(0)
-      setMathVariantRemaining(20)
-      setMemoryVariantPlayed(0)
-      setMemoryVariantRemaining(20)
-    } finally {
-      setIsResettingProgress(false)
     }
   }
 
@@ -239,6 +228,7 @@ export default function LandingPage() {
       operation: op,
       difficulty: (mathDifficulty ?? 'medium') as Difficulty,
     })
+    await setSelectedGameCount(mathGamesCount)
     // Always start a fresh math session with the selected number of games.
     await resetMathSession(mathGamesCount)
     setMathSessionMaxState(mathGamesCount)
@@ -622,9 +612,9 @@ export default function LandingPage() {
       {/* Single Play button – starts the currently selected game; disabled when 15 plays used this hour or session expired */}
       <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-6">
         <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-3">
-          {isRefreshing && (
+          {isRefreshing && !isSessionExpired && (
             <p className="text-xs text-slate-400 text-center">
-              Session expired. Tap Reload below to load new games and continue.
+              Game cache expired. Tap Reload below to load new games and continue.
             </p>
           )}
           {isSessionExpired && (
@@ -636,16 +626,17 @@ export default function LandingPage() {
                 type="button"
                 onClick={async () => {
                   await resetAndResume()
-                  setMathSessionMaxState(10)
+                  setMathSessionMaxState(DEFAULT_GAME_COUNT)
                   setMathSessionPlayedState(0)
-                  setMathGamesCount(10)
-                  setMemorySessionMaxState(10)
+                  setMathGamesCount(DEFAULT_GAME_COUNT)
+                  setMemorySessionMaxState(DEFAULT_GAME_COUNT)
                   setMemorySessionPlayedState(0)
-                  setMemoryGamesCount(10)
+                  setMemoryGamesCount(DEFAULT_GAME_COUNT)
                   setMathVariantPlayed(0)
                   setMathVariantRemaining(20)
                   setMemoryVariantPlayed(0)
                   setMemoryVariantRemaining(20)
+                  await setSelectedGameCount(DEFAULT_GAME_COUNT)
                 }}
                 disabled={isExpiryResetting}
                 className="inline-flex items-center justify-center rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
@@ -695,47 +686,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Reload when expired; Reset Progress */}
-      <section
-        className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <div className="mx-auto flex w-full max-w-2xl flex-col sm:flex-row items-center justify-center gap-3 px-4 py-4 sm:px-6 sm:py-5">
-          {/* 1-hour inactivity expiry: must reset progress before playing */}
-          {isSessionExpired && (
-            <>
-              <p className="text-xs text-amber-400 text-center w-full sm:w-auto">
-                You've been away for over an hour. Reset your progress to continue playing.
-              </p>
-              <button
-                type="button"
-                onClick={async () => {
-                  await resetAndResume()
-                  // Refresh local UI counters to reflect the reset
-                  setMathSessionMaxState(10)
-                  setMathSessionPlayedState(0)
-                  setMathGamesCount(10)
-                  setMemorySessionMaxState(10)
-                  setMemorySessionPlayedState(0)
-                  setMemoryGamesCount(10)
-                  setMathVariantPlayed(0)
-                  setMathVariantRemaining(20)
-                  setMemoryVariantPlayed(0)
-                  setMemoryVariantRemaining(20)
-                }}
-                disabled={isExpiryResetting}
-                className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
-                style={{
-                  backgroundColor: 'var(--accent-orange)',
-                  color: '#111827',
-                  border: '1px solid var(--accent-orange-hover)',
-                }}
-              >
-                {isExpiryResetting ? 'Resetting…' : 'Reset Progress'}
-              </button>
-            </>
-          )}
-          {isRefreshing && (
+      {/* Reload when game cache expired (but session NOT expired — session expiry is handled above) */}
+      {isRefreshing && !isSessionExpired && (
+        <section
+          className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <div className="mx-auto flex w-full max-w-2xl flex-col sm:flex-row items-center justify-center gap-3 px-4 py-4 sm:px-6 sm:py-5">
             <button
               type="button"
               onClick={handleReloadNewGames}
@@ -749,19 +706,9 @@ export default function LandingPage() {
             >
               {isReloadingGames ? '…' : 'Reload'}
             </button>
-          )}
-          {isRefreshing && (
-            <button
-              type="button"
-              onClick={handleResetProgress}
-              disabled={isResettingProgress}
-              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60 border border-[var(--border-subtle)] bg-zinc-900 text-slate-200"
-            >
-              {isResettingProgress ? '…' : 'Reset Progress'}
-            </button>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </main>
   )
 }

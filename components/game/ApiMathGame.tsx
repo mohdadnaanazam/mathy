@@ -24,6 +24,9 @@ import {
   incrementVariantPlayed,
   getVariantProgress,
   resetMathSession,
+  getSelectedGameCount,
+  setSelectedGameCount,
+  setLastPlayedSettings,
 } from '@/lib/db'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
@@ -86,7 +89,14 @@ export default function ApiMathGame() {
   )
   const [nextVariantPlayed, setNextVariantPlayed] = useState(0)
   const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
-  const [nextGamesCount, setNextGamesCount] = useState(5)
+  const [nextGamesCount, setNextGamesCount] = useState(sessionMax)
+
+  // Hydrate nextGamesCount from persisted selection on mount
+  useEffect(() => {
+    getSelectedGameCount().then(saved => {
+      if (saved != null && saved > 0) setNextGamesCount(saved)
+    })
+  }, [])
 
   const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
   const OPERATION_ORDER: OperationMode[] = [
@@ -119,10 +129,10 @@ export default function ApiMathGame() {
     getVariantProgress(nextOperation, nextDifficulty).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
+      // Clamp to remaining without replacing the user's chosen count
       setNextGamesCount(prev => {
         if (p.remaining <= 0) return 0
-        const base = prev || 5
-        return Math.min(Math.max(base, 1), p.remaining)
+        return Math.min(Math.max(prev, 1), p.remaining)
       })
     })
   }, [nextOperation, nextDifficulty])
@@ -548,6 +558,12 @@ export default function ApiMathGame() {
                 onClick={async () => {
                   if (!nextDifficulty || nextVariantRemaining <= 0 || nextGamesCount <= 0) return
                   await resetMathSession(nextGamesCount)
+                  await setSelectedGameCount(nextGamesCount)
+                  await setLastPlayedSettings({
+                    gameType: 'math',
+                    operation: nextOperation,
+                    difficulty: nextDifficulty,
+                  })
                   setOperation(nextOperation)
                   setDifficulty(nextDifficulty)
                   // Update the URL so opFromUrl reflects the new operation.

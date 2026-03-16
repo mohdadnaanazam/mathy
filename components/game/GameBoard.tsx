@@ -1,13 +1,17 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useAttempts } from '@/hooks/useAttempts'
 import { useGameTimer } from '@/hooks/useGameTimer'
+import { useSessionExpiry } from '@/hooks/useSessionExpiry'
 import { useGameStore } from '@/store/gameStore'
+import { useGameRefreshStore } from '@/store/gameRefreshStore'
 import { OperationMode } from '@/types'
+import { clearGameCache } from '@/lib/db'
+import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 import GameLockScreen from './GameLockScreen'
 import { Settings2 } from 'lucide-react'
 
@@ -27,9 +31,29 @@ export default function GameBoard() {
   const searchParams = useSearchParams()
   const { isLocked } = useAttempts()
   const { isRefreshing: gamesExpired } = useGameTimer()
+  const { isSessionExpired } = useSessionExpiry()
+  const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const gameType = useGameStore(s => s.gameType)
   const setGameType = useGameStore(s => s.setGameType)
   const operation = useGameStore(s => s.operation)
+  const [isReloading, setIsReloading] = useState(false)
+
+  const handleReload = useCallback(async () => {
+    if (isReloading) return
+    setIsReloading(true)
+    try {
+      await clearGameCache()
+      const now = await fetchAndCacheAllGames()
+      setLastFetchAt(now)
+      // After reload, navigate back to home so user can start fresh
+      router.push('/')
+    } catch {
+      // On failure, send to home anyway
+      router.push('/')
+    } finally {
+      setIsReloading(false)
+    }
+  }, [isReloading, setLastFetchAt, router])
 
   // Read URL params once per render as simple primitives
   // so we can use them safely in effects without depending on
@@ -67,21 +91,24 @@ export default function GameBoard() {
 
   if (isLocked) return <GameLockScreen />
 
-  if (gamesExpired) {
+  if (gamesExpired || isSessionExpired) {
     return (
       <div
         className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col items-center justify-center py-12 px-4"
         style={{ minHeight: '100dvh' }}
       >
         <p className="text-sm text-slate-300 text-center mb-4">
-          Games have expired. Go to home and tap Reload to load new games.
+          {isSessionExpired
+            ? 'Your session has expired. Reload to refresh game questions.'
+            : 'Games have expired. Tap Reload to load new games.'}
         </p>
         <button
           type="button"
-          onClick={() => router.push('/')}
-          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900"
+          onClick={handleReload}
+          disabled={isReloading}
+          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900 disabled:opacity-60"
         >
-          Go to home
+          {isReloading ? 'Reloading…' : 'Reload'}
         </button>
       </div>
     )

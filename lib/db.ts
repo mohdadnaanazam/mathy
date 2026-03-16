@@ -275,6 +275,8 @@ export async function resetAllProgress(): Promise<void> {
   await setMathSessionPlayed(0)
   await setMemorySessionMax(10)
   await setMemorySessionPlayed(0)
+  // Clear persisted game count so next session uses the default
+  await db.meta.delete(META_SELECTED_GAME_COUNT)
 }
 
 /** Last activity timestamp: updated whenever the user starts or finishes a game session. */
@@ -287,4 +289,16 @@ export async function getLastActivityAt(): Promise<number | null> {
 
 export async function setLastActivityAt(timestamp: number = Date.now()): Promise<void> {
   await db.meta.put({ key: META_LAST_ACTIVITY_AT, value: timestamp })
+}
+
+/** Persisted game count: the number the user last selected via the stepper (home or session-complete). */
+const META_SELECTED_GAME_COUNT = 'selectedGameCount'
+
+export async function getSelectedGameCount(): Promise<number | null> {
+  const row = await db.meta.get(META_SELECTED_GAME_COUNT)
+  return row?.value ?? null
+}
+
+export async function setSelectedGameCount(count: number): Promise<void> {
+  await db.meta.put({ key: META_SELECTED_GAME_COUNT, value: count })
 }
