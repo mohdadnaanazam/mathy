@@ -81,6 +81,7 @@ export default function LandingPage() {
   const [activeGame, setActiveGame] = useState<'math' | 'memory' | 'truefalse'>('math')
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const showMathOperations = mathDifficulty !== null
   const [mathVariantPlayed, setMathVariantPlayed] = useState<number>(0)
   const [mathVariantTotal, setMathVariantTotal] = useState<number>(20)
@@ -165,18 +166,24 @@ export default function LandingPage() {
 
   // Hydrate math & memory session progress from IndexedDB so played/remaining show correctly after return
   function hydrateSessions() {
-    getMathSessionMax().then(m => { setMathSessionMaxState(m) })
-    getMathSessionPlayed().then(p => setMathSessionPlayedState(p))
-    setMathSessionHydrated(true)
-    getMemorySessionMax().then(m => { setMemorySessionMaxState(m) })
-    getMemorySessionPlayed().then(p => setMemorySessionPlayedState(p))
-    setMemorySessionHydrated(true)
-    getTrueFalseSessionMax().then(m => { setTfSessionMaxState(m) })
-    getTrueFalseSessionPlayed().then(p => setTfSessionPlayedState(p))
-    setTfSessionHydrated(true)
+    Promise.all([
+      getMathSessionMax().then(m => setMathSessionMaxState(m)),
+      getMathSessionPlayed().then(p => setMathSessionPlayedState(p)),
+    ]).then(() => setMathSessionHydrated(true))
+
+    Promise.all([
+      getMemorySessionMax().then(m => setMemorySessionMaxState(m)),
+      getMemorySessionPlayed().then(p => setMemorySessionPlayedState(p)),
+    ]).then(() => setMemorySessionHydrated(true))
+
+    Promise.all([
+      getTrueFalseSessionMax().then(m => setTfSessionMaxState(m)),
+      getTrueFalseSessionPlayed().then(p => setTfSessionPlayedState(p)),
+    ]).then(() => setTfSessionHydrated(true))
   }
   useEffect(() => {
     hydrateSessions()
+    setMounted(true)
   }, [isSessionExpired])
 
   // Hydrate per-variant progress (operation + difficulty) whenever either changes.
@@ -234,7 +241,7 @@ export default function LandingPage() {
   }, [])
 
   async function handleReloadNewGames() {
-    if (!isRefreshing || isReloadingGames) return
+    if (isReloadingGames) return
     setIsReloadingGames(true)
     try {
       await clearGameCache()
@@ -257,8 +264,9 @@ export default function LandingPage() {
       setTfVariantPlayed(0)
       setTfVariantRemaining(20)
       await setSelectedGameCount(DEFAULT_GAME_COUNT)
-    } catch (err) {
-      setLastFetchAt(null)
+    } catch {
+      // Even on failure, stop the spinner. Don't null out lastFetchAt
+      // since that would hide the reload button entirely.
     } finally {
       setIsReloadingGames(false)
     }
@@ -767,7 +775,7 @@ export default function LandingPage() {
       </section>
 
       {/* Session expiry banner — stays inline in content flow */}
-      {isSessionExpired && (
+      {mounted && isSessionExpired && (
         <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
           <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
             <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 flex items-center justify-between gap-3">
@@ -825,10 +833,10 @@ export default function LandingPage() {
         >
           <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-2 py-3 sm:py-4">
             {/* Refresh countdown banner */}
-            {(mathVariantExhausted || memoryVariantExhausted || tfVariantExhausted) && (
+            {mounted && (mathVariantExhausted || memoryVariantExhausted || tfVariantExhausted) && (
               <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
             )}
-            {isRefreshing && !isSessionExpired && (
+            {mounted && isRefreshing && !isSessionExpired && (
               <button
                 type="button"
                 onClick={handleReloadNewGames}
@@ -858,11 +866,11 @@ export default function LandingPage() {
             >
               {isLocked
                 ? 'Limit reached (15/hour)'
-                : isSessionExpired
+                : mounted && isSessionExpired
                   ? 'Reset progress to play'
-                  : isRefreshing
+                  : mounted && isRefreshing
                     ? 'Reload to play'
-                    : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
+                    : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
                       ? 'Choose difficulty first'
                       : isNavigating
                         ? 'Starting…'

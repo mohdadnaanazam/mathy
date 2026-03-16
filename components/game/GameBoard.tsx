@@ -29,23 +29,25 @@ export default function GameBoard() {
   const setGameType = useGameStore(s => s.setGameType)
   const operation = useGameStore(s => s.operation)
   const [isReloading, setIsReloading] = useState(false)
+  const isReloadingRef = useRef(false)
 
   const handleReload = useCallback(async () => {
-    if (isReloading) return
+    if (isReloadingRef.current) return
+    isReloadingRef.current = true
     setIsReloading(true)
     try {
       await clearGameCache()
       const now = await fetchAndCacheAllGames()
       setLastFetchAt(now)
-      // After reload, navigate back to home so user can start fresh
       router.push('/')
     } catch {
       // On failure, send to home anyway
       router.push('/')
     } finally {
+      isReloadingRef.current = false
       setIsReloading(false)
     }
-  }, [isReloading, setLastFetchAt, router])
+  }, [setLastFetchAt, router])
 
   // Read URL params once per render as simple primitives
   // so we can use them safely in effects without depending on
