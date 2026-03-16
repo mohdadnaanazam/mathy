@@ -609,15 +609,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Single Play button – starts the currently selected game; disabled when 15 plays used this hour or session expired */}
-      <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-6">
-        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-3">
-          {isRefreshing && !isSessionExpired && (
-            <p className="text-xs text-slate-400 text-center">
-              Game cache expired. Tap Reload below to load new games and continue.
-            </p>
-          )}
-          {isSessionExpired && (
+      {/* Session expiry banner — stays inline in content flow */}
+      {isSessionExpired && (
+        <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
+          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
             <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-center space-y-2">
               <p className="text-xs text-amber-400">
                 You've been away for over an hour. Reset your progress to continue playing.
@@ -649,66 +644,74 @@ export default function LandingPage() {
                 {isExpiryResetting ? 'Resetting…' : 'Reset Progress'}
               </button>
             </div>
-          )}
-          <div className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.12em] text-slate-400" />
-          <button
-            type="button"
-            onClick={handlePlay}
-            disabled={playDisabled}
-            className="inline-flex items-center justify-center rounded-full px-10 py-3.5 sm:px-12 sm:py-4 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shrink-0"
-            style={{
-              backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
-              color: isLocked ? '#64748b' : '#111827',
-              border: `1px solid ${isLocked ? 'var(--border-subtle)' : 'var(--accent-orange-hover)'}`,
-              boxShadow: isLocked ? 'none' : '0 4px 16px rgba(249,115,22,0.25)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {isLocked
-              ? 'Limit reached (15/hour)'
-              : isSessionExpired
-                ? 'Reset progress to play'
-                : isRefreshing
-                  ? 'Reload to play'
-                  : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
-                    ? 'Choose difficulty first'
-                    : isNavigating
-                      ? 'Starting…'
-                      : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
-            {!isLocked &&
-              !isNavigating &&
-              !isRefreshing &&
-              !isSessionExpired &&
-              ((canPlayMath && activeGame === 'math') ||
-                (canPlayMemory && activeGame === 'memory')) &&
-              ' →'}
-          </button>
-        </div>
-      </section>
-
-      {/* Reload when game cache expired (but session NOT expired — session expiry is handled above) */}
-      {isRefreshing && !isSessionExpired && (
-        <section
-          className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-        >
-          <div className="mx-auto flex w-full max-w-2xl flex-col sm:flex-row items-center justify-center gap-3 px-4 py-4 sm:px-6 sm:py-5">
-            <button
-              type="button"
-              onClick={handleReloadNewGames}
-              disabled={isReloadingGames}
-              className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
-              style={{
-                backgroundColor: 'var(--accent-orange)',
-                color: '#111827',
-                border: '1px solid var(--accent-orange-hover)',
-              }}
-            >
-              {isReloadingGames ? '…' : 'Reload'}
-            </button>
           </div>
         </section>
       )}
+
+      {/* Floating sticky Play button */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <div
+          className="pointer-events-auto w-full"
+          style={{
+            background: 'linear-gradient(to top, var(--bg-surface) 60%, transparent)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        >
+          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-2 py-3 sm:py-4">
+            {isRefreshing && !isSessionExpired && (
+              <button
+                type="button"
+                onClick={handleReloadNewGames}
+                disabled={isReloadingGames}
+                className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
+                style={{
+                  backgroundColor: 'var(--accent-orange)',
+                  color: '#111827',
+                  border: '1px solid var(--accent-orange-hover)',
+                }}
+              >
+                {isReloadingGames ? '…' : 'Reload'}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handlePlay}
+              disabled={playDisabled}
+              className="w-full max-w-xs inline-flex items-center justify-center rounded-full px-10 py-3.5 sm:px-12 sm:py-4 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shrink-0"
+              style={{
+                backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
+                color: isLocked ? '#64748b' : '#111827',
+                border: `1px solid ${isLocked ? 'var(--border-subtle)' : 'var(--accent-orange-hover)'}`,
+                boxShadow: isLocked ? 'none' : '0 4px 20px rgba(249,115,22,0.35)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isLocked
+                ? 'Limit reached (15/hour)'
+                : isSessionExpired
+                  ? 'Reset progress to play'
+                  : isRefreshing
+                    ? 'Reload to play'
+                    : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory)
+                      ? 'Choose difficulty first'
+                      : isNavigating
+                        ? 'Starting…'
+                        : `Play ${activeGame === 'math' ? 'math' : 'memory'} game`}
+              {!isLocked &&
+                !isNavigating &&
+                !isRefreshing &&
+                !isSessionExpired &&
+                ((canPlayMath && activeGame === 'math') ||
+                  (canPlayMemory && activeGame === 'memory')) &&
+                ' →'}
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   )
 }
