@@ -111,25 +111,67 @@ export default function ApiMathGame() {
   // Only when all three difficulties for the current operation are completed
   // do we move to the next operation in OPERATION_ORDER.
   // If the user manually skipped a difficulty (e.g. played hard before medium),
-  // we will return to the first incomplete difficulty for that operation.
+  // we backfill the missing difficulties before moving to the next operation.
   useEffect(() => {
     if (!sessionComplete) return
     if (!difficulty) return
 
     const currentDifficulty = difficulty as Difficulty
     ;(async () => {
-      // 1. For the current operation, find the first difficulty (easy→medium→hard)
-      // that still has remaining games. This handles skipped difficulties.
-      for (const d of DIFFICULTY_ORDER) {
-        const progress = await getVariantProgress(operation, d)
-        if (progress.remaining > 0) {
+      // Fetch progress for all difficulties of the current operation once.
+      const progressByDiff: Record<Difficulty, { remaining: number }> = {
+        easy: await getVariantProgress(operation, 'easy'),
+        medium: await getVariantProgress(operation, 'medium'),
+        hard: await getVariantProgress(operation, 'hard'),
+      } as any
+
+      const hasRemaining = (d: Difficulty) => progressByDiff[d].remaining > 0
+
+      // 1. Within the current operation, choose the next difficulty primarily
+      // based on the difficulty that just finished.
+      if (currentDifficulty === 'easy') {
+        // Prefer Medium after Easy.
+        if (hasRemaining('medium')) {
           setNextOperation(operation)
-          setNextDifficulty(d)
+          setNextDifficulty('medium')
           return
+        }
+        // If Medium is exhausted, fall back to any other difficulty with remaining.
+        for (const d of DIFFICULTY_ORDER.filter(d => d !== 'easy')) {
+          if (hasRemaining(d)) {
+            setNextOperation(operation)
+            setNextDifficulty(d)
+            return
+          }
+        }
+      } else if (currentDifficulty === 'medium') {
+        // Prefer Hard after Medium.
+        if (hasRemaining('hard')) {
+          setNextOperation(operation)
+          setNextDifficulty('hard')
+          return
+        }
+        // If Hard is exhausted, fall back to any other difficulty with remaining.
+        for (const d of DIFFICULTY_ORDER.filter(d => d !== 'medium')) {
+          if (hasRemaining(d)) {
+            setNextOperation(operation)
+            setNextDifficulty(d)
+            return
+          }
+        }
+      } else if (currentDifficulty === 'hard') {
+        // When finishing Hard, backfill any skipped lower difficulties
+        // before moving to the next operation. Prefer Medium, then Easy.
+        for (const d of ['medium', 'easy'] as Difficulty[]) {
+          if (hasRemaining(d)) {
+            setNextOperation(operation)
+            setNextDifficulty(d)
+            return
+          }
         }
       }
 
-      // 2. Current operation is fully completed (all three difficulties done).
+      // 2. Current operation is fully completed (no remaining difficulties).
       // Move to the next operation in OPERATION_ORDER that still has any remaining
       // difficulty, again preferring easy→medium→hard within that operation.
       const opIndex = OPERATION_ORDER.indexOf(operation)
