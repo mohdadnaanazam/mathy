@@ -78,6 +78,8 @@ export default function ApiMathGame() {
   const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
   const [nextGamesCount, setNextGamesCount] = useState(5)
 
+  const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
+
   useEffect(() => {
     getMathSessionMax().then(setSessionMax)
     getMathSessionPlayed().then(setSessionPlayed)
@@ -101,6 +103,37 @@ export default function ApiMathGame() {
       })
     })
   }, [nextOperation, nextDifficulty])
+
+  // After a session completes, automatically advance difficulty:
+  // easy → medium → hard. If the next difficulty is exhausted (20/20),
+  // choose the next available difficulty with remaining > 0.
+  useEffect(() => {
+    if (!sessionComplete) return
+    if (!difficulty) return
+
+    const currentDifficulty = difficulty as Difficulty
+    const currentIdx = DIFFICULTY_ORDER.indexOf(currentDifficulty)
+    const candidates: Difficulty[] =
+      currentIdx === -1
+        ? ['medium', 'hard', 'easy']
+        : currentIdx === 0
+          ? ['medium', 'hard', 'easy']
+          : currentIdx === 1
+            ? ['hard', 'easy', 'medium']
+            : ['hard', 'easy', 'medium']
+
+    ;(async () => {
+      for (const d of candidates) {
+        const p = await getVariantProgress(operation, d)
+        if (p.remaining > 0) {
+          setNextDifficulty(d)
+          return
+        }
+      }
+      // If everything is exhausted, keep the current difficulty selected.
+      setNextDifficulty(currentDifficulty)
+    })()
+  }, [sessionComplete, operation, difficulty])
 
   // Compute the pool of questions for this session once per
   // (games, operation, difficulty, customOperations, sessionMax) change.
@@ -203,7 +236,6 @@ export default function ApiMathGame() {
         incrementVariantPlayed(operation, difficulty as Difficulty).then(() => {
           getVariantProgress(operation, difficulty as Difficulty).then(p => {
             setNextOperation(operation)
-            setNextDifficulty(difficulty as Difficulty)
             setNextVariantPlayed(p.played)
             setNextVariantRemaining(p.remaining)
           })
