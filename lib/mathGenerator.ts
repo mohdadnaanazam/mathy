@@ -5,11 +5,18 @@ export function generateMathQuestion(
   mode: OperationMode = 'mixture',
   customOps?: OperationMode[],
 ): MathQuestion {
-  const ranges: Record<Difficulty, number> = { easy: 10, medium: 50, hard: 100 }
-  const max = ranges[difficulty]
-
-  let a = Math.floor(Math.random() * max) + 1
-  let b = Math.floor(Math.random() * max) + 1
+  // Number ranges per difficulty
+  const ranges: Record<Difficulty, { min: number; max: number }> = {
+    easy:   { min: 1,  max: 10 },
+    medium: { min: 10, max: 50 },
+    hard:   { min: 50, max: 200 },
+  }
+  // Multiplication/division use smaller ranges to keep answers reasonable
+  const mulRanges: Record<Difficulty, { min: number; max: number }> = {
+    easy:   { min: 1,  max: 10 },
+    medium: { min: 5,  max: 15 },
+    hard:   { min: 10, max: 30 },
+  }
 
   let ops: string[]
   if (mode === 'custom' && customOps?.length) {
@@ -37,13 +44,23 @@ export function generateMathQuestion(
     }
   }
 
-  const op  = ops[Math.floor(Math.random() * ops.length)]
+  const op = ops[Math.floor(Math.random() * ops.length)]
 
-  // Ensure clean division
+  const isMulDiv = op === '×' || op === '÷'
+  const { min, max } = isMulDiv ? mulRanges[difficulty] : ranges[difficulty]
+
+  let a: number
+  let b: number
+
   if (op === '÷') {
-    b = Math.floor(Math.random() * 9) + 1
-    a = b * (Math.floor(Math.random() * 12) + 1)
+    b = Math.floor(Math.random() * (max - min + 1)) + min
+    const quotient = Math.floor(Math.random() * (max - min + 1)) + min
+    a = b * quotient
+  } else {
+    a = Math.floor(Math.random() * (max - min + 1)) + min
+    b = Math.floor(Math.random() * (max - min + 1)) + min
   }
+
   // Ensure subtraction stays positive
   if (op === '-' && b > a) { [a, b] = [b, a] }
 
