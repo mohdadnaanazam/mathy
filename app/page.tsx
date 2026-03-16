@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Minus, X, Divide, Sparkles, Settings2, Grid3X3, LayoutGrid, Calculator, CheckCircle } from 'lucide-react'
+import { Grid3X3, CheckCircle } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useRouter } from 'next/navigation'
 import { OperationMode, type Difficulty } from '@/types'
@@ -395,12 +395,12 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5">
               {[
-                { icon: Plus, label: 'Addition' as ModeLabel },
-                { icon: Minus, label: 'Subtraction' as ModeLabel },
-                { icon: X, label: 'Multiplication' as ModeLabel },
-                { icon: Divide, label: 'Division' as ModeLabel },
-                { icon: Sparkles, label: 'Mixture' as ModeLabel },
-                { icon: Settings2, label: 'Custom' as ModeLabel },
+                { symbol: '+', label: 'Addition' as ModeLabel },
+                { symbol: '−', label: 'Subtraction' as ModeLabel },
+                { symbol: '×', label: 'Multiplication' as ModeLabel },
+                { symbol: '÷', label: 'Division' as ModeLabel },
+                { symbol: 'Mix', label: 'Mixture' as ModeLabel },
+                { symbol: '⚙', label: 'Custom' as ModeLabel },
               ].map(item => {
                 const active = activeMode === item.label
                 return (
@@ -416,12 +416,12 @@ export default function LandingPage() {
                       boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
                     }}
                   >
-                    <item.icon
-                      size={20}
-                      strokeWidth={active ? 2.4 : 2}
-                      className="mb-1"
+                    <span
+                      className="text-xl font-bold mb-1"
                       style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
-                    />
+                    >
+                      {item.symbol}
+                    </span>
                     <span className="text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-slate-300">
                       {item.label}
                     </span>
@@ -483,12 +483,6 @@ export default function LandingPage() {
                       boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
                     }}
                   >
-                    <Calculator
-                      size={20}
-                      strokeWidth={active ? 2.4 : 2}
-                      className="mb-1.5"
-                      style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
-                    />
                     <span
                       className="text-[10px] sm:text-xs font-semibold tracking-[0.06em]"
                       style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
@@ -601,12 +595,6 @@ export default function LandingPage() {
                     boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
                   }}
                 >
-                  <LayoutGrid
-                    size={20}
-                    strokeWidth={active ? 2.4 : 2}
-                    className="mb-1.5"
-                    style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
-                  />
                   <span className="text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-slate-300" style={{ color: active ? 'var(--accent-orange)' : undefined }}>
                     {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
                   </span>
@@ -713,12 +701,6 @@ export default function LandingPage() {
                     boxShadow: active ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
                   }}
                 >
-                  <CheckCircle
-                    size={20}
-                    strokeWidth={active ? 2.4 : 2}
-                    className="mb-1.5"
-                    style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
-                  />
                   <span
                     className="text-[10px] sm:text-xs font-semibold tracking-[0.06em]"
                     style={{ color: active ? 'var(--accent-orange)' : '#e5e7eb' }}
@@ -788,7 +770,7 @@ export default function LandingPage() {
       {isSessionExpired && (
         <section className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] py-4">
           <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
-            <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-center space-y-2">
+            <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 flex items-center justify-between gap-3">
               <p className="text-xs text-amber-400">
                 You've been away for over an hour. Reset your progress to continue playing.
               </p>
@@ -814,7 +796,7 @@ export default function LandingPage() {
                   await setSelectedGameCount(DEFAULT_GAME_COUNT)
                 }}
                 disabled={isExpiryResetting}
-                className="inline-flex items-center justify-center rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
+                className="shrink-0 inline-flex items-center justify-center rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-all disabled:opacity-60"
                 style={{
                   backgroundColor: 'var(--accent-orange)',
                   color: '#111827',
