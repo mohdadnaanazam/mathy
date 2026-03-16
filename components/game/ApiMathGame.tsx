@@ -157,7 +157,10 @@ export default function ApiMathGame() {
           return
         }
       } else if (currentDifficulty === 'hard') {
-        // When finishing Hard, move to the next operation and start from Easy.
+        // When finishing Hard, always advance to the NEXT operation and
+        // reset difficulty to Easy, regardless of remaining games for
+        // the current operation. This prevents loops like
+        // Subtraction Hard -> Subtraction Easy.
         const opIndex = OPERATION_ORDER.indexOf(operation)
         if (opIndex === -1) {
           setNextOperation(operation)
@@ -165,26 +168,8 @@ export default function ApiMathGame() {
           return
         }
 
-        // Only consider operations AFTER the current one for automatic progression.
-        // We intentionally do not wrap back to the same operation here so that
-        // finishing Hard always advances to the next operation.
-        const opCandidates: OperationMode[] = [
-          ...OPERATION_ORDER.slice(opIndex + 1),
-          ...OPERATION_ORDER.slice(0, opIndex),
-        ]
-
-        for (const op of opCandidates) {
-          for (const d of DIFFICULTY_ORDER) {
-            if (await hasRemaining(op, d)) {
-              setNextOperation(op)
-              setNextDifficulty(d)
-              return
-            }
-          }
-        }
-        // If everything is exhausted across all operations, stay on current
-        // operation at Easy as a safe fallback.
-        setNextOperation(operation)
+        const nextOp = OPERATION_ORDER[(opIndex + 1) % OPERATION_ORDER.length]
+        setNextOperation(nextOp)
         setNextDifficulty('easy')
         return
       }
