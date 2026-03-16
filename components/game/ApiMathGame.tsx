@@ -95,10 +95,15 @@ export default function ApiMathGame() {
     getMathSessionPlayed().then(setSessionPlayed)
   }, [])
 
-  // Keep the next-session operation in sync with the current one
+  // Keep the next-session operation in sync with the current one,
+  // but only while the session is still in progress. Once the session
+  // completes, the progression logic takes over and we must not
+  // overwrite its selection.
   useEffect(() => {
-    setNextOperation(operation)
-  }, [operation])
+    if (!sessionComplete) {
+      setNextOperation(operation)
+    }
+  }, [operation, sessionComplete])
 
   // Load per-variant progress for the "next session" picker
   useEffect(() => {
