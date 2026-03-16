@@ -1,16 +1,19 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { getLastLeftAt, setLastLeftAt } from '@/lib/db'
+import { clearGameCache, getGlobalLastFetchAt, getLastLeftAt, resetAllProgress, setLastLeftAt } from '@/lib/db'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
+import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 
 const INACTIVE_THRESHOLD_MS = 60 * 60 * 1000 // 1 hour
 
 export interface UseInactiveUserResult {
   /** True when user returned after being away > 1 hour. */
   showInactiveModal: boolean
+  /** True when cached games are expired (>1 hour). */
+  isExpired: boolean
   onContinue: () => void
-  onRefresh: (invalidateCache: () => Promise<void>) => void
+  onRefresh: () => Promise<void>
 }
 
 /**
@@ -19,6 +22,7 @@ export interface UseInactiveUserResult {
  */
 export function useInactiveUser(): UseInactiveUserResult {
   const [showInactiveModal, setShowInactiveModal] = useState(false)
+  const [isExpired, setIsExpired] = useState(false)
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
 
   const onContinue = useCallback(() => {
@@ -26,10 +30,13 @@ export function useInactiveUser(): UseInactiveUserResult {
   }, [])
 
   const onRefresh = useCallback(
-    async (invalidateCache: () => Promise<void>) => {
-      await invalidateCache()
+    async () => {
+      await clearGameCache()
+      await resetAllProgress()
+      const now = await fetchAndCacheAllGames()
       await setLastLeftAt(Date.now())
-      setLastFetchAt(null)
+      setLastFetchAt(now)
+      setIsExpired(false)
       setShowInactiveModal(false)
     },
     [setLastFetchAt],
@@ -40,10 +47,14 @@ export function useInactiveUser(): UseInactiveUserResult {
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        getLastLeftAt().then(leftAt => {
+        Promise.all([getLastLeftAt(), getGlobalLastFetchAt()]).then(([leftAt, lastFetchAt]) => {
           if (leftAt == null) return
           const elapsed = Date.now() - leftAt
-          if (elapsed >= INACTIVE_THRESHOLD_MS) setShowInactiveModal(true)
+          if (elapsed < INACTIVE_THRESHOLD_MS) return
+
+          const expired = lastFetchAt != null && Date.now() - lastFetchAt >= INACTIVE_THRESHOLD_MS
+          setIsExpired(expired)
+          setShowInactiveModal(true)
         })
       } else {
         setLastLeftAt(Date.now())
@@ -54,5 +65,5 @@ export function useInactiveUser(): UseInactiveUserResult {
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
 
-  return { showInactiveModal, onContinue, onRefresh }
+  return { showInactiveModal, isExpired, onContinue, onRefresh }
 }

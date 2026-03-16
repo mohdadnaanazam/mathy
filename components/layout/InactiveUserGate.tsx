@@ -8,10 +8,11 @@ import InactiveUserModal from '@/components/ui/InactiveUserModal'
  * Mount in root layout so it works on all pages.
  */
 export default function InactiveUserGate() {
-  const { showInactiveModal, onContinue, onRefresh } = useInactiveUser()
+  const { showInactiveModal, isExpired, onContinue, onRefresh } = useInactiveUser()
   return (
     <InactiveUserModal
       open={showInactiveModal}
+      isExpired={isExpired}
       onContinue={onContinue}
       onRefresh={onRefresh}
     />

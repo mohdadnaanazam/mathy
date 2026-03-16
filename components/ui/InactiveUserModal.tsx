@@ -1,23 +1,19 @@
 'use client'
 
-import { clearGameCache } from '@/lib/db'
-
 export interface InactiveUserModalProps {
   open: boolean
+  isExpired: boolean
   onContinue: () => void
-  onRefresh: (invalidateCache: () => Promise<void>) => void
+  onRefresh: () => Promise<void>
 }
 
 export default function InactiveUserModal({
   open,
+  isExpired,
   onContinue,
   onRefresh,
 }: InactiveUserModalProps) {
   if (!open) return null
-
-  const handleRefresh = () => {
-    onRefresh(clearGameCache)
-  }
 
   return (
     <div
@@ -38,19 +34,23 @@ export default function InactiveUserModal({
           Welcome back
         </h2>
         <p className="text-sm text-slate-400 mb-6">
-          You’ve been away for a while. Continue with your previous games or refresh to load new ones.
+          {isExpired
+            ? 'Your previous session has expired (over 1 hour). Refresh games to continue.'
+            : 'You’ve been away for a while. Continue with your previous games or refresh to load new ones.'}
         </p>
         <div className="flex flex-col gap-3">
+          {!isExpired && (
+            <button
+              type="button"
+              onClick={onContinue}
+              className="w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 text-sm font-semibold text-zinc-100 hover:bg-zinc-700 transition-colors"
+            >
+              Continue previous game
+            </button>
+          )}
           <button
             type="button"
-            onClick={onContinue}
-            className="w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 text-sm font-semibold text-zinc-100 hover:bg-zinc-700 transition-colors"
-          >
-            Continue previous game
-          </button>
-          <button
-            type="button"
-            onClick={handleRefresh}
+            onClick={onRefresh}
             className="w-full rounded-xl py-3 text-sm font-semibold transition-colors"
             style={{
               backgroundColor: 'var(--accent-orange)',
