@@ -116,54 +116,44 @@ export default function ApiMathGame() {
     if (!sessionComplete) return
     if (!difficulty) return
 
-    const currentDifficulty = difficulty as Difficulty
     ;(async () => {
-      // Fetch progress for all difficulties of the current operation once.
-      const progressByDiff: Record<Difficulty, { remaining: number }> = {
-        easy: await getVariantProgress(operation, 'easy'),
-        medium: await getVariantProgress(operation, 'medium'),
-        hard: await getVariantProgress(operation, 'hard'),
-      } as any
+      const currentDifficulty = difficulty as Difficulty
 
-      const hasRemaining = (d: Difficulty) => progressByDiff[d].remaining > 0
+      // Helper to check remaining questions for a given (operation, difficulty).
+      const hasRemaining = async (op: OperationMode, d: Difficulty) => {
+        const progress = await getVariantProgress(op, d)
+        return progress.remaining > 0
+      }
 
-      // 1. Within the current operation, choose the next difficulty primarily
-      // based on the difficulty that just finished.
+      // 1. Within the current operation, choose the next difficulty strictly
+      // based on what was just completed, without re-selecting the same level.
       if (currentDifficulty === 'easy') {
-        // Prefer Medium after Easy.
-        if (hasRemaining('medium')) {
-          setNextOperation(operation)
-          setNextDifficulty('medium')
-          return
-        }
-        // If Medium is exhausted, fall back to any other difficulty with remaining.
-        for (const d of DIFFICULTY_ORDER.filter(d => d !== 'easy')) {
-          if (hasRemaining(d)) {
+        // Prefer Medium after Easy; if exhausted, fall through to Hard.
+        for (const d of ['medium', 'hard'] as Difficulty[]) {
+          if (await hasRemaining(operation, d)) {
             setNextOperation(operation)
             setNextDifficulty(d)
             return
           }
         }
       } else if (currentDifficulty === 'medium') {
-        // Prefer Hard after Medium.
-        if (hasRemaining('hard')) {
+        // Prefer Hard after Medium; never re-select Medium here.
+        if (await hasRemaining(operation, 'hard')) {
           setNextOperation(operation)
           setNextDifficulty('hard')
           return
         }
-        // If Hard is exhausted, fall back to any other difficulty with remaining.
-        for (const d of DIFFICULTY_ORDER.filter(d => d !== 'medium')) {
-          if (hasRemaining(d)) {
-            setNextOperation(operation)
-            setNextDifficulty(d)
-            return
-          }
+        // If Hard is exhausted, we can still offer Easy if it has remaining.
+        if (await hasRemaining(operation, 'easy')) {
+          setNextOperation(operation)
+          setNextDifficulty('easy')
+          return
         }
       } else if (currentDifficulty === 'hard') {
         // When finishing Hard, backfill any skipped lower difficulties
         // before moving to the next operation. Prefer Medium, then Easy.
         for (const d of ['medium', 'easy'] as Difficulty[]) {
-          if (hasRemaining(d)) {
+          if (await hasRemaining(operation, d)) {
             setNextOperation(operation)
             setNextDifficulty(d)
             return
