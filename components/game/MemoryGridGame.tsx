@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
@@ -11,9 +11,12 @@ import {
   getMemorySessionMax,
   getMemorySessionPlayed,
   incrementMemorySessionPlayed,
-  addToVariantPlayed,
   getVariantProgress,
   resetMemorySession,
+  getSelectedGameCount,
+  setSelectedGameCount,
+  setLastPlayedSettings,
+  incrementVariantPlayed,
 } from '@/lib/db'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
@@ -25,7 +28,16 @@ const GRID_SIZE: Record<Difficulty, number> = {
 }
 
 const HIGHLIGHT_DURATION_MS = 2500
-const WRONG_PENALTY = 0
+const AUTO_ADVANCE_CORRECT_MS = 1000
+const AUTO_ADVANCE_WRONG_MS = 1500
+
+const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
+  easy: 10,
+  medium: 20,
+  hard: 50,
+}
+
+const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
 type Phase = 'highlight' | 'recall' | 'result'
 
@@ -37,26 +49,38 @@ export default function MemoryGridGame() {
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
 
+  // Keep a ref so async callbacks never read stale difficulty
+  const difficultyRef = useRef(difficulty)
+  difficultyRef.current = difficulty
+
   const size = GRID_SIZE[difficulty]
   const total = size * size
 
-  const [sessionMax, setSessionMax] = useState(10)
-  const [roundIndex, setRoundIndex] = useState(0) // 1-based round counter
+  const [sessionMax, setSessionMax] = useState(5)
+  const [roundIndex, setRoundIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('highlight')
   const [pattern, setPattern] = useState<number[]>([])
   const [selected, setSelected] = useState<number[]>([])
   const [roundScore, setRoundScore] = useState(0)
-  const [gameOver, setGameOver] = useState(false)
+  const [roundResult, setRoundResult] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
   const [sessionComplete, setSessionComplete] = useState(false)
   const [nextVariantPlayed, setNextVariantPlayed] = useState(0)
   const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
   const [nextGamesCount, setNextGamesCount] = useState(5)
 
-  const pointsPerCorrect = difficulty === 'easy' ? 10 : difficulty === 'medium' ? 20 : 50
+  const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty] ?? 10
 
+  // --- Hydration effects ---
   useEffect(() => {
     getMemorySessionMax().then(setSessionMax)
+  }, [])
+
+  // Hydrate nextGamesCount from persisted selection on mount
+  useEffect(() => {
+    getSelectedGameCount().then(saved => {
+      if (saved != null && saved > 0) setNextGamesCount(saved)
+    })
   }, [])
 
   const cells = useMemo(() => Array.from({ length: total }, (_, i) => i), [total])
@@ -73,76 +97,91 @@ export default function MemoryGridGame() {
     setPhase('highlight')
     setSelected([])
     setRoundScore(0)
-    setGameOver(false)
+    setRoundResult(null)
     generatePattern()
   }, [generatePattern, sessionComplete])
 
+  // Auto-transition from highlight → recall
   useEffect(() => {
     if (phase !== 'highlight' || pattern.length === 0) return
-    const t = setTimeout(() => {
-      setPhase('recall')
-    }, HIGHLIGHT_DURATION_MS)
+    const t = setTimeout(() => setPhase('recall'), HIGHLIGHT_DURATION_MS)
     return () => clearTimeout(t)
   }, [phase, pattern.length])
 
+  // --- Round completion handler (shared by correct & wrong) ---
+  const finishRound = useCallback(
+    async (wasCorrect: boolean) => {
+      const currentDiff = difficultyRef.current as Difficulty
+
+      // Record attempt
+      recordHourlyAttempt()
+
+      // Increment per-variant progress (1 question at a time, like math game)
+      await incrementVariantPlayed('memory', currentDiff)
+
+      // Increment session played
+      const played = await getMemorySessionPlayed()
+      if (played < sessionMax) {
+        const next = await incrementMemorySessionPlayed()
+        if (next >= sessionMax) {
+          // Don't update nextVariant counters here — the progression effect handles it
+          setSessionComplete(true)
+        } else {
+          // Auto-advance to next round after delay
+          const delay = wasCorrect ? AUTO_ADVANCE_CORRECT_MS : AUTO_ADVANCE_WRONG_MS
+          setTimeout(() => {
+            setTimerKey(k => k + 1)
+            startRound()
+          }, delay)
+        }
+      } else {
+        setSessionComplete(true)
+      }
+
+      setTimeout(() => syncNow(), 300)
+    },
+    [sessionMax, recordHourlyAttempt, syncNow, startRound],
+  )
+
+  // --- Cell click handler ---
   const handleCellClick = useCallback(
     (index: number) => {
-      if (phase !== 'recall' || gameOver) return
+      if (phase !== 'recall' || roundResult !== null) return
       if (selected.includes(index)) return
 
       const next = [...selected, index]
       setSelected(next)
 
       if (pattern.includes(index)) {
+        // Correct click
         const points = pointsPerCorrect
         setRoundScore(s => s + points)
         addScore(points)
+
         if (next.length === pattern.length) {
-          setGameOver(true)
-          getMemorySessionPlayed().then(played => {
-            if (played < sessionMax) {
-              incrementMemorySessionPlayed().then(next => {
-                // Track per-difficulty cumulative progress for memory game
-                addToVariantPlayed('memory', difficulty, 1)
-                if (next >= sessionMax) {
-                  setSessionComplete(true)
-                }
-              })
-            } else {
-              setSessionComplete(true)
-            }
-          })
-          setTimeout(() => syncNow(), 300)
+          // All correct blocks found
+          setRoundResult('correct')
+          setPhase('result')
+          finishRound(true)
         }
       } else {
-        if (WRONG_PENALTY > 0) addScore(-WRONG_PENALTY)
-        setGameOver(true)
-        getMemorySessionPlayed().then(played => {
-          if (played < sessionMax) {
-            incrementMemorySessionPlayed().then(next => {
-              addToVariantPlayed('memory', difficulty, 1)
-              if (next >= sessionMax) {
-                setSessionComplete(true)
-              }
-            })
-          } else {
-            setSessionComplete(true)
-          }
-        })
-        setTimeout(() => syncNow(), 300)
+        // Wrong click
+        setRoundResult('wrong')
+        setPhase('result')
+        finishRound(false)
       }
     },
-    [phase, gameOver, selected, pattern, addScore, syncNow, sessionMax, pointsPerCorrect],
+    [phase, roundResult, selected, pattern, addScore, pointsPerCorrect, finishRound],
   )
 
   const handleTimeUp = useCallback(() => {
-    recordHourlyAttempt()
-    syncNow()
+    if (roundResult !== null) return
+    setRoundResult('wrong')
     setPhase('result')
-  }, [recordHourlyAttempt, syncNow])
+    finishRound(false)
+  }, [roundResult, finishRound])
 
   // When difficulty changes and we're not on the session-complete panel, reset and start a new session.
-  // When on the panel, changing difficulty only updates the panel (remaining count); do not start a round.
   useEffect(() => {
     if (sessionComplete) return
     setRoundIndex(0)
@@ -151,17 +190,44 @@ export default function MemoryGridGame() {
     return () => clearTimeout(t)
   }, [difficulty, sessionComplete])
 
-  // Load per-difficulty progress for the Session Complete panel (remaining games).
+  // Load per-difficulty progress for the Session Complete panel when user manually changes difficulty.
   useEffect(() => {
     if (!sessionComplete || !difficulty) return
     getVariantProgress('memory', difficulty).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
-      setNextGamesCount(prev =>
-        p.remaining <= 0 ? 0 : Math.min(Math.max(prev || 5, 1), p.remaining),
-      )
+      setNextGamesCount(prev => {
+        if (p.remaining <= 0) return 0
+        return Math.min(Math.max(prev, 1), p.remaining)
+      })
     })
   }, [sessionComplete, difficulty])
+
+  // After a session completes, advance difficulty: easy → medium → hard → wrap to easy.
+  // Eagerly loads variant progress for the new difficulty so the session complete
+  // screen renders with correct played/remaining immediately.
+  useEffect(() => {
+    if (!sessionComplete) return
+
+    const currentDiff = difficultyRef.current as Difficulty
+    const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
+    if (diffIdx === -1) return
+
+    const nextDiffIdx = (diffIdx + 1) % DIFFICULTY_ORDER.length
+    const newDiff = DIFFICULTY_ORDER[nextDiffIdx]
+
+    setDifficulty(newDiff)
+
+    // Eagerly load variant progress for the new difficulty
+    getVariantProgress('memory', newDiff).then(p => {
+      setNextVariantPlayed(p.played)
+      setNextVariantRemaining(p.remaining)
+      setNextGamesCount(prev => {
+        if (p.remaining <= 0) return 0
+        return Math.min(Math.max(prev, 1), p.remaining)
+      })
+    })
+  }, [sessionComplete])
 
   const currentRoundDisplay = Math.min(Math.max(roundIndex || 1, 1), sessionMax || 1)
   const nextVariantExhausted = nextVariantRemaining <= 0
@@ -178,7 +244,9 @@ export default function MemoryGridGame() {
   const isHighlighted = (index: number) => phase === 'highlight' && pattern.includes(index)
   const isSelected = (index: number) => selected.includes(index)
   const isCorrect = (index: number) => pattern.includes(index)
-  const showAsWrong = (index: number) => gameOver && selected.includes(index) && !pattern.includes(index)
+  const showAsWrong = (index: number) => roundResult === 'wrong' && selected.includes(index) && !pattern.includes(index)
+  // On result phase, reveal the correct pattern so user can learn
+  const showMissed = (index: number) => phase === 'result' && pattern.includes(index) && !selected.includes(index)
 
   if (sessionComplete) {
     return (
@@ -217,9 +285,10 @@ export default function MemoryGridGame() {
                     onClick={() => setDifficulty(d)}
                     className="rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 text-[11px] sm:text-xs font-semibold transition-all"
                     style={{
-                      backgroundColor: 'var(--bg-surface)',
+                      backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
                       borderRadius: 12,
-                      border: active ? '1px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                      color: active ? 'var(--accent-orange)' : '#d1d5db',
                     }}
                   >
                     {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
@@ -229,7 +298,7 @@ export default function MemoryGridGame() {
             </div>
           </div>
 
-          {/* Number of games: show remaining for current difficulty, clamp stepper */}
+          {/* Number of games */}
           <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
             <div className="flex flex-col">
               <span className="section-label text-xs mb-0.5">Number of games</span>
@@ -289,6 +358,12 @@ export default function MemoryGridGame() {
               onClick={async () => {
                 if (nextVariantExhausted || nextGamesCount <= 0) return
                 await resetMemorySession(nextGamesCount)
+                await setSelectedGameCount(nextGamesCount)
+                await setLastPlayedSettings({
+                  gameType: 'memory',
+                  difficulty,
+                })
+                setSessionMax(nextGamesCount)
                 setSessionComplete(false)
                 setRoundIndex(0)
                 setTimeout(() => startRound(), 0)
@@ -312,7 +387,6 @@ export default function MemoryGridGame() {
 
   return (
     <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-1 sm:px-2 sm:py-3 gap-2 sm:gap-4">
-      {/* Section title: Memory Grid Game (matches Math Game label) */}
       <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
         <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
           Memory Grid Game
@@ -331,18 +405,38 @@ export default function MemoryGridGame() {
         </div>
       </div>
 
-      <p className="section-label mb-2 sm:mb-3 text-slate-400 text-xs">
-        {phase === 'highlight'
-          ? 'Remember the blocks…'
-          : phase === 'recall'
-            ? 'Click the blocks you saw'
-            : gameOver
-              ? (selected.length === pattern.length && selected.every(i => pattern.includes(i))
-                  ? 'Correct!'
-                  : 'Wrong block — round over')
-              : ''}
-      </p>
+      {/* Phase instruction + feedback */}
+      <div className="min-h-[28px] flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          {roundResult ? (
+            <motion.p
+              key={roundResult}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="rounded-full border px-5 py-1.5 text-xs sm:text-sm font-semibold"
+              style={{
+                color: roundResult === 'correct' ? '#22c55e' : '#f87171',
+                borderColor: roundResult === 'correct' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+                background: roundResult === 'correct' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+              }}
+            >
+              {roundResult === 'correct' ? '✓ Correct!' : '✗ Wrong block'}
+            </motion.p>
+          ) : (
+            <motion.p
+              key={phase}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="section-label text-slate-400 text-xs"
+            >
+              {phase === 'highlight' ? 'Remember the blocks…' : 'Click the blocks you saw'}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
 
+      {/* Grid */}
       <div
         className="api-game-item grid gap-1 sm:gap-1.5 w-full max-w-[280px] sm:max-w-[360px]"
         style={{
@@ -361,12 +455,12 @@ export default function MemoryGridGame() {
                 opacity: 1,
                 backgroundColor: showAsWrong(index)
                   ? 'rgba(239, 68, 68, 0.4)'
-                  : isHighlighted(index)
+                  : isHighlighted(index) || showMissed(index)
                     ? 'var(--accent-orange)'
                     : isSelected(index) && isCorrect(index)
                       ? 'rgba(34, 197, 94, 0.5)'
                       : 'rgba(39, 39, 42, 0.9)',
-                borderColor: isHighlighted(index)
+                borderColor: isHighlighted(index) || showMissed(index)
                   ? 'var(--accent-orange)'
                   : showAsWrong(index)
                     ? '#ef4444'
@@ -376,27 +470,17 @@ export default function MemoryGridGame() {
               className="rounded-lg sm:rounded-xl border-2 min-h-[40px] sm:min-h-0 aspect-square touch-manipulative"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               onClick={() => handleCellClick(index)}
-              disabled={phase !== 'recall' || gameOver}
+              disabled={phase !== 'recall' || roundResult !== null}
             />
           ))}
         </AnimatePresence>
       </div>
 
-      <div className="api-game-item w-full flex justify-center pt-0.5">
-        <button
-          type="button"
-          onClick={() => {
-            setTimerKey(k => k + 1)
-            startRound()
-          }}
-          className="rounded-full px-4 py-2.5 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-white transition-all min-h-[40px] sm:min-h-[44px] touch-manipulative"
-          style={{
-            background: 'var(--accent-orange)',
-            boxShadow: '0 4px 14px rgba(234, 88, 12, 0.35)',
-          }}
-        >
-          Next round →
-        </button>
+      {/* Difficulty badge */}
+      <div className="flex items-center justify-center gap-2 mt-1">
+        <span className="rounded-full border border-zinc-700 bg-zinc-800/60 px-2.5 py-0.5 text-[9px] sm:text-[11px] font-mono uppercase tracking-wider text-slate-400">
+          {difficulty} · {size}×{size}
+        </span>
       </div>
     </div>
   )
