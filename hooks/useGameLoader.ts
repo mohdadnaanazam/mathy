@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   getCachedGames,
-  isCacheFresh,
   setCachedGames,
   getLastFetchAt,
   getCacheTtlMs,
@@ -187,13 +186,8 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
           setLastFetchAtGlobal(at)
           setLoading(false)
           setError(null)
-
-          // Check if any cache is stale
-          const freshChecks = await Promise.all(MATH_OP_TYPES.map(t => isCacheFresh(t)))
-          const anyStale = freshChecks.some(f => !f)
-          if (anyStale && !cancelled) {
-            fetchAllMathFromServer(false)
-          }
+          // Don't auto-fetch in background when cache is stale.
+          // The user can play cached games and reload manually if they want fresh ones.
           return
         }
         // No cache — fetch from server
@@ -208,11 +202,7 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
           setLastFetchAtGlobal(at ?? null)
           setLoading(false)
           setError(null)
-
-          const fresh = await isCacheFresh(gameType)
-          if (!fresh && !cancelled) {
-            loadSingleFromServer(false)
-          }
+          // Don't auto-fetch in background — cached games are playable.
           return
         }
         if (!cancelled) await loadSingleFromServer(true)

@@ -89,12 +89,12 @@ export default function GameBoard() {
         position: 'relative',
       }}
     >
-      {/* Non-blocking banner when new games are available */}
+      {/* Optional non-blocking hint when new games are available */}
       {(gamesExpired || isSessionExpired) && (
         <div className="mx-auto w-full max-w-lg md:max-w-xl lg:max-w-2xl px-4 sm:px-6 pt-1 pb-2">
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 flex items-center justify-between gap-2">
-            <p className="text-[10px] text-amber-400 leading-snug">
-              ⚡ New games available
+          <div className="rounded-xl border border-zinc-700/40 bg-zinc-800/30 px-3 py-2 flex items-center justify-between gap-2">
+            <p className="text-[10px] text-slate-500 leading-snug">
+              Fresh games available
             </p>
             <button
               type="button"

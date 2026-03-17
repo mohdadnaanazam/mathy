@@ -193,7 +193,7 @@ export default function LandingPage() {
       {/* Floating Play button */}
       <FloatingPlayButton
         label={s.playLabel}
-        showArrow={!s.isLocked && !s.isNavigating && !(s.isSessionExpired && !s.hasUnfinishedGames) && s.canPlayActive}
+        showArrow={!s.isLocked && !s.isNavigating && s.canPlayActive}
         disabled={s.playDisabled}
         isLocked={s.isLocked}
         isNavigating={s.isNavigating}

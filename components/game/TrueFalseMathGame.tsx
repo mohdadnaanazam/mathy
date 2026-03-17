@@ -41,8 +41,7 @@ export default function TrueFalseMathGame() {
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
   const { games, loading, error, refresh } = useGameLoader('true_false_math')
-  const { secondsRemaining, hasTimer } = useGameTimer()
-  const prevSecondsRef = useRef(secondsRemaining)
+  useGameTimer()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
   const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
@@ -174,11 +173,7 @@ export default function TrueFalseMathGame() {
       ? effectiveGames[questionOrder[currentIndex]]
       : undefined
 
-  // Auto-refresh when hourly countdown hits 0
-  useEffect(() => {
-    if (hasTimer && secondsRemaining === 0 && prevSecondsRef.current > 0) refresh()
-    prevSecondsRef.current = secondsRemaining
-  }, [secondsRemaining, hasTimer, refresh])
+
 
   const goNext = useCallback(() => {
     setFeedback(null)

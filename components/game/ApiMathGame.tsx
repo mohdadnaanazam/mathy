@@ -71,8 +71,7 @@ export default function ApiMathGame() {
   useEffect(() => {
     if (opFromUrl) setOperation(opFromUrl)
   }, [opFromUrl, setOperation])
-  const { secondsRemaining, hasTimer } = useGameTimer()
-  const prevSecondsRef = useRef(secondsRemaining)
+  useGameTimer()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
 
@@ -286,13 +285,7 @@ export default function ApiMathGame() {
     }
   }, [operation])
 
-  // When hourly countdown hits 0, auto-fetch new games and reset timer
-  useEffect(() => {
-    if (hasTimer && secondsRemaining === 0 && prevSecondsRef.current > 0) {
-      refresh()
-    }
-    prevSecondsRef.current = secondsRemaining
-  }, [secondsRemaining, hasTimer, refresh])
+
 
   // Only run entrance animation when advancing to next question, not on first load.
   useGSAP(() => {

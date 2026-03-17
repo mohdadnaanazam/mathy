@@ -214,49 +214,76 @@ export function useHomePageState() {
     finally { setIsReloadingGames(false) }
   }, [isReloadingGames, isSessionExpired, resetAndResume, setLastFetchAt])
 
+  /** Safety timeout: if navigation hasn't completed after 6s, reset the spinner. */
+  const NAV_TIMEOUT_MS = 6000
+
   async function playMath() {
     if (isNavigating) return
     setIsNavigating(true)
-    await recordActivity()
-    setType('math'); setStoreDifficulty(mathDifficulty ?? 'medium')
-    const op = MODE_TO_OPERATION[activeMode]
-    setOperation(op)
-    await setLastPlayedSettings({ gameType: 'math', operation: op, difficulty: (mathDifficulty ?? 'medium') as Difficulty })
-    await setSelectedGameCount(mathGamesCount)
-    await resetMathSession(mathGamesCount)
-    setMathSessionMax(mathGamesCount); setMathSessionPlayed_(0)
-    router.push(`/game?op=${op}`)
+    const timeout = setTimeout(() => setIsNavigating(false), NAV_TIMEOUT_MS)
+    try {
+      const op = MODE_TO_OPERATION[activeMode]
+      const diff = (mathDifficulty ?? 'medium') as Difficulty
+      setType('math'); setStoreDifficulty(diff); setOperation(op)
+      // Run all IndexedDB writes in parallel — they're independent
+      await Promise.all([
+        recordActivity(),
+        setLastPlayedSettings({ gameType: 'math', operation: op, difficulty: diff }),
+        setSelectedGameCount(mathGamesCount),
+        resetMathSession(mathGamesCount),
+      ])
+      setMathSessionMax(mathGamesCount); setMathSessionPlayed_(0)
+      router.push(`/game?op=${op}`)
+    } catch {
+      setIsNavigating(false)
+      clearTimeout(timeout)
+    }
   }
 
   async function playMemory() {
     if (isNavigating || memoryDifficulty === null) return
     setIsNavigating(true)
-    await recordActivity()
-    setType('memory'); setStoreDifficulty(memoryDifficulty)
-    await setLastPlayedSettings({ gameType: 'memory', operation: null, difficulty: memoryDifficulty })
-    if (memoryGamesCount !== memorySessionMax) {
-      await resetMemorySession(memoryGamesCount)
-      setMemorySessionMax(memoryGamesCount); setMemorySessionPlayed_(0)
+    const timeout = setTimeout(() => setIsNavigating(false), NAV_TIMEOUT_MS)
+    try {
+      setType('memory'); setStoreDifficulty(memoryDifficulty)
+      const writes: Promise<unknown>[] = [
+        recordActivity(),
+        setLastPlayedSettings({ gameType: 'memory', operation: null, difficulty: memoryDifficulty }),
+      ]
+      if (memoryGamesCount !== memorySessionMax) {
+        writes.push(resetMemorySession(memoryGamesCount))
+        setMemorySessionMax(memoryGamesCount); setMemorySessionPlayed_(0)
+      }
+      await Promise.all(writes)
+      router.push('/game?mode=memory')
+    } catch {
+      setIsNavigating(false)
+      clearTimeout(timeout)
     }
-    router.push('/game?mode=memory')
   }
 
   async function playTrueFalse() {
     if (isNavigating || tfDifficulty === null) return
     setIsNavigating(true)
-    await recordActivity()
-    setType('true_false'); setStoreDifficulty(tfDifficulty)
-    await setLastPlayedSettings({ gameType: 'true_false', operation: null, difficulty: tfDifficulty })
-    await setSelectedGameCount(tfGamesCount)
-    await resetTrueFalseSession(tfGamesCount)
-    setTfSessionMax(tfGamesCount); setTfSessionPlayed_(0)
-    router.push('/game?mode=truefalse')
+    const timeout = setTimeout(() => setIsNavigating(false), NAV_TIMEOUT_MS)
+    try {
+      setType('true_false'); setStoreDifficulty(tfDifficulty)
+      await Promise.all([
+        recordActivity(),
+        setLastPlayedSettings({ gameType: 'true_false', operation: null, difficulty: tfDifficulty }),
+        setSelectedGameCount(tfGamesCount),
+        resetTrueFalseSession(tfGamesCount),
+      ])
+      setTfSessionMax(tfGamesCount); setTfSessionPlayed_(0)
+      router.push('/game?mode=truefalse')
+    } catch {
+      setIsNavigating(false)
+      clearTimeout(timeout)
+    }
   }
 
   function handlePlay() {
     if (isLocked) return
-    // Session expired but user has unfinished games → allow continue (activity recorded in play*)
-    if (isSessionExpired && !canPlayActive) return
     if (activeGame === 'math') { if (!mathDifficulty || mathVariantRemaining <= 0) return; playMath() }
     else if (activeGame === 'truefalse') { if (!tfDifficulty || tfVariantRemaining <= 0) return; playTrueFalse() }
     else { if (!memoryDifficulty || memoryVariantRemaining <= 0) return; playMemory() }
@@ -289,8 +316,6 @@ export function useHomePageState() {
 
   const playDisabled =
     isNavigating || isLocked || isReloadingGames ||
-    // Only block on session expiry if there are NO unfinished games
-    (isSessionExpired && !hasUnfinishedGames) ||
     (activeGame === 'math' && !canPlayMath) ||
     (activeGame === 'memory' && !canPlayMemory) ||
     (activeGame === 'truefalse' && !canPlayTf)
@@ -299,15 +324,13 @@ export function useHomePageState() {
     ? 'Loading…'
     : isLocked
       ? 'Limit reached'
-      : mounted && isSessionExpired && !hasUnfinishedGames
-        ? 'New games ready'
-        : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
-          ? 'Choose difficulty'
-          : isNavigating
-            ? 'Starting…'
-            : mounted && (isSessionExpired || isRefreshing) && hasUnfinishedGames
-              ? 'Continue playing'
-              : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
+      : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
+        ? 'Choose difficulty'
+        : isNavigating
+          ? 'Starting…'
+          : hasUnfinishedGames
+            ? 'Continue playing'
+            : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
 
   // ── Return ─────────────────────────────────────────────────────────
   return {
