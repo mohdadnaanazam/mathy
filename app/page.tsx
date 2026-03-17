@@ -7,7 +7,6 @@ import GameCard from '@/components/home/GameCard'
 import StatusBanner from '@/components/home/StatusBanner'
 import FloatingPlayButton from '@/components/home/FloatingPlayButton'
 import TopBanner from '@/components/home/TopBanner'
-import SeoSection from '@/components/home/SeoSection'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
@@ -190,9 +189,6 @@ export default function LandingPage() {
           refreshFormatted={s.refreshFormatted}
         />
       </div>
-
-      {/* SEO content */}
-      <SeoSection />
 
       {/* Floating Play button */}
       <FloatingPlayButton
