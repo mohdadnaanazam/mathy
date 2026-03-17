@@ -194,28 +194,25 @@ export function useHomePageState() {
     setTfVariantPlayed(0); setTfVariantRemaining(20)
   }
 
-  const handleReloadNewGames = useCallback(async () => {
+  const handleReload = useCallback(async () => {
     if (isReloadingGames) return
     setIsReloadingGames(true)
     try {
-      // Reset progress and counts immediately (instant)
+      // If session expired, clear the expired flag first
+      if (isSessionExpired) await resetAndResume()
+
+      // Reset progress and counts
       await resetAllProgress()
       resetAllCounts()
       await setSelectedGameCount(DEFAULT_GAME_COUNT)
 
-      // Clear cache and fetch fresh games (may be slow, but UI is already usable)
+      // Clear cache and fetch fresh games
       await clearGameCache()
       const now = await fetchAndCacheAllGames()
       setLastFetchAt(now)
     } catch { /* stop spinner even on failure */ }
     finally { setIsReloadingGames(false) }
-  }, [isReloadingGames, setLastFetchAt])
-
-  const handleSessionReset = useCallback(async () => {
-    await resetAndResume()
-    resetAllCounts()
-    await setSelectedGameCount(DEFAULT_GAME_COUNT)
-  }, [resetAndResume])
+  }, [isReloadingGames, isSessionExpired, resetAndResume, setLastFetchAt])
 
   async function playMath() {
     if (isNavigating) return
@@ -298,13 +295,13 @@ export function useHomePageState() {
   return {
     // UI state
     mounted, activeGame, setActiveGame, activeMode, setActiveMode,
-    isNavigating, isReloadingGames,
+    isNavigating, isReloading: isReloadingGames,
 
     // Attempts / lock
     used, maxAttempts, timeToReset, isLocked,
 
     // Session expiry
-    isSessionExpired, isExpiryResetting,
+    isSessionExpired,
 
     // Refresh
     isRefreshing, refreshFormatted, refreshTier, refreshReady,
@@ -331,6 +328,6 @@ export function useHomePageState() {
     canPlayActive, playDisabled, playLabel,
 
     // Handlers
-    handlePlay, handleReloadNewGames, handleSessionReset,
+    handlePlay, handleReload,
   }
 }

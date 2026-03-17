@@ -52,10 +52,8 @@ export default function LandingPage() {
         <StatusBanner
           isSessionExpired={s.isSessionExpired}
           isRefreshing={s.isRefreshing}
-          isExpiryResetting={s.isExpiryResetting}
-          isReloadingGames={s.isReloadingGames}
-          onReset={s.handleSessionReset}
-          onReload={s.handleReloadNewGames}
+          isReloading={s.isReloading}
+          onReload={s.handleReload}
         />
       )}
 

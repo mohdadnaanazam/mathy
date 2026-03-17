@@ -34,6 +34,7 @@ export default function GameBoard() {
     if (isReloading) return
     setIsReloading(true)
     try {
+      if (isSessionExpired) await resetAndResume()
       await resetAllProgress()
       await setSelectedGameCount(5)
       await clearGameCache()
@@ -44,23 +45,7 @@ export default function GameBoard() {
     } finally {
       setIsReloading(false)
     }
-  }, [isReloading, setLastFetchAt, router])
-
-  const handleSessionReset = useCallback(async () => {
-    if (isReloading) return
-    setIsReloading(true)
-    try {
-      await resetAndResume()
-      await setSelectedGameCount(5)
-      await clearGameCache()
-      const now = await fetchAndCacheAllGames()
-      setLastFetchAt(now)
-    } catch {
-      router.push('/')
-    } finally {
-      setIsReloading(false)
-    }
-  }, [isReloading, resetAndResume, setLastFetchAt, router])
+  }, [isReloading, isSessionExpired, resetAndResume, setLastFetchAt, router])
 
   // Read URL params once per render as simple primitives
   // so we can use them safely in effects without depending on
@@ -107,7 +92,7 @@ export default function GameBoard() {
         <button
           type="button"
           disabled={isReloading}
-          onClick={isSessionExpired ? handleSessionReset : handleReload}
+          onClick={handleReload}
           className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900 disabled:opacity-60"
         >
           {isReloading ? 'Loading…' : 'Reload Games'}
