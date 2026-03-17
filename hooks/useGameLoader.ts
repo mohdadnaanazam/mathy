@@ -107,7 +107,19 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
         return
       }
       const now = Date.now()
-      setGames(merged)
+      // Only replace the games array if the actual content changed.
+      // This prevents downstream reshuffles when a background refresh
+      // returns the same data the user is already playing with.
+      setGames(prev => {
+        if (prev.length > 0 && !showLoader) {
+          const prevIds = new Set(prev.map(g => g.id))
+          const mergedIds = new Set(merged.map(g => g.id))
+          if (prevIds.size === mergedIds.size && [...prevIds].every(id => mergedIds.has(id))) {
+            return prev
+          }
+        }
+        return merged
+      })
       setLastFetchAt(now)
       setLastFetchAtGlobal(now)
     } catch (err) {
@@ -134,7 +146,17 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
       }
       const now = Date.now()
       await setCachedGames(gameType, data, now)
-      setGames(data)
+      // Only replace the games array if the actual content changed.
+      setGames(prev => {
+        if (prev.length > 0 && !showLoader) {
+          const prevIds = new Set(prev.map(g => g.id))
+          const dataIds = new Set(data.map(g => g.id))
+          if (prevIds.size === dataIds.size && [...prevIds].every(id => dataIds.has(id))) {
+            return prev
+          }
+        }
+        return data
+      })
       setLastFetchAt(now)
       setLastFetchAtGlobal(now)
     } catch (err) {

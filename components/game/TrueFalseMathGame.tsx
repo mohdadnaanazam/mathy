@@ -115,9 +115,23 @@ export default function TrueFalseMathGame() {
     })
   }, [sessionComplete])
 
-  // Build question pool filtered by difficulty
+  // Build question pool filtered by difficulty.
+  // Use a stable games reference to avoid recomputing when a background
+  // refresh returns the same data.
+  const gamesRef = useRef(games)
+  const prevGameIds = useRef<string>('')
+  const currentGameIds = useMemo(
+    () => games.map(g => g.id).sort().join(','),
+    [games],
+  )
+  if (currentGameIds !== prevGameIds.current) {
+    prevGameIds.current = currentGameIds
+    gamesRef.current = games
+  }
+
   const effectiveGames = useMemo(() => {
-    const filtered = games.filter(
+    const source = gamesRef.current
+    const filtered = source.filter(
       (g: BackendGame) => g.difficulty === difficulty && g.game_type === 'true_false_math',
     )
     const unique = Array.from(new Map(filtered.map(g => [g.question, g])).values())
@@ -128,9 +142,14 @@ export default function TrueFalseMathGame() {
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
     return shuffled.slice(0, maxQ)
-  }, [games, difficulty, sessionMax, shuffleKey])
+  }, [currentGameIds, difficulty, sessionMax, shuffleKey])
 
   // Shuffle question order when pool changes
+  const effectiveGameIds = useMemo(
+    () => effectiveGames.map(g => g.id).join(','),
+    [effectiveGames],
+  )
+
   useEffect(() => {
     const len = effectiveGames.length
     if (len === 0) { setQuestionOrder([]); setCurrentIndex(0); setFeedback(null); return }
@@ -142,7 +161,8 @@ export default function TrueFalseMathGame() {
     setQuestionOrder(indices)
     setCurrentIndex(0)
     setFeedback(null)
-  }, [effectiveGames])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveGameIds])
 
   const current =
     questionOrder.length && currentIndex < questionOrder.length

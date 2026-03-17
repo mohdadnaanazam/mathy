@@ -171,8 +171,24 @@ export default function ApiMathGame() {
   // (games, operation, difficulty, customOperations, sessionMax) change.
   // This avoids reshuffling on every render (e.g. every timer tick),
   // which previously caused the visible question to jump.
+  //
+  // IMPORTANT: We use a stable reference for the games array to avoid
+  // recomputing when the background refresh replaces the array with
+  // equivalent data. Only update the ref when the actual game IDs change.
+  const gamesRef = useRef(games)
+  const prevGameIds = useRef<string>('')
+  const currentGameIds = useMemo(
+    () => games.map(g => g.id).sort().join(','),
+    [games],
+  )
+  if (currentGameIds !== prevGameIds.current) {
+    prevGameIds.current = currentGameIds
+    gamesRef.current = games
+  }
+
   const effectiveGames = useMemo(() => {
-    const gamesForDifficulty = games.filter((g: BackendGame) => {
+    const source = gamesRef.current
+    const gamesForDifficulty = source.filter((g: BackendGame) => {
       if (g.difficulty !== (difficulty as Difficulty)) return false
 
       // Ensure loaded questions always match the currently selected operation.
@@ -214,7 +230,16 @@ export default function ApiMathGame() {
     }
 
     return shuffledPool.slice(0, maxQuestions)
-  }, [games, difficulty, operation, customOperations, sessionMax, shuffleKey])
+  }, [currentGameIds, difficulty, operation, customOperations, sessionMax, shuffleKey])
+
+  // Build question order only when the effective pool actually changes
+  // (new game IDs) or when we explicitly request a reshuffle via shuffleKey.
+  // This prevents the flicker caused by background refreshes producing a
+  // new effectiveGames array reference with the same underlying data.
+  const effectiveGameIds = useMemo(
+    () => effectiveGames.map(g => g.id).join(','),
+    [effectiveGames],
+  )
 
   useEffect(() => {
     const len = effectiveGames.length
@@ -234,17 +259,23 @@ export default function ApiMathGame() {
     setCurrentIndex(0)
     setAnswer('')
     setFeedback(null)
-  }, [effectiveGames])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveGameIds])
 
   const current =
     questionOrder.length && currentIndex < questionOrder.length
       ? effectiveGames[questionOrder[currentIndex]]
       : undefined
 
+  // Reset game state when operation changes mid-session (not on mount).
+  const prevOperationRef = useRef(operation)
   useEffect(() => {
-    setCurrentIndex(0)
-    setAnswer('')
-    setFeedback(null)
+    if (prevOperationRef.current !== operation) {
+      prevOperationRef.current = operation
+      setCurrentIndex(0)
+      setAnswer('')
+      setFeedback(null)
+    }
   }, [operation])
 
   // When hourly countdown hits 0, auto-fetch new games and reset timer
