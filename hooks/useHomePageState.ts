@@ -64,6 +64,9 @@ export function useHomePageState() {
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
   const [mounted, setMounted] = useState(false)
+  // Suppresses the reload banner right after a fresh reload so the user
+  // sees a clean slate instead of stale "new games available" messaging.
+  const [justReloaded, setJustReloaded] = useState(false)
 
   // ── Math variant state ─────────────────────────────────────────────
   const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
@@ -152,6 +155,13 @@ export function useHomePageState() {
 
   useEffect(() => { hydrateSessions(); setMounted(true) }, [isSessionExpired])
 
+  // Clear the justReloaded flag once the timer picks up the fresh timestamp
+  // (isRefreshing becomes false). This way, when the cache eventually expires
+  // again, justReloaded is already false and the banner will show.
+  useEffect(() => {
+    if (justReloaded && !isRefreshing) setJustReloaded(false)
+  }, [justReloaded, isRefreshing])
+
   // Per-variant progress hydration
   useEffect(() => {
     if (!mathDifficulty) return
@@ -210,6 +220,7 @@ export function useHomePageState() {
       await clearGameCache()
       const now = await fetchAndCacheAllGames()
       setLastFetchAt(now)
+      setJustReloaded(true)
     } catch { /* stop spinner even on failure */ }
     finally { setIsReloadingGames(false) }
   }, [isReloadingGames, isSessionExpired, resetAndResume, setLastFetchAt])
@@ -342,7 +353,7 @@ export function useHomePageState() {
     used, maxAttempts, timeToReset, isLocked,
 
     // Session expiry
-    isSessionExpired, hasUnfinishedGames,
+    isSessionExpired, hasUnfinishedGames, justReloaded,
 
     // Refresh
     isRefreshing, refreshFormatted, refreshTier, refreshReady,

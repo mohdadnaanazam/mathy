@@ -5,19 +5,19 @@ import { useState, useEffect, useCallback } from 'react'
 const STORAGE_KEY = 'bannerDismissed'
 
 export default function TopBanner() {
-  // Start hidden to avoid flash, then reveal after localStorage check
+  // Start hidden to avoid flash, then reveal after sessionStorage check
   const [visible, setVisible] = useState(false)
   const [closing, setClosing] = useState(false)
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(STORAGE_KEY) !== 'true') setVisible(true)
+      if (sessionStorage.getItem(STORAGE_KEY) !== 'true') setVisible(true)
     } catch { /* private browsing — show it */ setVisible(true) }
   }, [])
 
   const dismiss = useCallback(() => {
     setClosing(true)
-    try { localStorage.setItem(STORAGE_KEY, 'true') } catch {}
+    try { sessionStorage.setItem(STORAGE_KEY, 'true') } catch {}
     setTimeout(() => setVisible(false), 250)
   }, [])
 

@@ -58,6 +58,7 @@ export default function LandingPage() {
           isRefreshing={s.isRefreshing}
           isReloading={s.isReloading}
           hasUnfinishedGames={s.hasUnfinishedGames}
+          justReloaded={s.justReloaded}
           onReload={s.handleReload}
           onContinue={s.handleContinue}
         />
