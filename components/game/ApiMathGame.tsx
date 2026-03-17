@@ -78,6 +78,7 @@ export default function ApiMathGame() {
 
   const [sessionMax, setSessionMax] = useState<number>(20)
   const [sessionPlayed, setSessionPlayed] = useState<number>(0)
+  const [sessionHydrated, setSessionHydrated] = useState(false)
   const [questionOrder, setQuestionOrder] = useState<number[]>([])
   const sessionDone = sessionPlayed >= sessionMax
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -107,8 +108,10 @@ export default function ApiMathGame() {
   }, [])
 
   useEffect(() => {
-    getMathSessionMax().then(setSessionMax)
-    getMathSessionPlayed().then(setSessionPlayed)
+    Promise.all([
+      getMathSessionMax().then(setSessionMax),
+      getMathSessionPlayed().then(setSessionPlayed),
+    ]).then(() => setSessionHydrated(true))
   }, [])
 
   // Keep the next-session operation in sync with the current one,
@@ -242,6 +245,11 @@ export default function ApiMathGame() {
   )
 
   useEffect(() => {
+    // Don't build question order until session config is hydrated from DB.
+    // This prevents a reshuffle when sessionMax changes from its default
+    // to the persisted value, which was causing the first-question flicker.
+    if (!sessionHydrated) return
+
     const len = effectiveGames.length
     if (len === 0) {
       setQuestionOrder([])
@@ -260,7 +268,7 @@ export default function ApiMathGame() {
     setAnswer('')
     setFeedback(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveGameIds])
+  }, [effectiveGameIds, sessionHydrated])
 
   const current =
     questionOrder.length && currentIndex < questionOrder.length
@@ -420,7 +428,7 @@ export default function ApiMathGame() {
     goNext()
   }
 
-  if (loading) {
+  if (loading || !sessionHydrated) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-8">
         <div className="h-6 w-6 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-slate-700 border-t-slate-300" />

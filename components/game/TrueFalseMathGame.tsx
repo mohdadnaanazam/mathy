@@ -52,6 +52,7 @@ export default function TrueFalseMathGame() {
 
   const [sessionMax, setSessionMax] = useState<number>(5)
   const [sessionPlayed, setSessionPlayed] = useState<number>(0)
+  const [sessionHydrated, setSessionHydrated] = useState(false)
   const [questionOrder, setQuestionOrder] = useState<number[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
@@ -68,8 +69,10 @@ export default function TrueFalseMathGame() {
 
   // Hydrate session state
   useEffect(() => {
-    getTrueFalseSessionMax().then(setSessionMax)
-    getTrueFalseSessionPlayed().then(setSessionPlayed)
+    Promise.all([
+      getTrueFalseSessionMax().then(setSessionMax),
+      getTrueFalseSessionPlayed().then(setSessionPlayed),
+    ]).then(() => setSessionHydrated(true))
   }, [])
 
   useEffect(() => {
@@ -151,6 +154,8 @@ export default function TrueFalseMathGame() {
   )
 
   useEffect(() => {
+    if (!sessionHydrated) return
+
     const len = effectiveGames.length
     if (len === 0) { setQuestionOrder([]); setCurrentIndex(0); setFeedback(null); return }
     const indices = Array.from({ length: len }, (_, i) => i)
@@ -162,7 +167,7 @@ export default function TrueFalseMathGame() {
     setCurrentIndex(0)
     setFeedback(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveGameIds])
+  }, [effectiveGameIds, sessionHydrated])
 
   const current =
     questionOrder.length && currentIndex < questionOrder.length
@@ -225,7 +230,7 @@ export default function TrueFalseMathGame() {
     goNext()
   }
 
-  if (loading || userLoading) {
+  if (loading || userLoading || !sessionHydrated) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-8">
         <div className="h-6 w-6 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-slate-700 border-t-slate-300" />
