@@ -23,7 +23,7 @@ export default function GameBoard() {
   const searchParams = useSearchParams()
   const { isLocked } = useAttempts()
   const { isRefreshing: gamesExpired } = useGameTimer()
-  const { isSessionExpired, resetAndResume } = useSessionExpiry()
+  const { isSessionExpired, resetAndResume, recordActivity } = useSessionExpiry()
   const gameType = useGameStore(s => s.gameType)
   const setGameType = useGameStore(s => s.setGameType)
 
@@ -76,18 +76,21 @@ export default function GameBoard() {
     }
   }, [opParam, setOperation])
 
+  const handleContinue = useCallback(async () => {
+    await recordActivity()
+    await resetAndResume()
+  }, [recordActivity, resetAndResume])
+
   if (isLocked) return <GameLockScreen />
 
-  if (gamesExpired || isSessionExpired) {
+  if (gamesExpired) {
     return (
       <div
         className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col items-center justify-center py-12 px-4"
         style={{ minHeight: '100dvh' }}
       >
         <p className="text-sm text-slate-300 text-center mb-4">
-          {isSessionExpired
-            ? 'Your session has expired. Tap below to reset and load fresh games.'
-            : 'Games have expired. Tap Reload to fetch new games.'}
+          ⚡ New games are available. Tap Reload to play!
         </p>
         <button
           type="button"
@@ -96,6 +99,34 @@ export default function GameBoard() {
           className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900 disabled:opacity-60"
         >
           {isReloading ? 'Loading…' : 'Reload Games'}
+        </button>
+      </div>
+    )
+  }
+
+  if (isSessionExpired) {
+    return (
+      <div
+        className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col items-center justify-center py-12 px-4"
+        style={{ minHeight: '100dvh' }}
+      >
+        <p className="text-sm text-slate-300 text-center mb-5">
+          🎮 You still have unfinished games — pick up where you left off!
+        </p>
+        <button
+          type="button"
+          onClick={handleContinue}
+          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900 mb-3"
+        >
+          Continue Game
+        </button>
+        <button
+          type="button"
+          disabled={isReloading}
+          onClick={handleReload}
+          className="rounded-full border border-zinc-700 bg-transparent px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400 disabled:opacity-60"
+        >
+          {isReloading ? 'Loading…' : 'Reset & Start New'}
         </button>
       </div>
     )

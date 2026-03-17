@@ -254,11 +254,19 @@ export function useHomePageState() {
   }
 
   function handlePlay() {
-    if (isLocked || isRefreshing || isSessionExpired) return
+    if (isLocked || isRefreshing) return
+    // Session expired but user has unfinished games → allow continue (activity recorded in play*)
+    if (isSessionExpired && !canPlayActive) return
     if (activeGame === 'math') { if (!mathDifficulty || mathVariantRemaining <= 0) return; playMath() }
     else if (activeGame === 'truefalse') { if (!tfDifficulty || tfVariantRemaining <= 0) return; playTrueFalse() }
     else { if (!memoryDifficulty || memoryVariantRemaining <= 0) return; playMemory() }
   }
+
+  /** Continue playing without resetting — just clear the expired flag and resume. */
+  const handleContinue = useCallback(async () => {
+    await recordActivity()
+    await resetAndResume()
+  }, [recordActivity, resetAndResume])
 
   // ── Computed values ────────────────────────────────────────────────
   const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
@@ -273,23 +281,35 @@ export function useHomePageState() {
   const memoryVariantExhausted = memoryVariantRemaining <= 0
   const tfVariantExhausted = tfVariantRemaining <= 0
 
+  // True when any active game type has unfinished variant games
+  const hasUnfinishedGames =
+    (activeGame === 'math' && canPlayMath) ||
+    (activeGame === 'memory' && canPlayMemory) ||
+    (activeGame === 'truefalse' && canPlayTf)
+
   const playDisabled =
-    isNavigating || isLocked || isRefreshing || isSessionExpired ||
+    isNavigating || isLocked || isRefreshing || isReloadingGames ||
+    // Only block on session expiry if there are NO unfinished games
+    (isSessionExpired && !hasUnfinishedGames) ||
     (activeGame === 'math' && !canPlayMath) ||
     (activeGame === 'memory' && !canPlayMemory) ||
     (activeGame === 'truefalse' && !canPlayTf)
 
-  const playLabel = isLocked
-    ? 'Limit reached'
-    : mounted && isSessionExpired
-      ? 'Reset progress to play'
-      : mounted && isRefreshing
-        ? 'Reload to play'
-        : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
-          ? 'Choose difficulty'
-          : isNavigating
-            ? 'Starting…'
-            : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
+  const playLabel = isReloadingGames
+    ? 'Loading…'
+    : isLocked
+      ? 'Limit reached'
+      : mounted && isSessionExpired && !hasUnfinishedGames
+        ? 'New games ready'
+        : mounted && isRefreshing
+          ? 'Reload for new games'
+          : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
+            ? 'Choose difficulty'
+            : isNavigating
+              ? 'Starting…'
+              : mounted && isSessionExpired && hasUnfinishedGames
+                ? 'Continue game'
+                : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
 
   // ── Return ─────────────────────────────────────────────────────────
   return {
@@ -301,7 +321,7 @@ export function useHomePageState() {
     used, maxAttempts, timeToReset, isLocked,
 
     // Session expiry
-    isSessionExpired,
+    isSessionExpired, hasUnfinishedGames,
 
     // Refresh
     isRefreshing, refreshFormatted, refreshTier, refreshReady,
@@ -328,6 +348,6 @@ export function useHomePageState() {
     canPlayActive, playDisabled, playLabel,
 
     // Handlers
-    handlePlay, handleReload,
+    handlePlay, handleReload, handleContinue,
   }
 }

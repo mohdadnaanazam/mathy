@@ -1,9 +1,10 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Poppins, Urbanist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import InactiveUserGate from '@/components/layout/InactiveUserGate'
+
+const SITE_URL = 'https://matthy.netlify.app'
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,21 +32,69 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title:       'AI Games — Math & Memory Challenges',
-  description: 'AI-powered math puzzles and memory challenges. No signup required. 15 games per hour.',
-  keywords:    ['math games', 'memory game', 'brain training', 'ai games'],
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'Mathy — Free Math & Memory Brain Training Games',
+    template: '%s | Mathy',
+  },
+  description:
+    'Play free AI-generated math puzzles, memory grid challenges, and true/false equations. New games every hour. No signup required. Train your brain daily.',
+  keywords: [
+    'math games', 'free math games', 'brain training games', 'online math practice',
+    'memory games', 'mental math', 'math puzzles', 'brain games online',
+    'math challenge', 'true false math', 'memory grid game', 'daily brain training',
+  ],
+  authors: [{ name: 'Mathy' }],
+  creator: 'Mathy',
+  robots: { index: true, follow: true },
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: SITE_URL,
+    siteName: 'Mathy',
+    title: 'Mathy — Free Math & Memory Brain Training Games',
+    description:
+      'AI-generated math puzzles, memory challenges, and true/false equations. New games every hour. No signup. Train your brain daily.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Mathy — Free Math & Memory Brain Training Games',
+    description:
+      'AI-generated math puzzles and memory challenges. New games every hour. Train your brain daily.',
+  },
 }
 
-export const viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  viewportFit: 'cover' as const, // enables safe-area-inset-* on notched devices
+  viewportFit: 'cover',
+  themeColor: '#0c0c0f',
+}
+
+// JSON-LD structured data for the site
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Mathy',
+  url: SITE_URL,
+  description: 'Free AI-generated math puzzles, memory grid challenges, and brain training games. New games every hour.',
+  applicationCategory: 'GameApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  genre: ['Educational', 'Puzzle', 'Brain Training'],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang='en' suppressHydrationWarning className={`${inter.variable} ${poppins.variable} ${urbanist.variable} ${geistMono.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="antialiased overflow-x-hidden">
         <div className="hidden" aria-hidden="true">
           <Navbar />
@@ -54,7 +103,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
         <Footer />
-        <InactiveUserGate />
       </body>
     </html>
   )

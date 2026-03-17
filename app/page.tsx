@@ -7,6 +7,7 @@ import GameCard from '@/components/home/GameCard'
 import StatusBanner from '@/components/home/StatusBanner'
 import FloatingPlayButton from '@/components/home/FloatingPlayButton'
 import TopBanner from '@/components/home/TopBanner'
+import SeoSection from '@/components/home/SeoSection'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
@@ -41,7 +42,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl px-4 sm:px-6 flex items-end justify-between">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Mathy</h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Train your brain daily</p>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Train your brain with free math and memory games</p>
           </div>
           {s.isLocked && (
             <span className="text-[10px] font-mono text-amber-400">
@@ -57,7 +58,9 @@ export default function LandingPage() {
           isSessionExpired={s.isSessionExpired}
           isRefreshing={s.isRefreshing}
           isReloading={s.isReloading}
+          hasUnfinishedGames={s.hasUnfinishedGames}
           onReload={s.handleReload}
+          onContinue={s.handleContinue}
         />
       )}
 
@@ -188,10 +191,13 @@ export default function LandingPage() {
         />
       </div>
 
+      {/* SEO content */}
+      <SeoSection />
+
       {/* Floating Play button */}
       <FloatingPlayButton
         label={s.playLabel}
-        showArrow={!s.isLocked && !s.isNavigating && !s.isRefreshing && !s.isSessionExpired && s.canPlayActive}
+        showArrow={!s.isLocked && !s.isNavigating && !s.isRefreshing && !(s.isSessionExpired && !s.hasUnfinishedGames) && s.canPlayActive}
         disabled={s.playDisabled}
         isLocked={s.isLocked}
         isNavigating={s.isNavigating}

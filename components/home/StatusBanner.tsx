@@ -4,31 +4,55 @@ interface StatusBannerProps {
   isSessionExpired: boolean
   isRefreshing: boolean
   isReloading: boolean
+  hasUnfinishedGames: boolean
   onReload: () => void
+  onContinue: () => void
 }
 
 export default function StatusBanner({
-  isSessionExpired, isRefreshing, isReloading, onReload,
+  isSessionExpired, isRefreshing, isReloading, hasUnfinishedGames, onReload, onContinue,
 }: StatusBannerProps) {
-  if (!isSessionExpired && !isRefreshing) return null
+  if (!isReloading && !isSessionExpired && !isRefreshing) return null
 
-  const message = isSessionExpired
-    ? 'Your session has expired.'
-    : 'Games have expired. Reload for new questions.'
+  const message = isReloading
+    ? '🔄 Preparing your games…'
+    : isSessionExpired
+      ? hasUnfinishedGames
+        ? '🎮 You have unfinished games — pick up where you left off!'
+        : '🎯 Fresh new challenges are ready!'
+      : '⚡ New games are available — reload to play!'
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
       <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-2.5 flex items-center justify-between gap-3">
-        <p className="text-[11px] text-amber-400">{message}</p>
-        <button
-          type="button"
-          onClick={onReload}
-          disabled={isReloading}
-          className="shrink-0 rounded-full px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider disabled:opacity-60"
-          style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
-        >
-          {isReloading ? 'Loading…' : 'Reload New Games'}
-        </button>
+        <p className="text-[11px] text-amber-400 leading-snug">{message}</p>
+        <div className="shrink-0 flex items-center gap-2">
+          {/* Primary: Continue if unfinished games exist during session expiry */}
+          {!isReloading && isSessionExpired && hasUnfinishedGames && (
+            <button
+              type="button"
+              onClick={onContinue}
+              className="rounded-full px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
+              style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
+            >
+              Continue
+            </button>
+          )}
+          {/* Secondary: Reset / Reload */}
+          <button
+            type="button"
+            onClick={onReload}
+            disabled={isReloading}
+            className="rounded-full px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider disabled:opacity-60"
+            style={
+              !isReloading && isSessionExpired && hasUnfinishedGames
+                ? { backgroundColor: 'transparent', color: '#a1a1aa', border: '1px solid rgba(63,63,70,0.6)' }
+                : { backgroundColor: 'var(--accent-orange)', color: '#111827' }
+            }
+          >
+            {isReloading ? 'Loading…' : isSessionExpired && hasUnfinishedGames ? 'Reset' : 'Reload New Games'}
+          </button>
+        </div>
       </div>
     </div>
   )
