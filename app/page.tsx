@@ -6,6 +6,7 @@ import type { OperationMode } from '@/types'
 import GameCard from '@/components/home/GameCard'
 import StatusBanner from '@/components/home/StatusBanner'
 import FloatingPlayButton from '@/components/home/FloatingPlayButton'
+import TopBanner from '@/components/home/TopBanner'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
@@ -32,6 +33,9 @@ export default function LandingPage() {
       className="min-h-screen overflow-x-hidden bg-[var(--bg-surface)]"
       style={{ paddingBottom: 'max(9rem, calc(env(safe-area-inset-bottom, 0px) + 9rem))' }}
     >
+      {/* Top banner */}
+      <TopBanner />
+
       {/* Header */}
       <header className="border-b border-[var(--border-subtle)] py-5 sm:py-6">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 flex items-end justify-between">
@@ -190,6 +194,7 @@ export default function LandingPage() {
         showArrow={!s.isLocked && !s.isNavigating && !s.isRefreshing && !s.isSessionExpired && s.canPlayActive}
         disabled={s.playDisabled}
         isLocked={s.isLocked}
+        isNavigating={s.isNavigating}
         onClick={s.handlePlay}
       />
     </main>

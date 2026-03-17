@@ -1,16 +1,36 @@
 'use client'
 
+import { useRef, useCallback } from 'react'
+
 interface FloatingPlayButtonProps {
   label: string
   showArrow: boolean
   disabled: boolean
   isLocked: boolean
+  isNavigating?: boolean
   onClick: () => void
 }
 
 export default function FloatingPlayButton({
-  label, showArrow, disabled, isLocked, onClick,
+  label, showArrow, disabled, isLocked, isNavigating, onClick,
 }: FloatingPlayButtonProps) {
+  const btnRef = useRef<HTMLButtonElement>(null)
+
+  const handleClick = useCallback(() => {
+    if (disabled || isNavigating) return
+    // Haptic-style micro-feedback via a quick scale punch
+    const el = btnRef.current
+    if (el) {
+      el.style.transform = 'scale(0.94)'
+      requestAnimationFrame(() => {
+        setTimeout(() => { if (el) el.style.transform = '' }, 120)
+      })
+    }
+    onClick()
+  }, [disabled, isNavigating, onClick])
+
+  const isActive = !disabled && !isLocked && !isNavigating
+
   return (
     <div
       className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
@@ -19,26 +39,71 @@ export default function FloatingPlayButton({
       <div
         className="pointer-events-auto w-full"
         style={{
-          background: 'linear-gradient(to top, var(--bg-surface) 60%, transparent)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          background: 'linear-gradient(to top, var(--bg-surface) 55%, transparent)',
+          paddingTop: '24px',
         }}
       >
-        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-3 sm:py-4 flex justify-center">
+        <div className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-4 sm:pb-5 flex justify-center">
           <button
+            ref={btnRef}
             type="button"
-            onClick={onClick}
+            onClick={handleClick}
             disabled={disabled}
-            className="w-full max-w-xs inline-flex items-center justify-center rounded-full px-10 py-3.5 sm:px-12 sm:py-4 text-sm sm:text-base font-semibold uppercase tracking-[0.1em] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+            aria-busy={isNavigating}
+            className="play-btn group relative w-full max-w-xs overflow-hidden rounded-2xl px-8 py-3.5 sm:py-4 text-[13px] sm:text-sm font-bold uppercase tracking-[0.12em] transition-all duration-200 ease-out disabled:pointer-events-none"
             style={{
-              backgroundColor: isLocked ? 'var(--border-subtle)' : 'var(--accent-orange)',
-              color: isLocked ? '#64748b' : '#111827',
-              border: `1px solid ${isLocked ? 'var(--border-subtle)' : 'var(--accent-orange-hover)'}`,
-              boxShadow: isLocked ? 'none' : '0 4px 20px rgba(249,115,22,0.35)',
-              whiteSpace: 'nowrap',
+              /* --- colours by state --- */
+              background: isLocked
+                ? 'rgba(39,39,42,0.7)'
+                : isNavigating
+                  ? 'linear-gradient(135deg, var(--accent-orange) 0%, #ea580c 100%)'
+                  : isActive
+                    ? 'linear-gradient(135deg, var(--accent-orange) 0%, #ea580c 100%)'
+                    : 'rgba(39,39,42,0.55)',
+              color: isLocked ? '#52525b' : isActive || isNavigating ? '#111827' : '#71717a',
+              border: isLocked
+                ? '1px solid rgba(63,63,70,0.5)'
+                : isActive || isNavigating
+                  ? '1px solid rgba(249,115,22,0.5)'
+                  : '1px solid rgba(63,63,70,0.4)',
+              boxShadow: isActive
+                ? '0 6px 28px rgba(249,115,22,0.3), 0 2px 8px rgba(249,115,22,0.15), inset 0 1px 0 rgba(255,255,255,0.15)'
+                : isNavigating
+                  ? '0 4px 20px rgba(249,115,22,0.25), inset 0 1px 0 rgba(255,255,255,0.1)'
+                  : 'none',
+              opacity: disabled && !isLocked && !isNavigating ? 0.45 : 1,
             }}
           >
-            {label}{showArrow && ' →'}
+            {/* Shimmer sweep on active state */}
+            {isActive && (
+              <span
+                aria-hidden="true"
+                className="play-btn-shimmer absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.13) 50%, transparent 60%)',
+                  backgroundSize: '200% 100%',
+                }}
+              />
+            )}
+
+            {/* Content */}
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              {isNavigating ? (
+                <>
+                  <svg className="play-btn-spinner h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeDasharray="50 20" />
+                  </svg>
+                  <span>Starting…</span>
+                </>
+              ) : (
+                <>
+                  <span>{label}</span>
+                  {showArrow && (
+                    <span className="play-btn-arrow inline-block" aria-hidden="true">→</span>
+                  )}
+                </>
+              )}
+            </span>
           </button>
         </div>
       </div>
