@@ -6,6 +6,7 @@ const OPERATIONS_ORDER: OperationMode[] = [
   'multiplication',
   'division',
   'mixture',
+  'custom',
 ]
 
 const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
@@ -19,7 +20,8 @@ export interface NextGameConfig {
  * Given the current operation + difficulty, return the next slot in the
  * sequential progression: easy → medium → hard → next operation → easy …
  *
- * Custom operation is excluded from auto-progression since it's user-configured.
+ * Progression order: Addition → Subtraction → Multiplication → Division → Mixture → Custom
+ * After Custom → Hard, wraps back to Addition → Easy.
  */
 export function getNextGameConfig(
   currentOperation: OperationMode,
@@ -28,9 +30,9 @@ export function getNextGameConfig(
   const opIdx = OPERATIONS_ORDER.indexOf(currentOperation)
   const diffIdx = DIFFICULTY_ORDER.indexOf(currentDifficulty)
 
-  // If current op/diff isn't in our ordered lists (e.g. 'custom'), stay as-is
+  // If current op/diff isn't in our ordered lists, default to next in sequence
   if (opIdx === -1 || diffIdx === -1) {
-    return { operation: currentOperation, difficulty: currentDifficulty }
+    return { operation: 'addition', difficulty: 'easy' }
   }
 
   const totalSlots = OPERATIONS_ORDER.length * DIFFICULTY_ORDER.length

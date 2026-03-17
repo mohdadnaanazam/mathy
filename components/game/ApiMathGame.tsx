@@ -53,6 +53,8 @@ export default function ApiMathGame() {
   const difficulty = useGameStore(s => s.difficulty)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const customOperations = useGameStore(s => s.customOperations)
+  const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
+  const setCustomOperations = useGameStore(s => s.setCustomOperations)
   const opFromUrl = operationFromUrl(searchParams.get('op'))
   const operation = opFromUrl ?? storeOperation
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
@@ -473,6 +475,40 @@ export default function ApiMathGame() {
                 })}
               </div>
             </div>
+
+            {/* Custom operation toggles — shown when Custom is selected */}
+            {nextOperation === 'custom' && (
+              <div className="space-y-2.5">
+                <p className="section-label text-xs text-slate-400">
+                  Include operations
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {([
+                    { label: '+', value: 'addition' as OperationMode },
+                    { label: '−', value: 'subtraction' as OperationMode },
+                    { label: '×', value: 'multiplication' as OperationMode },
+                    { label: '÷', value: 'division' as OperationMode },
+                  ]).map(({ label, value }) => {
+                    const on = customOperations.includes(value)
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => toggleCustomOp(value)}
+                        className="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all active:scale-[0.97]"
+                        style={{
+                          backgroundColor: on ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
+                          border: on ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
+                          color: on ? 'var(--accent-orange)' : '#a1a1aa',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Difficulty selector */}
             <div className="space-y-2.5">
