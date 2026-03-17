@@ -53,7 +53,6 @@ export default function ApiMathGame() {
   const difficulty = useGameStore(s => s.difficulty)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const customOperations = useGameStore(s => s.customOperations)
-  const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
   const setCustomOperations = useGameStore(s => s.setCustomOperations)
   const opFromUrl = operationFromUrl(searchParams.get('op'))
   const operation = opFromUrl ?? storeOperation
@@ -95,9 +94,16 @@ export default function ApiMathGame() {
   const [nextDifficulty, setNextDifficulty] = useState<Difficulty | null>(
     (difficulty as Difficulty) ?? null,
   )
+  const [nextCustomOperations, setNextCustomOperations] = useState<OperationMode[]>(customOperations)
   const [nextVariantPlayed, setNextVariantPlayed] = useState(0)
   const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
   const [nextGamesCount, setNextGamesCount] = useState(sessionMax)
+
+  const toggleNextCustomOp = useCallback((op: OperationMode) => {
+    setNextCustomOperations(prev =>
+      prev.includes(op) ? prev.filter(o => o !== op) : [...prev, op],
+    )
+  }, [])
 
   // Hydrate nextGamesCount from persisted selection on mount
   useEffect(() => {
@@ -510,12 +516,12 @@ export default function ApiMathGame() {
                     { label: '×', value: 'multiplication' as OperationMode },
                     { label: '÷', value: 'division' as OperationMode },
                   ]).map(({ label, value }) => {
-                    const on = customOperations.includes(value)
+                    const on = nextCustomOperations.includes(value)
                     return (
                       <button
                         key={value}
                         type="button"
-                        onClick={() => toggleCustomOp(value)}
+                        onClick={() => toggleNextCustomOp(value)}
                         className="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all active:scale-[0.97]"
                         style={{
                           backgroundColor: on ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
@@ -635,6 +641,8 @@ export default function ApiMathGame() {
                   })
                   setOperation(nextOperation)
                   setDifficulty(nextDifficulty)
+                  // Commit the local custom-ops picker state to the store
+                  if (nextOperation === 'custom') setCustomOperations(nextCustomOperations)
                   // Update the URL so opFromUrl reflects the new operation.
                   // Without this, the derived `operation` (opFromUrl ?? storeOperation)
                   // would still return the old URL param, causing the progression
