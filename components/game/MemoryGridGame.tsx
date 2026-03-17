@@ -105,7 +105,7 @@ export default function MemoryGridGame() {
   const generatePattern = useCallback(() => {
     const count = Math.max(2, Math.ceil(total * 0.35))
     const shuffled = [...cells].sort(() => Math.random() - 0.5)
-    setPattern(shuffled.slice(0, count))
+    return shuffled.slice(0, count)
   }, [cells, total])
 
   const startRound = useCallback(() => {
@@ -115,7 +115,7 @@ export default function MemoryGridGame() {
     setSelected([])
     setRoundScore(0)
     setRoundResult(null)
-    generatePattern()
+    setPattern(generatePattern())
   }, [generatePattern, sessionComplete])
 
   // Auto-transition from highlight → recall
@@ -202,13 +202,29 @@ export default function MemoryGridGame() {
     finishRound(false)
   }, [roundResult, finishRound])
 
-  // When difficulty changes and we're not on the session-complete panel, reset and start a new session.
+  // When difficulty changes and we're not on the session-complete panel, reset and start a new round.
+  // Use a ref to track whether we've already initialized to avoid double-starts.
+  const hasInitialized = useRef(false)
+
   useEffect(() => {
     if (sessionComplete) return
+
+    // On mount or difficulty change, start a fresh round synchronously.
+    // No setTimeout — the pattern must exist before the first paint so
+    // the highlight phase is visible immediately.
+    hasInitialized.current = true
     setRoundIndex(0)
     setSessionComplete(false)
-    const t = setTimeout(() => startRound(), 0)
-    return () => clearTimeout(t)
+    // Call startRound inline (can't call the callback because it checks
+    // sessionComplete from its closure which may be stale). Replicate
+    // the logic directly so the pattern is set in the same batch.
+    setRoundIndex(1)
+    setPhase('highlight')
+    setSelected([])
+    setRoundScore(0)
+    setRoundResult(null)
+    setPattern(generatePattern())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [difficulty, sessionComplete])
 
   // Load per-difficulty progress for the Session Complete panel when user manually changes difficulty.
@@ -384,7 +400,14 @@ export default function MemoryGridGame() {
                 setSessionMax(nextGamesCount)
                 setSessionComplete(false)
                 setRoundIndex(0)
-                setTimeout(() => startRound(), 0)
+                // Start the first round synchronously so the pattern is
+                // visible immediately (no setTimeout flicker).
+                setRoundIndex(1)
+                setPhase('highlight')
+                setSelected([])
+                setRoundScore(0)
+                setRoundResult(null)
+                setPattern(generatePattern())
               }}
               className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 disabled:opacity-60"
             >
