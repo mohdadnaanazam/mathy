@@ -136,15 +136,9 @@ export default function TrueFalseMathGame() {
     const filtered = source.filter(
       (g: BackendGame) => g.difficulty === difficulty && g.game_type === 'true_false_math',
     )
-    const unique = Array.from(new Map(filtered.map(g => [g.question, g])).values())
-    const maxQ = Math.min(Math.max(1, sessionMax), Math.max(1, unique.length))
-    const shuffled = [...unique]
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-    }
-    return shuffled.slice(0, maxQ)
-  }, [currentGameIds, difficulty, sessionMax, shuffleKey])
+    // Don't slice or shuffle here — the questionOrder effect handles both.
+    return Array.from(new Map(filtered.map(g => [g.question, g])).values())
+  }, [currentGameIds, difficulty, sessionMax])
 
   // Shuffle question order when pool changes
   const effectiveGameIds = useMemo(
@@ -162,11 +156,11 @@ export default function TrueFalseMathGame() {
       const j = Math.floor(Math.random() * (i + 1))
       ;[indices[i], indices[j]] = [indices[j], indices[i]]
     }
-    setQuestionOrder(indices)
+    setQuestionOrder(indices.slice(0, Math.max(1, sessionMax)))
     setCurrentIndex(0)
     setFeedback(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveGameIds, sessionHydrated])
+  }, [effectiveGameIds, sessionHydrated, shuffleKey])
 
   const current =
     questionOrder.length && currentIndex < questionOrder.length

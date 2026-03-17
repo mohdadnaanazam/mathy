@@ -213,26 +213,15 @@ export default function ApiMathGame() {
       return g.game_type !== 'true_false_math'
     })
 
-    // De-duplicate questions so the same prompt (e.g. "20 + 10 = ?") only appears once per batch
-    const uniqueGamesForDifficulty = Array.from(
+    // De-duplicate questions so the same prompt (e.g. "20 + 10 = ?") only appears once per batch.
+    // Don't slice here — for custom/mixture modes the pool contains multiple
+    // operation types and a naive slice from the front would only grab one type.
+    // The questionOrder effect shuffles indices and sessionMax limits how many
+    // questions the user actually plays.
+    return Array.from(
       new Map(gamesForDifficulty.map(g => [g.question, g])).values(),
     )
-
-    const maxQuestions = Math.min(
-      Math.max(1, sessionMax),
-      Math.max(1, uniqueGamesForDifficulty.length),
-    )
-
-    // Randomly sample a subset from the entire pool so sessions draw
-    // from a larger question set, even when more than maxQuestions exist.
-    const shuffledPool = [...uniqueGamesForDifficulty]
-    for (let i = shuffledPool.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[shuffledPool[i], shuffledPool[j]] = [shuffledPool[j], shuffledPool[i]]
-    }
-
-    return shuffledPool.slice(0, maxQuestions)
-  }, [currentGameIds, difficulty, operation, customOperations, sessionMax, shuffleKey])
+  }, [currentGameIds, difficulty, operation, customOperations, sessionMax])
 
   // Build question order only when the effective pool actually changes
   // (new game IDs) or when we explicitly request a reshuffle via shuffleKey.
@@ -244,9 +233,6 @@ export default function ApiMathGame() {
   )
 
   useEffect(() => {
-    // Don't build question order until session config is hydrated from DB.
-    // This prevents a reshuffle when sessionMax changes from its default
-    // to the persisted value, which was causing the first-question flicker.
     if (!sessionHydrated) return
 
     const len = effectiveGames.length
@@ -257,17 +243,20 @@ export default function ApiMathGame() {
       setFeedback(null)
       return
     }
+    // Build indices for the full pool, shuffle, then take at most sessionMax.
+    // This ensures custom/mixture modes draw from all operation types evenly
+    // rather than slicing from the front (which would favour one type).
     const indices = Array.from({ length: len }, (_, i) => i)
     for (let i = indices.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[indices[i], indices[j]] = [indices[j], indices[i]]
     }
-    setQuestionOrder(indices)
+    setQuestionOrder(indices.slice(0, Math.max(1, sessionMax)))
     setCurrentIndex(0)
     setAnswer('')
     setFeedback(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveGameIds, sessionHydrated])
+  }, [effectiveGameIds, sessionHydrated, shuffleKey])
 
   const current =
     questionOrder.length && currentIndex < questionOrder.length
