@@ -156,6 +156,15 @@ export default function ApiMathGame() {
     })
   }, [sessionComplete])
 
+  // Auto-retry: if we have no current question but aren't loading, trigger a refresh.
+  const hasTriedRefresh = useRef(false)
+  useEffect(() => {
+    if (!loading && !error && games.length === 0 && !hasTriedRefresh.current) {
+      hasTriedRefresh.current = true
+      refresh()
+    }
+  }, [loading, error, games.length, refresh])
+
   // Compute the pool of questions for this session once per
   // (games, operation, difficulty, customOperations, sessionMax) change.
   // This avoids reshuffling on every render (e.g. every timer tick),
@@ -601,15 +610,6 @@ export default function ApiMathGame() {
       </div>
     )
   }
-
-  // Auto-retry: if we have no current question but aren't loading, trigger a refresh.
-  const hasTriedRefresh = useRef(false)
-  useEffect(() => {
-    if (!loading && !error && games.length === 0 && !hasTriedRefresh.current) {
-      hasTriedRefresh.current = true
-      refresh()
-    }
-  }, [loading, error, games.length, refresh])
 
   if (!current) {
     return (
