@@ -28,6 +28,7 @@ import {
   setSelectedGameCount,
   setLastPlayedSettings,
 } from '@/lib/db'
+import { getNextGameConfig, operationLabel, difficultyLabel } from '@/lib/gameProgression'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 
@@ -103,16 +104,6 @@ export default function ApiMathGame() {
     })
   }, [])
 
-  const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
-  const OPERATION_ORDER: OperationMode[] = [
-    'addition',
-    'subtraction',
-    'multiplication',
-    'division',
-    'mixture',
-    'custom',
-  ]
-
   useEffect(() => {
     getMathSessionMax().then(setSessionMax)
     getMathSessionPlayed().then(setSessionPlayed)
@@ -142,20 +133,20 @@ export default function ApiMathGame() {
     })
   }, [nextOperation, nextDifficulty])
 
-  // When a session completes, reload the CURRENT variant's progress so the
-  // session-complete screen shows the accurate played/remaining for what the
-  // user just finished. The user can then manually pick a different
-  // operation/difficulty from the picker if they want.
+  // When a session completes, auto-advance to the next operation/difficulty
+  // in the progression sequence. Shows the user what's next while still
+  // allowing them to manually override from the picker.
   useEffect(() => {
     if (!sessionComplete) return
     const currentOp = operationRef.current
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
 
-    setNextOperation(currentOp)
-    setNextDifficulty(currentDiff)
+    const next = getNextGameConfig(currentOp, currentDiff)
+    setNextOperation(next.operation)
+    setNextDifficulty(next.difficulty)
 
-    getVariantProgress(currentOp, currentDiff).then(p => {
+    getVariantProgress(next.operation, next.difficulty).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
       setNextGamesCount(prev => {
@@ -433,10 +424,13 @@ export default function ApiMathGame() {
               Session complete
             </p>
             <p className="text-base sm:text-lg text-slate-200 font-medium">
-              You finished this set of questions for {operation}.
+              You finished this set of questions for {operationLabel(operation)}.
+            </p>
+            <p className="text-xs sm:text-sm text-[var(--accent-orange)]">
+              Next up: {operationLabel(nextOperation)} → {difficultyLabel(nextDifficulty as Difficulty)}
             </p>
             <p className="text-xs sm:text-sm text-slate-500">
-              Choose your next game below, or go back to the home screen.
+              Or choose a different game below.
             </p>
           </div>
 

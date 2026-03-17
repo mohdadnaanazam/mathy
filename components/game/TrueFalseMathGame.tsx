@@ -25,6 +25,7 @@ import {
   setSelectedGameCount,
   setLastPlayedSettings,
 } from '@/lib/db'
+import { difficultyLabel } from '@/lib/gameProgression'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -95,15 +96,16 @@ export default function TrueFalseMathGame() {
     })
   }, [nextDifficulty])
 
-  // When session completes, reload the CURRENT variant's progress so the
-  // session-complete screen shows accurate played/remaining for what the
-  // user just finished.
+  // When session completes, auto-advance to next difficulty in sequence
   useEffect(() => {
     if (!sessionComplete) return
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
-    setNextDifficulty(currentDiff)
-    getVariantProgress('true_false_math', currentDiff).then(p => {
+    const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
+    const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length
+    const newDiff = DIFFICULTY_ORDER[nextIdx]
+    setNextDifficulty(newDiff)
+    getVariantProgress('true_false_math', newDiff).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
       setNextGamesCount(prev => {
@@ -240,8 +242,11 @@ export default function TrueFalseMathGame() {
             <p className="text-base sm:text-lg text-slate-200 font-medium">
               You finished this set of True / False questions.
             </p>
+            <p className="text-xs sm:text-sm text-[var(--accent-orange)]">
+              Next up: {difficultyLabel(nextDifficulty)}
+            </p>
             <p className="text-xs sm:text-sm text-slate-500">
-              Choose your next difficulty below, or go back to the home screen.
+              Or choose a different difficulty below.
             </p>
           </div>
 

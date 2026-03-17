@@ -198,12 +198,15 @@ export function useHomePageState() {
     if (isReloadingGames) return
     setIsReloadingGames(true)
     try {
-      await clearGameCache()
+      // Reset progress and counts immediately (instant)
       await resetAllProgress()
-      const now = await fetchAndCacheAllGames()
-      setLastFetchAt(now)
       resetAllCounts()
       await setSelectedGameCount(DEFAULT_GAME_COUNT)
+
+      // Clear cache and fetch fresh games (may be slow, but UI is already usable)
+      await clearGameCache()
+      const now = await fetchAndCacheAllGames()
+      setLastFetchAt(now)
     } catch { /* stop spinner even on failure */ }
     finally { setIsReloadingGames(false) }
   }, [isReloadingGames, setLastFetchAt])

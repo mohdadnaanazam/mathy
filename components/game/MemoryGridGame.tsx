@@ -22,6 +22,7 @@ import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
+import { difficultyLabel } from '@/lib/gameProgression'
 
 const GRID_SIZE: Record<Difficulty, number> = {
   easy: 3,
@@ -223,16 +224,16 @@ export default function MemoryGridGame() {
     })
   }, [sessionComplete, difficulty])
 
-  // When session completes, reload the CURRENT variant's progress so the
-  // session-complete screen shows accurate played/remaining for what the
-  // user just finished. The user can manually change difficulty from the picker.
+  // When session completes, auto-advance to next difficulty in sequence
   useEffect(() => {
     if (!sessionComplete) return
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
-    // Keep the current difficulty selected (don't auto-advance)
-    setDifficulty(currentDiff)
-    getVariantProgress('memory', currentDiff).then(p => {
+    const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
+    const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length
+    const newDiff = DIFFICULTY_ORDER[nextIdx]
+    setDifficulty(newDiff)
+    getVariantProgress('memory', newDiff).then(p => {
       setNextVariantPlayed(p.played)
       setNextVariantRemaining(p.remaining)
       setNextGamesCount(prev => {
@@ -278,8 +279,11 @@ export default function MemoryGridGame() {
             <p className="text-sm sm:text-base text-slate-200">
               You finished this set of rounds for Memory Grid.
             </p>
+            <p className="text-xs sm:text-sm text-[var(--accent-orange)]">
+              Next up: {difficultyLabel(difficulty as Difficulty)}
+            </p>
             <p className="text-[11px] sm:text-xs text-slate-400">
-              Choose your next difficulty and number of games, or go back to the home screen.
+              Or choose a different difficulty below.
             </p>
           </div>
 

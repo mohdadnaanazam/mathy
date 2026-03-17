@@ -35,8 +35,9 @@ export interface UseGameLoaderResult {
 }
 
 /**
- * Load games from IndexedDB if cache is fresh (< 1 hour), otherwise fetch from server.
- * Stores result in IndexedDB and updates last fetch timestamp.
+ * Load games from IndexedDB immediately (fast), then check freshness.
+ * If cache is stale, fetch from server in the background and update silently.
+ * This ensures the UI is never blocked waiting for a server response.
  */
 export function useGameLoader(operation: string): UseGameLoaderResult {
   const gameType = mapOperationToType(operation)
@@ -47,14 +48,17 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
   const [error, setError] = useState<string | null>(null)
   const [lastFetchAt, setLastFetchAt] = useState<number | null>(null)
 
-  const loadFromServer = useCallback(async () => {
-    setLoading(true)
+  const loadFromServer = useCallback(async (showLoader: boolean) => {
+    if (showLoader) setLoading(true)
     setError(null)
     try {
       const data = await fetchGamesByType(gameType)
       if (!data.length) {
-        setError('No games available. Please try again later.')
-        setGames([])
+        // Only show error if we have no cached fallback
+        setGames(prev => {
+          if (prev.length === 0) setError('No games available. Please try again later.')
+          return prev.length > 0 ? prev : []
+        })
         return
       }
       const now = Date.now()
@@ -63,41 +67,48 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
       setLastFetchAt(now)
       setLastFetchAtGlobal(now)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load games')
-      setGames([])
+      // Only show error if we have no cached fallback
+      setGames(prev => {
+        if (prev.length === 0) setError(err instanceof Error ? err.message : 'Failed to load games')
+        return prev
+      })
     } finally {
       setLoading(false)
     }
   }, [gameType, setLastFetchAtGlobal])
 
   const refresh = useCallback(async () => {
-    await loadFromServer()
+    await loadFromServer(true)
   }, [loadFromServer])
 
   useEffect(() => {
     let cancelled = false
 
     async function init() {
-      const fresh = await isCacheFresh(gameType)
-      if (fresh) {
-        const cached = await getCachedGames(gameType)
-        const at = await getLastFetchAt(gameType)
-        if (!cancelled && cached?.length) {
-          setGames(cached)
-          setLastFetchAt(at ?? null)
-          setLastFetchAtGlobal(at ?? null)
-          setLoading(false)
-          setError(null)
-          return
+      // Step 1: Always try to load from IndexedDB first (instant)
+      const cached = await getCachedGames(gameType)
+      const at = await getLastFetchAt(gameType)
+      if (!cancelled && cached?.length) {
+        setGames(cached)
+        setLastFetchAt(at ?? null)
+        setLastFetchAtGlobal(at ?? null)
+        setLoading(false)
+        setError(null)
+
+        // Step 2: If cache is stale, refresh silently in background
+        const fresh = await isCacheFresh(gameType)
+        if (!fresh && !cancelled) {
+          loadFromServer(false) // non-blocking, no loader
         }
+        return
       }
-      if (!cancelled) await loadFromServer()
+
+      // No cache at all — must fetch from server (show loader)
+      if (!cancelled) await loadFromServer(true)
     }
 
     init()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [gameType, setLastFetchAtGlobal, loadFromServer])
 
   return { games, loading, error, lastFetchAt, refresh }

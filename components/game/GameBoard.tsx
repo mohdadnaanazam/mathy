@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
@@ -8,9 +8,6 @@ import { useAttempts } from '@/hooks/useAttempts'
 import { useGameTimer } from '@/hooks/useGameTimer'
 import { useSessionExpiry } from '@/hooks/useSessionExpiry'
 import { useGameStore } from '@/store/gameStore'
-import { useGameRefreshStore } from '@/store/gameRefreshStore'
-import { clearGameCache } from '@/lib/db'
-import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 import GameLockScreen from './GameLockScreen'
 
 const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
@@ -24,30 +21,14 @@ export default function GameBoard() {
   const { isLocked } = useAttempts()
   const { isRefreshing: gamesExpired } = useGameTimer()
   const { isSessionExpired } = useSessionExpiry()
-  const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const gameType = useGameStore(s => s.gameType)
   const setGameType = useGameStore(s => s.setGameType)
-  const operation = useGameStore(s => s.operation)
-  const [isReloading, setIsReloading] = useState(false)
-  const isReloadingRef = useRef(false)
 
-  const handleReload = useCallback(async () => {
-    if (isReloadingRef.current) return
-    isReloadingRef.current = true
-    setIsReloading(true)
-    try {
-      await clearGameCache()
-      const now = await fetchAndCacheAllGames()
-      setLastFetchAt(now)
-      router.push('/')
-    } catch {
-      // On failure, send to home anyway
-      router.push('/')
-    } finally {
-      isReloadingRef.current = false
-      setIsReloading(false)
-    }
-  }, [setLastFetchAt, router])
+  const handleReload = useCallback(() => {
+    // Navigate home immediately — the homepage handles the actual reload.
+    // No need to block the UI waiting for 6 API calls.
+    router.push('/')
+  }, [router])
 
   // Read URL params once per render as simple primitives
   // so we can use them safely in effects without depending on
@@ -94,10 +75,9 @@ export default function GameBoard() {
         <button
           type="button"
           onClick={handleReload}
-          disabled={isReloading}
-          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900 disabled:opacity-60"
+          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900"
         >
-          {isReloading ? 'Reloading…' : 'Reload'}
+          Go to Home
         </button>
       </div>
     )
