@@ -23,7 +23,7 @@ export default function GameBoard() {
   const searchParams = useSearchParams()
   const { isLocked } = useAttempts()
   const { isRefreshing: gamesExpired } = useGameTimer()
-  const { isSessionExpired, resetAndResume, recordActivity } = useSessionExpiry()
+  const { isSessionExpired, resetAndResume } = useSessionExpiry()
   const gameType = useGameStore(s => s.gameType)
   const setGameType = useGameStore(s => s.setGameType)
 
@@ -76,61 +76,7 @@ export default function GameBoard() {
     }
   }, [opParam, setOperation])
 
-  const handleContinue = useCallback(async () => {
-    await recordActivity()
-    await resetAndResume()
-  }, [recordActivity, resetAndResume])
-
   if (isLocked) return <GameLockScreen />
-
-  if (gamesExpired) {
-    return (
-      <div
-        className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col items-center justify-center py-12 px-4"
-        style={{ minHeight: '100dvh' }}
-      >
-        <p className="text-sm text-slate-300 text-center mb-4">
-          ⚡ New games are available. Tap Reload to play!
-        </p>
-        <button
-          type="button"
-          disabled={isReloading}
-          onClick={handleReload}
-          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900 disabled:opacity-60"
-        >
-          {isReloading ? 'Loading…' : 'Reload Games'}
-        </button>
-      </div>
-    )
-  }
-
-  if (isSessionExpired) {
-    return (
-      <div
-        className="overflow-x-hidden bg-[var(--bg-surface)] min-h-0 flex flex-col items-center justify-center py-12 px-4"
-        style={{ minHeight: '100dvh' }}
-      >
-        <p className="text-sm text-slate-300 text-center mb-5">
-          🎮 You still have unfinished games — pick up where you left off!
-        </p>
-        <button
-          type="button"
-          onClick={handleContinue}
-          className="rounded-full border border-[var(--accent-orange)] bg-[var(--accent-orange)] px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-900 mb-3"
-        >
-          Continue Game
-        </button>
-        <button
-          type="button"
-          disabled={isReloading}
-          onClick={handleReload}
-          className="rounded-full border border-zinc-700 bg-transparent px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400 disabled:opacity-60"
-        >
-          {isReloading ? 'Loading…' : 'Reset & Start New'}
-        </button>
-      </div>
-    )
-  }
 
   return (
     <div
@@ -143,7 +89,27 @@ export default function GameBoard() {
         position: 'relative',
       }}
     >
-      {/* Game only */}
+      {/* Non-blocking banner when new games are available */}
+      {(gamesExpired || isSessionExpired) && (
+        <div className="mx-auto w-full max-w-lg md:max-w-xl lg:max-w-2xl px-4 sm:px-6 pt-1 pb-2">
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 flex items-center justify-between gap-2">
+            <p className="text-[10px] text-amber-400 leading-snug">
+              ⚡ New games available
+            </p>
+            <button
+              type="button"
+              disabled={isReloading}
+              onClick={handleReload}
+              className="shrink-0 rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-wider disabled:opacity-60"
+              style={{ backgroundColor: 'transparent', color: '#a1a1aa', border: '1px solid rgba(63,63,70,0.6)' }}
+            >
+              {isReloading ? 'Loading…' : 'Reload'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Game */}
       <main
         id="live-game-area"
         className="flex-1 mx-auto w-full max-w-lg md:max-w-xl lg:max-w-2xl px-4 sm:px-6 py-6 sm:py-10 flex items-center justify-center"

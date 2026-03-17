@@ -254,7 +254,7 @@ export function useHomePageState() {
   }
 
   function handlePlay() {
-    if (isLocked || isRefreshing) return
+    if (isLocked) return
     // Session expired but user has unfinished games → allow continue (activity recorded in play*)
     if (isSessionExpired && !canPlayActive) return
     if (activeGame === 'math') { if (!mathDifficulty || mathVariantRemaining <= 0) return; playMath() }
@@ -288,7 +288,7 @@ export function useHomePageState() {
     (activeGame === 'truefalse' && canPlayTf)
 
   const playDisabled =
-    isNavigating || isLocked || isRefreshing || isReloadingGames ||
+    isNavigating || isLocked || isReloadingGames ||
     // Only block on session expiry if there are NO unfinished games
     (isSessionExpired && !hasUnfinishedGames) ||
     (activeGame === 'math' && !canPlayMath) ||
@@ -301,15 +301,13 @@ export function useHomePageState() {
       ? 'Limit reached'
       : mounted && isSessionExpired && !hasUnfinishedGames
         ? 'New games ready'
-        : mounted && isRefreshing
-          ? 'Reload for new games'
-          : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
-            ? 'Choose difficulty'
-            : isNavigating
-              ? 'Starting…'
-              : mounted && isSessionExpired && hasUnfinishedGames
-                ? 'Continue game'
-                : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
+        : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
+          ? 'Choose difficulty'
+          : isNavigating
+            ? 'Starting…'
+            : mounted && (isSessionExpired || isRefreshing) && hasUnfinishedGames
+              ? 'Continue playing'
+              : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
 
   // ── Return ─────────────────────────────────────────────────────────
   return {
