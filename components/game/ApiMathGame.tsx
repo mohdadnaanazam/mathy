@@ -602,10 +602,27 @@ export default function ApiMathGame() {
     )
   }
 
+  // Auto-retry: if we have no current question but aren't loading, trigger a refresh.
+  const hasTriedRefresh = useRef(false)
+  useEffect(() => {
+    if (!loading && !error && games.length === 0 && !hasTriedRefresh.current) {
+      hasTriedRefresh.current = true
+      refresh()
+    }
+  }, [loading, error, games.length, refresh])
+
   if (!current) {
     return (
-      <div className="flex flex-col items-center justify-center gap-1 py-6 text-center">
-        <p className="text-xs sm:text-sm text-slate-300">No games loaded.</p>
+      <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-700 border-t-slate-300" />
+        <p className="text-xs sm:text-sm text-slate-400">Loading questions…</p>
+        <button
+          type="button"
+          onClick={() => refresh()}
+          className="mt-2 rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-200"
+        >
+          Retry
+        </button>
       </div>
     )
   }

@@ -22,8 +22,21 @@ const MAP_OP_TO_TYPE: Record<string, BackendGame['game_type']> = {
   true_false_math: 'true_false_math',
 }
 
+/** The four standard math operation types (used for mixture/custom fallback). */
+const MATH_OP_TYPES: BackendGame['game_type'][] = [
+  'addition',
+  'subtraction',
+  'multiplication',
+  'division',
+]
+
 function mapOperationToType(op: string): BackendGame['game_type'] {
   return MAP_OP_TO_TYPE[op] ?? 'mixed'
+}
+
+/** Whether this operation needs all four math caches merged instead of a single type. */
+function needsAllMathTypes(op: string): boolean {
+  return op === 'mixture' || op === 'custom'
 }
 
 export interface UseGameLoaderResult {
@@ -37,10 +50,13 @@ export interface UseGameLoaderResult {
 /**
  * Load games from IndexedDB immediately (fast), then check freshness.
  * If cache is stale, fetch from server in the background and update silently.
- * This ensures the UI is never blocked waiting for a server response.
+ *
+ * For mixture/custom modes, merges all four math operation caches so the game
+ * always has questions even if the 'mixed' endpoint cache is empty.
  */
 export function useGameLoader(operation: string): UseGameLoaderResult {
   const gameType = mapOperationToType(operation)
+  const mergeAll = needsAllMathTypes(operation)
   const setLastFetchAtGlobal = useGameRefreshStore(s => s.setLastFetchAt)
 
   const [games, setGames] = useState<BackendGame[]>([])
@@ -48,13 +64,68 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
   const [error, setError] = useState<string | null>(null)
   const [lastFetchAt, setLastFetchAt] = useState<number | null>(null)
 
-  const loadFromServer = useCallback(async (showLoader: boolean) => {
+  /** Load all four math caches and merge them into one array. */
+  const loadAllMathFromCache = useCallback(async (): Promise<{
+    games: BackendGame[]
+    at: number | null
+  }> => {
+    const results = await Promise.all(
+      MATH_OP_TYPES.map(async (t) => {
+        const cached = await getCachedGames(t)
+        const at = await getLastFetchAt(t)
+        return { games: cached ?? [], at }
+      }),
+    )
+    const merged = results.flatMap(r => r.games)
+    // Use the oldest fetch timestamp so staleness check is conservative
+    const timestamps = results.map(r => r.at).filter((a): a is number => a != null)
+    const oldestAt = timestamps.length ? Math.min(...timestamps) : null
+    return { games: merged, at: oldestAt }
+  }, [])
+
+  /** Fetch all four math types from server and cache each one. */
+  const fetchAllMathFromServer = useCallback(async (showLoader: boolean) => {
+    if (showLoader) setLoading(true)
+    setError(null)
+    try {
+      const results = await Promise.allSettled(
+        MATH_OP_TYPES.map(async (t) => {
+          const data = await fetchGamesByType(t)
+          const now = Date.now()
+          if (data.length) await setCachedGames(t, data, now)
+          return data
+        }),
+      )
+      const merged = results.flatMap(r =>
+        r.status === 'fulfilled' ? r.value : [],
+      )
+      if (!merged.length) {
+        setGames(prev => {
+          if (prev.length === 0) setError('No games available. Please try again later.')
+          return prev.length > 0 ? prev : []
+        })
+        return
+      }
+      const now = Date.now()
+      setGames(merged)
+      setLastFetchAt(now)
+      setLastFetchAtGlobal(now)
+    } catch (err) {
+      setGames(prev => {
+        if (prev.length === 0) setError(err instanceof Error ? err.message : 'Failed to load games')
+        return prev
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [setLastFetchAtGlobal])
+
+  const loadSingleFromServer = useCallback(async (showLoader: boolean) => {
     if (showLoader) setLoading(true)
     setError(null)
     try {
       const data = await fetchGamesByType(gameType)
       if (!data.length) {
-        // Only show error if we have no cached fallback
         setGames(prev => {
           if (prev.length === 0) setError('No games available. Please try again later.')
           return prev.length > 0 ? prev : []
@@ -67,7 +138,6 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
       setLastFetchAt(now)
       setLastFetchAtGlobal(now)
     } catch (err) {
-      // Only show error if we have no cached fallback
       setGames(prev => {
         if (prev.length === 0) setError(err instanceof Error ? err.message : 'Failed to load games')
         return prev
@@ -78,38 +148,58 @@ export function useGameLoader(operation: string): UseGameLoaderResult {
   }, [gameType, setLastFetchAtGlobal])
 
   const refresh = useCallback(async () => {
-    await loadFromServer(true)
-  }, [loadFromServer])
+    if (mergeAll) await fetchAllMathFromServer(true)
+    else await loadSingleFromServer(true)
+  }, [mergeAll, fetchAllMathFromServer, loadSingleFromServer])
 
   useEffect(() => {
     let cancelled = false
 
     async function init() {
-      // Step 1: Always try to load from IndexedDB first (instant)
-      const cached = await getCachedGames(gameType)
-      const at = await getLastFetchAt(gameType)
-      if (!cancelled && cached?.length) {
-        setGames(cached)
-        setLastFetchAt(at ?? null)
-        setLastFetchAtGlobal(at ?? null)
-        setLoading(false)
-        setError(null)
+      if (mergeAll) {
+        // Mixture/custom: merge all four math caches
+        const { games: cached, at } = await loadAllMathFromCache()
+        if (!cancelled && cached.length) {
+          setGames(cached)
+          setLastFetchAt(at)
+          setLastFetchAtGlobal(at)
+          setLoading(false)
+          setError(null)
 
-        // Step 2: If cache is stale, refresh silently in background
-        const fresh = await isCacheFresh(gameType)
-        if (!fresh && !cancelled) {
-          loadFromServer(false) // non-blocking, no loader
+          // Check if any cache is stale
+          const freshChecks = await Promise.all(MATH_OP_TYPES.map(t => isCacheFresh(t)))
+          const anyStale = freshChecks.some(f => !f)
+          if (anyStale && !cancelled) {
+            fetchAllMathFromServer(false)
+          }
+          return
         }
-        return
-      }
+        // No cache — fetch from server
+        if (!cancelled) await fetchAllMathFromServer(true)
+      } else {
+        // Single operation: load from its specific cache
+        const cached = await getCachedGames(gameType)
+        const at = await getLastFetchAt(gameType)
+        if (!cancelled && cached?.length) {
+          setGames(cached)
+          setLastFetchAt(at ?? null)
+          setLastFetchAtGlobal(at ?? null)
+          setLoading(false)
+          setError(null)
 
-      // No cache at all — must fetch from server (show loader)
-      if (!cancelled) await loadFromServer(true)
+          const fresh = await isCacheFresh(gameType)
+          if (!fresh && !cancelled) {
+            loadSingleFromServer(false)
+          }
+          return
+        }
+        if (!cancelled) await loadSingleFromServer(true)
+      }
     }
 
     init()
     return () => { cancelled = true }
-  }, [gameType, setLastFetchAtGlobal, loadFromServer])
+  }, [gameType, mergeAll, setLastFetchAtGlobal, loadAllMathFromCache, fetchAllMathFromServer, loadSingleFromServer])
 
   return { games, loading, error, lastFetchAt, refresh }
 }
