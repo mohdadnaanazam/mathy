@@ -179,8 +179,9 @@ export default function ApiMathGame() {
       ) {
         return g.game_type === operation
       }
-      // mixture (and any fallback) uses whatever the backend returned.
-      return true
+      // mixture (and any fallback) — only include standard math operations,
+      // never true/false questions.
+      return g.game_type !== 'true_false_math'
     })
 
     // De-duplicate questions so the same prompt (e.g. "20 + 10 = ?") only appears once per batch

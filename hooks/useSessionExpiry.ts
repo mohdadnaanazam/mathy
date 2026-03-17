@@ -21,10 +21,12 @@ export interface UseSessionExpiryResult {
 }
 
 /**
- * Tracks a 1-hour inactivity window. When the user returns after ≥ 1 hour,
- * `isSessionExpired` becomes true and they must press "Reset Progress" before
- * they can play again. Resetting clears all variant played counters and session
- * counters but preserves the total score.
+ * Tracks a 1-hour inactivity window. When the user returns after ≥ 1 hour
+ * of being away (tab hidden / browser closed), `isSessionExpired` becomes
+ * true and they must press "Reset Progress" before they can play again.
+ *
+ * Activity is recorded automatically every 5 minutes while the tab is visible,
+ * so normal gameplay never triggers a false expiry.
  */
 export function useSessionExpiry(): UseSessionExpiryResult {
   const [isSessionExpired, setIsSessionExpired] = useState(false)
@@ -41,7 +43,13 @@ export function useSessionExpiry(): UseSessionExpiryResult {
         return
       }
       const elapsed = Date.now() - lastActivity
-      setIsSessionExpired(elapsed >= EXPIRY_THRESHOLD_MS)
+      if (elapsed >= EXPIRY_THRESHOLD_MS) {
+        setIsSessionExpired(true)
+      } else {
+        setIsSessionExpired(false)
+        // User is back within the window — refresh the timestamp
+        await setLastActivityAt()
+      }
     }
 
     check()
@@ -52,6 +60,21 @@ export function useSessionExpiry(): UseSessionExpiryResult {
     document.addEventListener('visibilitychange', onVisibility)
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
+
+  // Heartbeat: while the tab is visible, record activity every 5 minutes
+  // so that active gameplay keeps the session alive.
+  useEffect(() => {
+    if (isSessionExpired) return // don't heartbeat if already expired
+
+    const HEARTBEAT_MS = 5 * 60 * 1000 // 5 minutes
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setLastActivityAt()
+      }
+    }, HEARTBEAT_MS)
+
+    return () => clearInterval(id)
+  }, [isSessionExpired])
 
   const resetAndResume = useCallback(async () => {
     setIsResetting(true)
