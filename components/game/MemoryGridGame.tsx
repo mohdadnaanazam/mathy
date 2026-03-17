@@ -20,6 +20,7 @@ import {
 } from '@/lib/db'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
+import ShareScoreButton from './ShareScoreButton'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
 import { difficultyLabel } from '@/lib/gameProgression'
@@ -420,6 +421,11 @@ export default function MemoryGridGame() {
             >
               Go to home
             </button>
+            <ShareScoreButton
+              score={score}
+              gameType="Memory Grid"
+              difficulty={difficultyLabel(difficulty as Difficulty)}
+            />
           </div>
         </div>
       </div>

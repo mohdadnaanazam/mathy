@@ -31,6 +31,7 @@ import {
 import { getNextGameConfig, operationLabel, difficultyLabel } from '@/lib/gameProgression'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
+import ShareScoreButton from './ShareScoreButton'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -669,6 +670,12 @@ export default function ApiMathGame() {
               >
                 Go to home
               </button>
+
+              <ShareScoreButton
+                score={score}
+                gameType={`Math · ${operationLabel(operation)}`}
+                difficulty={difficultyLabel(difficulty as Difficulty)}
+              />
             </div>
           </div>
         </div>

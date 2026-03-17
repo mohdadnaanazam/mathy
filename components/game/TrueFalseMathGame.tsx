@@ -11,6 +11,7 @@ import { useUserUUID } from '@/hooks/useUserUUID'
 import { useScore } from '@/hooks/useScore'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
+import ShareScoreButton from './ShareScoreButton'
 import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
 import type { Difficulty } from '@/types'
@@ -337,6 +338,12 @@ export default function TrueFalseMathGame() {
               className="w-full sm:w-auto rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-6 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-300 transition-all hover:border-zinc-600 hover:text-white active:scale-[0.98]">
               Go to home
             </button>
+
+            <ShareScoreButton
+              score={score}
+              gameType="True / False Math"
+              difficulty={difficultyLabel(difficulty as Difficulty)}
+            />
           </div>
         </div>
       </div>

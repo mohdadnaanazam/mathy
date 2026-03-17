@@ -7,6 +7,7 @@ import GameCard from '@/components/home/GameCard'
 import StatusBanner from '@/components/home/StatusBanner'
 import FloatingPlayButton from '@/components/home/FloatingPlayButton'
 import TopBanner from '@/components/home/TopBanner'
+import ResetScoreButton from '@/components/home/ResetScoreButton'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
@@ -31,7 +32,7 @@ export default function LandingPage() {
   return (
     <main
       className="min-h-screen overflow-x-hidden bg-[var(--bg-surface)]"
-      style={{ paddingBottom: 'max(9rem, calc(env(safe-area-inset-bottom, 0px) + 9rem))' }}
+      style={{ paddingBottom: 'max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 5.5rem))' }}
     >
       {/* Top banner */}
       <TopBanner />
@@ -43,11 +44,14 @@ export default function LandingPage() {
             <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Mathy</h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Train your brain with free math and memory games</p>
           </div>
-          {s.isLocked && (
-            <span className="text-[10px] font-mono text-amber-400">
-              Limit {s.used}/{s.maxAttempts} · resets {s.timeToReset}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {s.isLocked && (
+              <span className="text-[10px] font-mono text-amber-400">
+                Limit {s.used}/{s.maxAttempts} · resets {s.timeToReset}
+              </span>
+            )}
+            <ResetScoreButton />
+          </div>
         </div>
       </header>
 

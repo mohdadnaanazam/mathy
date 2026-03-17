@@ -39,18 +39,20 @@ export default function FloatingPlayButton({
       <div
         className="pointer-events-auto w-full"
         style={{
-          background: 'linear-gradient(to top, var(--bg-surface) 55%, transparent)',
-          paddingTop: '24px',
+          background: 'linear-gradient(to top, var(--bg-surface) 60%, transparent)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          paddingTop: '20px',
         }}
       >
-        <div className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-4 sm:pb-5 flex justify-center">
+        <div className="mx-auto w-full max-w-md px-5 sm:px-6 pb-4 sm:pb-5 flex justify-center">
           <button
             ref={btnRef}
             type="button"
             onClick={handleClick}
             disabled={disabled}
             aria-busy={isNavigating}
-            className="play-btn group relative w-full max-w-xs overflow-hidden rounded-2xl px-8 py-3.5 sm:py-4 text-[13px] sm:text-sm font-bold uppercase tracking-[0.12em] transition-all duration-200 ease-out disabled:pointer-events-none"
+            className="play-btn group relative w-full overflow-hidden rounded-2xl px-8 py-3.5 sm:py-4 text-[13px] sm:text-sm font-bold uppercase tracking-[0.12em] transition-all duration-200 ease-out disabled:pointer-events-none"
             style={{
               /* --- colours by state --- */
               background: isLocked
@@ -67,9 +69,9 @@ export default function FloatingPlayButton({
                   ? '1px solid rgba(249,115,22,0.5)'
                   : '1px solid rgba(63,63,70,0.4)',
               boxShadow: isActive
-                ? '0 6px 28px rgba(249,115,22,0.3), 0 2px 8px rgba(249,115,22,0.15), inset 0 1px 0 rgba(255,255,255,0.15)'
+                ? '0 8px 32px rgba(249,115,22,0.35), 0 2px 12px rgba(249,115,22,0.2), inset 0 1px 0 rgba(255,255,255,0.15)'
                 : isNavigating
-                  ? '0 4px 20px rgba(249,115,22,0.25), inset 0 1px 0 rgba(255,255,255,0.1)'
+                  ? '0 6px 24px rgba(249,115,22,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
                   : 'none',
               opacity: disabled && !isLocked && !isNavigating ? 0.45 : 1,
             }}
