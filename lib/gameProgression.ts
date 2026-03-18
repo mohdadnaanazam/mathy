@@ -11,6 +11,25 @@ const OPERATIONS_ORDER: OperationMode[] = [
 
 const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
+/** Ordered list of "More Games" operations for progression. */
+const MORE_GAMES_ORDER: string[] = [
+  'square_root',
+  'fractions',
+  'percentage',
+  'algebra',
+  'speed_math',
+  'logic_puzzle',
+]
+
+const MORE_GAME_LABELS: Record<string, string> = {
+  square_root: 'Square Root',
+  fractions: 'Fractions',
+  percentage: 'Percentages',
+  algebra: 'Algebra',
+  speed_math: 'Speed Math',
+  logic_puzzle: 'Logic Grid',
+}
+
 export interface NextGameConfig {
   operation: OperationMode
   difficulty: Difficulty
@@ -57,4 +76,36 @@ export function difficultyLabel(d: Difficulty): string {
   return d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'
 }
 
-export { OPERATIONS_ORDER, DIFFICULTY_ORDER }
+export { OPERATIONS_ORDER, DIFFICULTY_ORDER, MORE_GAMES_ORDER, MORE_GAME_LABELS }
+
+/**
+ * Progression for "More Games": easy → medium → hard → next game → easy …
+ * After the last game (logic_puzzle hard), wraps to square_root easy.
+ */
+export function getNextMoreGameConfig(
+  currentGame: string,
+  currentDifficulty: Difficulty,
+): { game: string; difficulty: Difficulty } {
+  const gameIdx = MORE_GAMES_ORDER.indexOf(currentGame)
+  const diffIdx = DIFFICULTY_ORDER.indexOf(currentDifficulty)
+
+  if (gameIdx === -1 || diffIdx === -1) {
+    return { game: MORE_GAMES_ORDER[0], difficulty: 'easy' }
+  }
+
+  const totalSlots = MORE_GAMES_ORDER.length * DIFFICULTY_ORDER.length
+  const currentSlot = gameIdx * DIFFICULTY_ORDER.length + diffIdx
+  const nextSlot = (currentSlot + 1) % totalSlots
+  const nextGameIdx = Math.floor(nextSlot / DIFFICULTY_ORDER.length)
+  const nextDiffIdx = nextSlot % DIFFICULTY_ORDER.length
+
+  return {
+    game: MORE_GAMES_ORDER[nextGameIdx],
+    difficulty: DIFFICULTY_ORDER[nextDiffIdx],
+  }
+}
+
+/** Human-readable label for a "more game" type */
+export function moreGameLabel(game: string): string {
+  return MORE_GAME_LABELS[game] ?? game.charAt(0).toUpperCase() + game.slice(1).replace(/_/g, ' ')
+}
