@@ -1,41 +1,43 @@
 'use client'
 
-import { Lock, Radical, Percent, PieChart, Variable, Zap, Puzzle, LayoutGrid } from 'lucide-react'
+import { Radical, Percent, PieChart, Variable, Zap, Puzzle, LayoutGrid } from 'lucide-react'
 
-const LOCKED_GAMES = [
-  { title: 'Square Root', desc: 'Estimate and solve square root problems.', icon: Radical },
-  { title: 'Fractions', desc: 'Add, subtract and compare fractions.', icon: PieChart },
-  { title: 'Percentages', desc: 'Calculate percentages in real-world scenarios.', icon: Percent },
-  { title: 'Algebra', desc: 'Solve for x in simple equations.', icon: Variable },
-  { title: 'Speed Math', desc: 'Race the clock with rapid-fire calculations.', icon: Zap },
-  { title: 'Brain Puzzle', desc: 'Pattern recognition and logic challenges.', icon: Puzzle },
-  { title: 'Logic Grid', desc: 'Deduce the solution from given clues.', icon: LayoutGrid },
+export interface MoreGame {
+  id: string
+  title: string
+  desc: string
+  icon: typeof Radical
+}
+
+export const MORE_GAMES: MoreGame[] = [
+  { id: 'square_root',  title: 'Square Root',  desc: 'Estimate and solve square roots.',       icon: Radical },
+  { id: 'fractions',    title: 'Fractions',     desc: 'Add, subtract and compare fractions.',   icon: PieChart },
+  { id: 'percentage',   title: 'Percentages',   desc: 'Calculate real-world percentages.',      icon: Percent },
+  { id: 'algebra',      title: 'Algebra',       desc: 'Solve for x in simple equations.',       icon: Variable },
+  { id: 'speed_math',   title: 'Speed Math',    desc: 'Rapid-fire chain calculations.',         icon: Zap },
+  { id: 'brain_puzzle', title: 'Brain Puzzle',   desc: 'Pattern and logic challenges.',          icon: Puzzle },
+  { id: 'logic_grid',   title: 'Logic Grid',    desc: 'Deduce solutions from clues.',           icon: LayoutGrid },
 ]
 
 export default function ComingSoonSection() {
   return (
-    <section className="mx-auto max-w-2xl px-4 sm:px-6 pt-6 pb-4">
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-3">
-        Coming Soon
-      </h2>
+    <section className="mx-auto max-w-2xl px-4 sm:px-6 pt-5 pb-6">
+      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500 mb-2.5">
+        More Games
+      </p>
 
       <div className="grid grid-cols-2 gap-2">
-        {LOCKED_GAMES.map(({ title, desc, icon: Icon }) => (
+        {MORE_GAMES.map(({ id, title, desc, icon: Icon }) => (
           <div
-            key={title}
-            className="relative rounded-2xl border border-[var(--border-subtle)] p-3 select-none overflow-hidden"
-            style={{ backgroundColor: 'var(--bg-card)', opacity: 0.5 }}
+            key={id}
+            className="rounded-xl border border-zinc-800/60 p-3 select-none cursor-default"
+            style={{ backgroundColor: 'rgba(24,24,27,0.5)' }}
           >
-            {/* Lock badge */}
-            <div className="absolute top-2.5 right-2.5 text-zinc-600">
-              <Lock size={12} />
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Icon size={13} className="text-zinc-500 shrink-0" />
+              <span className="text-[11px] font-semibold text-zinc-300 truncate">{title}</span>
             </div>
-
-            <div className="flex items-center gap-1.5 mb-1">
-              <Icon size={14} className="text-zinc-600" />
-              <span className="text-[11px] font-semibold text-zinc-400">{title}</span>
-            </div>
-            <p className="text-[9px] leading-snug text-zinc-600">{desc}</p>
+            <p className="text-[9px] leading-snug text-zinc-500">{desc}</p>
           </div>
         ))}
       </div>
