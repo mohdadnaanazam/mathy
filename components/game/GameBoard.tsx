@@ -16,6 +16,7 @@ import GameLockScreen from './GameLockScreen'
 const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
 const TrueFalseMathGame = dynamic(() => import('./TrueFalseMathGame'), { ssr: false })
+const MoreGame = dynamic(() => import('./MoreGame'), { ssr: false })
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
@@ -58,8 +59,9 @@ export default function GameBoard() {
   useEffect(() => {
     if (modeParam === 'memory') setGameType('memory')
     else if (modeParam === 'truefalse') setGameType('true_false')
+    else if (modeParam === 'more') setGameType('square_root') // placeholder; MoreGame reads type from URL
   }, [modeParam, setGameType])
-  const effectiveGameType = modeParam === 'memory' ? 'memory' : modeParam === 'truefalse' ? 'true_false' : gameType
+  const effectiveGameType = modeParam === 'memory' ? 'memory' : modeParam === 'truefalse' ? 'true_false' : modeParam === 'more' ? 'more' : gameType
 
   const setOperation = useGameStore(s => s.setOperation)
   const customOperations = useGameStore(s => s.customOperations)
@@ -124,6 +126,8 @@ export default function GameBoard() {
             <MemoryGridGame />
           ) : effectiveGameType === 'true_false' ? (
             <TrueFalseMathGame />
+          ) : effectiveGameType === 'more' ? (
+            <MoreGame />
           ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
             <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
               Select operations on the home screen, then press Play to start a custom game.

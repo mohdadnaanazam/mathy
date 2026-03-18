@@ -9,7 +9,7 @@ import FloatingPlayButton from '@/components/home/FloatingPlayButton'
 import TopBanner from '@/components/home/TopBanner'
 import ResetScoreButton from '@/components/home/ResetScoreButton'
 import RefreshBanner from '@/components/ui/RefreshBanner'
-import ComingSoonSection from '@/components/home/ComingSoonSection'
+import MoreGamesButton from '@/components/home/MoreGamesButton'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
   { symbol: '+', label: 'Addition' },
@@ -196,8 +196,8 @@ export default function LandingPage() {
         />
       </div>
 
-      {/* Coming soon / locked games */}
-      <ComingSoonSection />
+      {/* More Games entry point */}
+      <MoreGamesButton />
 
       {/* Floating Play button */}
       <FloatingPlayButton
