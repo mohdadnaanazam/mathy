@@ -14,83 +14,83 @@ async function generateShareImage(
   gameType?: string,
   difficulty?: string,
 ): Promise<Blob> {
-  const W = 600
-  const H = 340
+  // 1080×1080 square — optimal for WhatsApp, Instagram, Twitter
+  const W = 1080
+  const H = 1080
   const canvas = document.createElement('canvas')
   canvas.width = W
   canvas.height = H
   const ctx = canvas.getContext('2d')!
 
-  // Background
+  // Solid dark background — edge-to-edge, no rounded corners (avoids
+  // transparent gaps that look like padding on dark chat backgrounds)
   const bg = ctx.createLinearGradient(0, 0, W, H)
   bg.addColorStop(0, '#0c0c0f')
   bg.addColorStop(1, '#18181b')
   ctx.fillStyle = bg
-  ctx.beginPath()
-  ctx.roundRect(0, 0, W, H, 24)
-  ctx.fill()
+  ctx.fillRect(0, 0, W, H)
 
   // Orange accent line at top
   const accent = ctx.createLinearGradient(0, 0, W, 0)
   accent.addColorStop(0, '#f97316')
   accent.addColorStop(1, '#ea580c')
   ctx.fillStyle = accent
-  ctx.beginPath()
-  ctx.roundRect(0, 0, W, 4, [24, 24, 0, 0])
-  ctx.fill()
+  ctx.fillRect(0, 0, W, 6)
+
+  // --- Content is vertically centred in the card ---
+  const centerY = H / 2
 
   // App name
   ctx.fillStyle = '#f97316'
-  ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
+  ctx.font = 'bold 36px system-ui, -apple-system, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('MATHY', W / 2, 48)
+  ctx.fillText('MATHY', W / 2, centerY - 200)
 
   // Score
   ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 64px system-ui, -apple-system, sans-serif'
-  ctx.fillText(score.toLocaleString(), W / 2, 130)
+  ctx.font = 'bold 144px system-ui, -apple-system, sans-serif'
+  ctx.fillText(score.toLocaleString(), W / 2, centerY - 50)
 
   // "points" label
   ctx.fillStyle = '#a1a1aa'
-  ctx.font = '16px system-ui, -apple-system, sans-serif'
-  ctx.fillText('points', W / 2, 158)
+  ctx.font = '32px system-ui, -apple-system, sans-serif'
+  ctx.fillText('points', W / 2, centerY + 10)
 
   // Game info pills
   const pills: string[] = []
   if (gameType) pills.push(gameType)
   if (difficulty) pills.push(difficulty)
+  const pillBaseY = centerY + 70
   if (pills.length) {
-    ctx.font = '13px system-ui, -apple-system, sans-serif'
+    ctx.font = '26px system-ui, -apple-system, sans-serif'
     const pillText = pills.join('  ·  ')
     ctx.fillStyle = 'rgba(249,115,22,0.15)'
     const tw = ctx.measureText(pillText).width
-    const px = 16, py = 6
+    const px = 28
     ctx.beginPath()
-    ctx.roundRect((W - tw) / 2 - px, 174, tw + px * 2, 28, 14)
+    ctx.roundRect((W - tw) / 2 - px, pillBaseY - 20, tw + px * 2, 50, 25)
     ctx.fill()
     ctx.fillStyle = '#f97316'
     ctx.textAlign = 'center'
-    ctx.fillText(pillText, W / 2, 193)
+    ctx.fillText(pillText, W / 2, pillBaseY + 10)
   }
 
   // Challenge text
   ctx.fillStyle = '#d4d4d8'
-  ctx.font = '20px system-ui, -apple-system, sans-serif'
+  ctx.font = '38px system-ui, -apple-system, sans-serif'
   ctx.textAlign = 'center'
-  const tagY = pills.length ? 240 : 210
+  const tagY = pills.length ? pillBaseY + 90 : centerY + 100
   ctx.fillText('I scored this in Mathy 🧠🔥', W / 2, tagY)
 
   // CTA
   ctx.fillStyle = '#71717a'
-  ctx.font = '14px system-ui, -apple-system, sans-serif'
-  ctx.fillText('Can you beat my score? → matthy.netlify.app', W / 2, tagY + 34)
+  ctx.font = '26px system-ui, -apple-system, sans-serif'
+  ctx.fillText('Can you beat my score? → matthy.netlify.app', W / 2, tagY + 56)
 
-  // Subtle border
-  ctx.strokeStyle = 'rgba(249,115,22,0.2)'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.roundRect(0.5, 0.5, W - 1, H - 1, 24)
-  ctx.stroke()
+  // Subtle inner border
+  ctx.strokeStyle = 'rgba(249,115,22,0.15)'
+  ctx.lineWidth = 2
+  ctx.strokeRect(1, 1, W - 2, H - 2)
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(

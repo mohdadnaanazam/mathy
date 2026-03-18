@@ -277,6 +277,10 @@ export async function resetAllProgress(): Promise<void> {
   await setMemorySessionPlayed(0)
   await setTrueFalseSessionMax(10)
   await setTrueFalseSessionPlayed(0)
+  // Reset new game type sessions
+  for (const gt of NEW_GAME_TYPES) {
+    await resetGenericSession(gt, 10)
+  }
   // Clear persisted game count so next session uses the default
   await db.meta.delete(META_SELECTED_GAME_COUNT)
 }
@@ -338,3 +342,46 @@ export async function resetTrueFalseSession(max: number): Promise<void> {
   await setTrueFalseSessionMax(max)
   await setTrueFalseSessionPlayed(0)
 }
+
+// ─── Generic session helpers for new game types ──────────────────────
+// Avoids duplicating get/set/increment/reset for each new game type.
+// Uses the same meta table with keys like "squareRoot_sessionMax".
+
+function sessionKey(gameType: string, field: 'max' | 'played'): string {
+  return `${gameType}_session${field === 'max' ? 'Max' : 'Played'}`
+}
+
+export async function getGenericSessionMax(gameType: string): Promise<number> {
+  const row = await db.meta.get(sessionKey(gameType, 'max'))
+  return row?.value ?? 10
+}
+
+export async function getGenericSessionPlayed(gameType: string): Promise<number> {
+  const row = await db.meta.get(sessionKey(gameType, 'played'))
+  return row?.value ?? 0
+}
+
+export async function setGenericSessionMax(gameType: string, max: number): Promise<void> {
+  await db.meta.put({ key: sessionKey(gameType, 'max'), value: max })
+}
+
+export async function setGenericSessionPlayed(gameType: string, played: number): Promise<void> {
+  await db.meta.put({ key: sessionKey(gameType, 'played'), value: played })
+}
+
+export async function incrementGenericSessionPlayed(gameType: string): Promise<number> {
+  const played = await getGenericSessionPlayed(gameType)
+  const next = played + 1
+  await setGenericSessionPlayed(gameType, next)
+  return next
+}
+
+export async function resetGenericSession(gameType: string, max: number): Promise<void> {
+  await setGenericSessionMax(gameType, max)
+  await setGenericSessionPlayed(gameType, 0)
+}
+
+/** All new game type identifiers for session reset. */
+export const NEW_GAME_TYPES = [
+  'square_root', 'fractions', 'percentage', 'algebra', 'speed_math', 'logic_puzzle',
+] as const

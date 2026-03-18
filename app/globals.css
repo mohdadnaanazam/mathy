@@ -399,3 +399,10 @@
   to   { opacity: 1; transform: translate(-50%, 0); }
 }
 .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
+
+/* Urgent countdown pulse */
+@keyframes urgent-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.progress-urgent { animation: urgent-pulse 1.5s ease-in-out infinite; }

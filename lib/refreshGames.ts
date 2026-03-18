@@ -9,6 +9,12 @@ const GAME_TYPES: BackendGame['game_type'][] = [
   'division',
   'mixed',
   'true_false_math',
+  'square_root',
+  'fractions',
+  'percentage',
+  'algebra',
+  'speed_math',
+  'logic_puzzle',
 ]
 
 /** Per-request timeout (ms). Prevents a single slow/hung request from blocking forever. */

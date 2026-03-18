@@ -19,6 +19,12 @@ const MAP_OP_TO_TYPE: Record<string, BackendGame['game_type']> = {
   mixture: 'mixed',
   custom: 'mixed',
   true_false_math: 'true_false_math',
+  square_root: 'square_root',
+  fractions: 'fractions',
+  percentage: 'percentage',
+  algebra: 'algebra',
+  speed_math: 'speed_math',
+  logic_puzzle: 'logic_puzzle',
 }
 
 /** The four standard math operation types (used for mixture/custom fallback). */

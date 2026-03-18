@@ -3,6 +3,7 @@ import { apiClient } from '../api/apiClient'
 export type BackendGame = {
   id: string
   game_type: 'addition' | 'subtraction' | 'multiplication' | 'division' | 'mixed' | 'true_false_math'
+    | 'square_root' | 'fractions' | 'percentage' | 'algebra' | 'speed_math' | 'logic_puzzle'
   question: string
   correct_answer: number | string
   difficulty: 'easy' | 'medium' | 'hard'

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useGameStore } from '@/store/gameStore'
-import { useAttempts } from '@/hooks/useAttempts'
+import { useAttempts } from '@/hooks/useAttempts' 
 import { useGameLoader } from '@/hooks/useGameLoader'
 import { useGameTimer } from '@/hooks/useGameTimer'
 import { useUserUUID } from '@/hooks/useUserUUID'
@@ -31,7 +31,6 @@ import {
 import { getNextGameConfig, operationLabel, difficultyLabel } from '@/lib/gameProgression'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
-import ShareScoreButton from './ShareScoreButton'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -54,6 +53,7 @@ export default function ApiMathGame() {
   const difficulty = useGameStore(s => s.difficulty)
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const customOperations = useGameStore(s => s.customOperations)
+  const toggleCustomOp = useGameStore(s => s.toggleCustomOp)
   const setCustomOperations = useGameStore(s => s.setCustomOperations)
   const opFromUrl = operationFromUrl(searchParams.get('op'))
   const operation = opFromUrl ?? storeOperation
@@ -517,12 +517,12 @@ export default function ApiMathGame() {
                     { label: '×', value: 'multiplication' as OperationMode },
                     { label: '÷', value: 'division' as OperationMode },
                   ]).map(({ label, value }) => {
-                    const on = nextCustomOperations.includes(value)
+                    const on = customOperations.includes(value)
                     return (
                       <button
                         key={value}
                         type="button"
-                        onClick={() => toggleNextCustomOp(value)}
+                        onClick={() => toggleCustomOp(value)}
                         className="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all active:scale-[0.97]"
                         style={{
                           backgroundColor: on ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
@@ -642,8 +642,6 @@ export default function ApiMathGame() {
                   })
                   setOperation(nextOperation)
                   setDifficulty(nextDifficulty)
-                  // Commit the local custom-ops picker state to the store
-                  if (nextOperation === 'custom') setCustomOperations(nextCustomOperations)
                   // Update the URL so opFromUrl reflects the new operation.
                   // Without this, the derived `operation` (opFromUrl ?? storeOperation)
                   // would still return the old URL param, causing the progression
@@ -670,12 +668,6 @@ export default function ApiMathGame() {
               >
                 Go to home
               </button>
-
-              <ShareScoreButton
-                score={score}
-                gameType={`Math · ${operationLabel(operation)}`}
-                difficulty={difficultyLabel(difficulty as Difficulty)}
-              />
             </div>
           </div>
         </div>

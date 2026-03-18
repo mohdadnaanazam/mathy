@@ -342,13 +342,25 @@ export default function MemoryGridGame() {
               <span className="text-[10px] font-mono text-slate-500 mt-1">
                 {nextVariantPlayed} / 20 played · {nextVariantRemaining} remaining
               </span>
-              {nextVariantExhausted && (
-                <span className="text-[10px] font-mono text-amber-400 mt-0.5 block">
-                  {refreshReady
-                    ? '🎉 New games available! Go home and tap Reload.'
-                    : `Next games unlock in ${refreshFormatted}`}
-                </span>
-              )}
+              {nextVariantExhausted && (() => {
+                const urgent = !refreshReady && /^(\d+)m/.test(refreshFormatted) && parseInt(refreshFormatted.match(/^(\d+)m/)![1], 10) < 2
+                return (
+                  <span
+                    className={`text-[10px] font-mono inline-flex items-center gap-1 mt-0.5 ${urgent ? 'progress-urgent' : ''}`}
+                    style={{ color: refreshReady ? '#22c55e' : urgent ? '#f87171' : '#fbbf24' }}
+                  >
+                    {refreshReady ? '🎉 New games available! Go home and tap Reload.' : (
+                      <>
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="shrink-0" style={{ opacity: 0.8 }}>
+                          <circle cx="8" cy="8" r="6.5" />
+                          <path d="M8 4.5V8l2.5 1.5" />
+                        </svg>
+                        Next games unlock in {refreshFormatted}
+                      </>
+                    )}
+                  </span>
+                )
+              })()}
             </div>
             <div className="flex items-center gap-2">
               <button
