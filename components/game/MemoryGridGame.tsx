@@ -398,7 +398,7 @@ export default function MemoryGridGame() {
             <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
           )}
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 pt-1">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1">
             <button
               type="button"
               disabled={nextVariantExhausted || nextGamesCount <= 0}
@@ -426,6 +426,11 @@ export default function MemoryGridGame() {
             >
               Play game
             </button>
+            <ShareScoreButton
+              score={score}
+              gameType="Memory Grid"
+              difficulty={difficultyLabel(difficulty as Difficulty)}
+            />
             <button
               type="button"
               onClick={() => router.push('/')}
@@ -433,11 +438,6 @@ export default function MemoryGridGame() {
             >
               Go to home
             </button>
-            <ShareScoreButton
-              score={score}
-              gameType="Memory Grid"
-              difficulty={difficultyLabel(difficulty as Difficulty)}
-            />
           </div>
         </div>
       </div>

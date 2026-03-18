@@ -31,6 +31,7 @@ import {
 import { getNextGameConfig, operationLabel, difficultyLabel } from '@/lib/gameProgression'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
+import ShareScoreButton from './ShareScoreButton'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -622,8 +623,8 @@ export default function ApiMathGame() {
               <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
             )}
 
-            {/* Primary: Play next game; Secondary: Go home */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            {/* Primary: Play next game; Secondary: Share, Go home */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 disabled={
@@ -660,6 +661,12 @@ export default function ApiMathGame() {
               >
                 Play game
               </button>
+
+              <ShareScoreButton
+                score={score}
+                gameType={operationLabel(operation)}
+                difficulty={difficultyLabel(difficulty as Difficulty)}
+              />
 
               <button
                 type="button"

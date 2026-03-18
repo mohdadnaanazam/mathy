@@ -328,7 +328,7 @@ export default function TrueFalseMathGame() {
 
           {nextVariantExhausted && <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />}
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button type="button"
               disabled={!nextDifficulty || nextVariantExhausted || nextGamesCount <= 0}
               onClick={async () => {
@@ -348,16 +348,15 @@ export default function TrueFalseMathGame() {
               className="w-full sm:w-auto rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-8 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-900 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none">
               Play game
             </button>
-            <button type="button" onClick={() => router.push('/')}
-              className="w-full sm:w-auto rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-6 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-300 transition-all hover:border-zinc-600 hover:text-white active:scale-[0.98]">
-              Go to home
-            </button>
-
             <ShareScoreButton
               score={score}
               gameType="True / False Math"
               difficulty={difficultyLabel(difficulty as Difficulty)}
             />
+            <button type="button" onClick={() => router.push('/')}
+              className="w-full sm:w-auto rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-6 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-300 transition-all hover:border-zinc-600 hover:text-white active:scale-[0.98]">
+              Go to home
+            </button>
           </div>
         </div>
       </div>
