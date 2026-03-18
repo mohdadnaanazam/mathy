@@ -47,14 +47,12 @@ export default function MoreGamesPage() {
   const [gamesCount, setGamesCount] = useState(DEFAULT_COUNT)
   const [isNavigating, setIsNavigating] = useState(false)
 
-  // Variant progress for the selected game + difficulty
   const [variantPlayed, setVariantPlayed] = useState(0)
   const [variantTotal, setVariantTotal] = useState(20)
   const [variantRemaining, setVariantRemaining] = useState(20)
 
   const game = MORE_GAMES.find(g => g.id === selected)
   const variantExhausted = variantRemaining <= 0
-  const showControls = selected !== null && difficulty !== null
 
   // Load variant progress when game or difficulty changes
   useEffect(() => {
@@ -68,14 +66,8 @@ export default function MoreGamesPage() {
   }, [selected, difficulty])
 
   const handleSelect = (id: string) => {
-    if (selected === id) {
-      setSelected(null)
-      setDifficulty(null)
-    } else {
-      setSelected(id)
-      setDifficulty(null)
-      setGamesCount(DEFAULT_COUNT)
-    }
+    setSelected(selected === id ? null : id)
+    setGamesCount(DEFAULT_COUNT)
   }
 
   const handlePlay = useCallback(async () => {
@@ -117,56 +109,56 @@ export default function MoreGamesPage() {
         </div>
       </header>
 
-      {/* Game list */}
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4 space-y-2">
-        {MORE_GAMES.map(({ id, title, desc, icon: Icon }) => {
-          const active = selected === id
-          return (
-            <div
-              key={id}
-              className="rounded-2xl border p-4 transition-colors"
-              style={{
-                borderColor: active ? 'var(--accent-orange)' : 'var(--border-subtle)',
-                backgroundColor: active ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
-              }}
-              onClick={() => handleSelect(id)}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Icon size={16} style={{ color: active ? 'var(--accent-orange)' : '#71717a' }} />
-                <span className="text-sm font-semibold text-white">{title}</span>
-              </div>
-              <p className="text-[11px] text-slate-500 mb-3">{desc}</p>
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4 space-y-4">
+        {/* Global difficulty selector */}
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Difficulty</p>
+          <DifficultyPills value={difficulty} onChange={d => { setDifficulty(d); setGamesCount(DEFAULT_COUNT) }} />
+        </div>
 
-              {/* Difficulty pills */}
-              <div onClick={e => e.stopPropagation()}>
-                <DifficultyPills
-                  value={active ? difficulty : null}
-                  onChange={d => { setSelected(id); setDifficulty(d); setGamesCount(DEFAULT_COUNT) }}
-                />
-              </div>
-
-              {/* Stepper + progress — only when active and difficulty chosen */}
-              {active && difficulty !== null && (
-                <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]" onClick={e => e.stopPropagation()}>
-                  <GameStepper
-                    count={gamesCount}
-                    onDecrement={() => { if (!variantExhausted) setGamesCount(v => Math.max(1, Math.min(v - 1, variantRemaining))) }}
-                    onIncrement={() => { if (!variantExhausted) setGamesCount(v => Math.min(Math.max(v + 1, 1), variantRemaining)) }}
-                    disabled={variantExhausted}
-                  />
-                  <ProgressLine
-                    played={variantPlayed}
-                    total={variantTotal}
-                    remaining={variantRemaining}
-                    exhausted={variantExhausted}
-                    refreshReady={refreshReady}
-                    refreshFormatted={refreshFormatted}
-                  />
+        {/* Game list */}
+        <div className="space-y-2">
+          {MORE_GAMES.map(({ id, title, desc, icon: Icon }) => {
+            const active = selected === id
+            return (
+              <div
+                key={id}
+                className="rounded-2xl border p-4 transition-colors cursor-pointer"
+                style={{
+                  borderColor: active ? 'var(--accent-orange)' : 'var(--border-subtle)',
+                  backgroundColor: active ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
+                }}
+                onClick={() => handleSelect(id)}
+              >
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Icon size={16} style={{ color: active ? 'var(--accent-orange)' : '#71717a' }} />
+                  <span className="text-sm font-semibold text-white">{title}</span>
                 </div>
-              )}
-            </div>
-          )
-        })}
+                <p className="text-[11px] text-slate-500">{desc}</p>
+
+                {/* Stepper + progress — only when this card is selected AND difficulty is chosen */}
+                {active && difficulty !== null && (
+                  <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]" onClick={e => e.stopPropagation()}>
+                    <GameStepper
+                      count={gamesCount}
+                      onDecrement={() => { if (!variantExhausted) setGamesCount(v => Math.max(1, Math.min(v - 1, variantRemaining))) }}
+                      onIncrement={() => { if (!variantExhausted) setGamesCount(v => Math.min(Math.max(v + 1, 1), variantRemaining)) }}
+                      disabled={variantExhausted}
+                    />
+                    <ProgressLine
+                      played={variantPlayed}
+                      total={variantTotal}
+                      remaining={variantRemaining}
+                      exhausted={variantExhausted}
+                      refreshReady={refreshReady}
+                      refreshFormatted={refreshFormatted}
+                    />
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Play button — fixed at bottom */}
