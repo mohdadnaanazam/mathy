@@ -34,6 +34,7 @@ interface SscQuestion {
   options: string[]
   answer: string
   explanation: string
+  year?: number
 }
 
 const DATA_MAP: Record<Difficulty, SscQuestion[]> = {
@@ -168,7 +169,7 @@ export default function SscCglGame() {
     } else {
       setFeedback('wrong')
       recordHourlyAttempt()
-      setTimeout(goNext, 1500)
+      setTimeout(goNext, 2500)
     }
   }, [current, feedback, recordHourlyAttempt, addScore, pointsPerCorrect, syncNow, goNext])
 
@@ -332,7 +333,7 @@ export default function SscCglGame() {
               {Math.min(currentIndex + 1, sessionMax)} / {sessionMax}
             </span>
             <span className="rounded-full border border-zinc-700 bg-zinc-800/60 px-2 py-0.5 text-[9px] sm:text-[11px] font-mono uppercase tracking-wider text-slate-400">
-              ssc cgl
+              ssc cgl{current.year ? ` · ${current.year}` : ''}
             </span>
           </div>
           <p className="text-sm sm:text-base text-white leading-relaxed text-center">{current.question}</p>

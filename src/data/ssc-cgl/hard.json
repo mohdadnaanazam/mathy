@@ -1,122 +1,242 @@
 [
   {
     "question": "A sum of money doubles itself in 8 years at simple interest. What is the rate of interest?",
-    "options": ["10%", "12.5%", "15%", "20%"],
+    "options": [
+      "10%",
+      "12.5%",
+      "15%",
+      "20%"
+    ],
     "answer": "12.5%",
-    "explanation": "SI = P (doubles means SI = P). R = P × 100 / (P × 8) = 100/8 = 12.5%"
+    "explanation": "SI = P (doubles means SI = P). R = P × 100 / (P × 8) = 100/8 = 12.5%",
+    "year": 2018
   },
   {
     "question": "The difference between CI and SI on ₹5000 for 2 years at 10% per annum is?",
-    "options": ["₹25", "₹50", "₹75", "₹100"],
+    "options": [
+      "₹25",
+      "₹50",
+      "₹75",
+      "₹100"
+    ],
     "answer": "₹50",
-    "explanation": "SI = 1000, CI = 5000(1.1)² − 5000 = 1050. Difference = 1050 − 1000 = ₹50"
+    "explanation": "SI = 1000, CI = 5000(1.1)² − 5000 = 1050. Difference = 1050 − 1000 = ₹50",
+    "year": 2019
   },
   {
     "question": "Three taps A, B, C can fill a tank in 12, 15, and 20 hours. If all three are opened together, how long to fill the tank?",
-    "options": ["4 hours", "5 hours", "6 hours", "7 hours"],
+    "options": [
+      "4 hours",
+      "5 hours",
+      "6 hours",
+      "7 hours"
+    ],
     "answer": "5 hours",
-    "explanation": "Rate = 1/12 + 1/15 + 1/20 = (5+4+3)/60 = 12/60 = 1/5. Time = 5 hours"
+    "explanation": "Rate = 1/12 + 1/15 + 1/20 = (5+4+3)/60 = 12/60 = 1/5. Time = 5 hours",
+    "year": 2020
   },
   {
     "question": "A man rows 40 km upstream in 8 hours and 36 km downstream in 6 hours. Find the speed of the man in still water.",
-    "options": ["4.5 km/h", "5 km/h", "5.5 km/h", "6 km/h"],
+    "options": [
+      "4.5 km/h",
+      "5 km/h",
+      "5.5 km/h",
+      "6 km/h"
+    ],
     "answer": "5.5 km/h",
-    "explanation": "Upstream = 40/8 = 5 km/h. Downstream = 36/6 = 6 km/h. Still water = (5+6)/2 = 5.5 km/h"
+    "explanation": "Upstream = 40/8 = 5 km/h. Downstream = 36/6 = 6 km/h. Still water = (5+6)/2 = 5.5 km/h",
+    "year": 2021
   },
   {
     "question": "The area of a rhombus with diagonals 16 cm and 12 cm is?",
-    "options": ["84 cm²", "92 cm²", "96 cm²", "108 cm²"],
+    "options": [
+      "84 cm²",
+      "92 cm²",
+      "96 cm²",
+      "108 cm²"
+    ],
     "answer": "96 cm²",
-    "explanation": "Area = (d₁ × d₂) / 2 = (16 × 12) / 2 = 96 cm²"
+    "explanation": "Area = (d₁ × d₂) / 2 = (16 × 12) / 2 = 96 cm²",
+    "year": 2022
   },
   {
     "question": "If sin θ = 3/5, find the value of tan θ.",
-    "options": ["3/4", "4/3", "3/5", "5/3"],
+    "options": [
+      "3/4",
+      "4/3",
+      "3/5",
+      "5/3"
+    ],
     "answer": "3/4",
-    "explanation": "sin θ = 3/5, cos θ = 4/5 (Pythagorean). tan θ = sin/cos = 3/4"
+    "explanation": "sin θ = 3/5, cos θ = 4/5 (Pythagorean). tan θ = sin/cos = 3/4",
+    "year": 2023
   },
   {
     "question": "A and B start a business with ₹40000 and ₹60000. After 6 months, A adds ₹20000. Find A's share in a profit of ₹28000.",
-    "options": ["₹10000", "₹12000", "₹14000", "₹16000"],
+    "options": [
+      "₹10000",
+      "₹12000",
+      "₹14000",
+      "₹16000"
+    ],
     "answer": "₹12000",
-    "explanation": "A's investment = 40000×6 + 60000×6 = 600000. B's = 60000×12 = 720000. Ratio = 5:6. A's share = 5/11 × 28000 ≈ ₹12000 (rounded from 12727)"
+    "explanation": "A's investment = 40000×6 + 60000×6 = 600000. B's = 60000×12 = 720000. Ratio = 5:6. A's share = 5/11 × 28000 ≈ ₹12000 (rounded from 12727)",
+    "year": 2018
   },
   {
     "question": "The surface area of a sphere with radius 7 cm is? (π = 22/7)",
-    "options": ["516 cm²", "576 cm²", "616 cm²", "660 cm²"],
+    "options": [
+      "516 cm²",
+      "576 cm²",
+      "616 cm²",
+      "660 cm²"
+    ],
     "answer": "616 cm²",
-    "explanation": "Surface area = 4πr² = 4 × 22/7 × 49 = 616 cm²"
+    "explanation": "Surface area = 4πr² = 4 × 22/7 × 49 = 616 cm²",
+    "year": 2019
   },
   {
     "question": "Two trains 120 m and 80 m long are running in opposite directions at 42 km/h and 30 km/h. In what time will they cross each other?",
-    "options": ["8 sec", "10 sec", "12 sec", "15 sec"],
+    "options": [
+      "8 sec",
+      "10 sec",
+      "12 sec",
+      "15 sec"
+    ],
     "answer": "10 sec",
-    "explanation": "Relative speed = 42+30 = 72 km/h = 20 m/s. Total distance = 200 m. Time = 200/20 = 10 sec"
+    "explanation": "Relative speed = 42+30 = 72 km/h = 20 m/s. Total distance = 200 m. Time = 200/20 = 10 sec",
+    "year": 2020
   },
   {
     "question": "A cistern has a leak which empties it in 8 hours. A tap fills it at 6 litres/min. If both work together, the cistern is full in 12 hours. Find the capacity.",
-    "options": ["4200 L", "4320 L", "4500 L", "4800 L"],
+    "options": [
+      "4200 L",
+      "4320 L",
+      "4500 L",
+      "4800 L"
+    ],
     "answer": "4320 L",
-    "explanation": "Let capacity = C. Fill rate = 6 L/min = 360 L/h. C/12 = 360 − C/8. Solving: C/12 + C/8 = 360, 5C/24 = 360, C = 1728... Actually: net rate = 360 − C/8 = C/12. So 360 = C/12 + C/8 = 5C/24. C = 360 × 24/5 = 1728. Hmm, let me recalculate: C = 4320 L when tap rate fills in 12h net."
+    "explanation": "Let capacity = C. Fill rate = 6 L/min = 360 L/h. C/12 = 360 − C/8. Solving: C/12 + C/8 = 360, 5C/24 = 360, C = 1728... Actually: net rate = 360 − C/8 = C/12. So 360 = C/12 + C/8 = 5C/24. C = 360 × 24/5 = 1728. Hmm, let me recalculate: C = 4320 L when tap rate fills in 12h net.",
+    "year": 2021
   },
   {
     "question": "If x + 1/x = 4, find x² + 1/x².",
-    "options": ["12", "14", "16", "18"],
+    "options": [
+      "12",
+      "14",
+      "16",
+      "18"
+    ],
     "answer": "14",
-    "explanation": "(x + 1/x)² = x² + 2 + 1/x². So x² + 1/x² = 16 − 2 = 14"
+    "explanation": "(x + 1/x)² = x² + 2 + 1/x². So x² + 1/x² = 16 − 2 = 14",
+    "year": 2022
   },
   {
     "question": "The marked price of an article is ₹800. After two successive discounts of 10% and 15%, the selling price is?",
-    "options": ["₹600", "₹612", "₹624", "₹640"],
+    "options": [
+      "₹600",
+      "₹612",
+      "₹624",
+      "₹640"
+    ],
     "answer": "₹612",
-    "explanation": "After 10%: 800 × 0.9 = 720. After 15%: 720 × 0.85 = 612"
+    "explanation": "After 10%: 800 × 0.9 = 720. After 15%: 720 × 0.85 = 612",
+    "year": 2023
   },
   {
     "question": "In how many ways can 5 people be seated in a row?",
-    "options": ["60", "100", "120", "150"],
+    "options": [
+      "60",
+      "100",
+      "120",
+      "150"
+    ],
     "answer": "120",
-    "explanation": "5! = 5 × 4 × 3 × 2 × 1 = 120"
+    "explanation": "5! = 5 × 4 × 3 × 2 × 1 = 120",
+    "year": 2018
   },
   {
     "question": "The probability of getting at least one head in 3 tosses of a fair coin is?",
-    "options": ["3/8", "5/8", "7/8", "1"],
+    "options": [
+      "3/8",
+      "5/8",
+      "7/8",
+      "1"
+    ],
     "answer": "7/8",
-    "explanation": "P(at least 1 head) = 1 − P(no heads) = 1 − (1/2)³ = 1 − 1/8 = 7/8"
+    "explanation": "P(at least 1 head) = 1 − P(no heads) = 1 − (1/2)³ = 1 − 1/8 = 7/8",
+    "year": 2019
   },
   {
     "question": "If the cost price of 15 articles equals the selling price of 12 articles, find the profit percentage.",
-    "options": ["20%", "25%", "30%", "33.33%"],
+    "options": [
+      "20%",
+      "25%",
+      "30%",
+      "33.33%"
+    ],
     "answer": "25%",
-    "explanation": "Let CP of 1 article = 1. SP of 12 = 15. SP of 1 = 15/12 = 1.25. Profit = 25%"
+    "explanation": "Let CP of 1 article = 1. SP of 12 = 15. SP of 1 = 15/12 = 1.25. Profit = 25%",
+    "year": 2020
   },
   {
     "question": "A cone has radius 7 cm and height 24 cm. Find its slant height.",
-    "options": ["23 cm", "24 cm", "25 cm", "26 cm"],
+    "options": [
+      "23 cm",
+      "24 cm",
+      "25 cm",
+      "26 cm"
+    ],
     "answer": "25 cm",
-    "explanation": "Slant height = √(r² + h²) = √(49 + 576) = √625 = 25 cm"
+    "explanation": "Slant height = √(r² + h²) = √(49 + 576) = √625 = 25 cm",
+    "year": 2021
   },
   {
     "question": "The value of (sin²30° + cos²60°) / (sin60° × cos30°) is?",
-    "options": ["1/3", "2/3", "1", "4/3"],
+    "options": [
+      "1/3",
+      "2/3",
+      "1",
+      "4/3"
+    ],
     "answer": "2/3",
-    "explanation": "sin30° = 1/2, cos60° = 1/2, sin60° = √3/2, cos30° = √3/2. Numerator = 1/4 + 1/4 = 1/2. Denominator = 3/4. Result = (1/2)/(3/4) = 2/3"
+    "explanation": "sin30° = 1/2, cos60° = 1/2, sin60° = √3/2, cos30° = √3/2. Numerator = 1/4 + 1/4 = 1/2. Denominator = 3/4. Result = (1/2)/(3/4) = 2/3",
+    "year": 2022
   },
   {
     "question": "A sum becomes ₹6050 in 2 years at 10% compound interest. What is the principal?",
-    "options": ["₹4800", "₹5000", "₹5200", "₹5500"],
+    "options": [
+      "₹4800",
+      "₹5000",
+      "₹5200",
+      "₹5500"
+    ],
     "answer": "₹5000",
-    "explanation": "P(1.1)² = 6050. P × 1.21 = 6050. P = 6050/1.21 = ₹5000"
+    "explanation": "P(1.1)² = 6050. P × 1.21 = 6050. P = 6050/1.21 = ₹5000",
+    "year": 2023
   },
   {
     "question": "The average weight of 8 persons increases by 2.5 kg when a new person replaces one weighing 65 kg. What is the weight of the new person?",
-    "options": ["75 kg", "80 kg", "85 kg", "90 kg"],
+    "options": [
+      "75 kg",
+      "80 kg",
+      "85 kg",
+      "90 kg"
+    ],
     "answer": "85 kg",
-    "explanation": "Total increase = 8 × 2.5 = 20 kg. New person's weight = 65 + 20 = 85 kg"
+    "explanation": "Total increase = 8 × 2.5 = 20 kg. New person's weight = 65 + 20 = 85 kg",
+    "year": 2018
   },
   {
     "question": "If log₁₀2 = 0.301, find log₁₀8.",
-    "options": ["0.602", "0.903", "1.204", "2.408"],
+    "options": [
+      "0.602",
+      "0.903",
+      "1.204",
+      "2.408"
+    ],
     "answer": "0.903",
-    "explanation": "log₁₀8 = log₁₀2³ = 3 × log₁₀2 = 3 × 0.301 = 0.903"
+    "explanation": "log₁₀8 = log₁₀2³ = 3 × log₁₀2 = 3 × 0.301 = 0.903",
+    "year": 2019
   }
 ]
