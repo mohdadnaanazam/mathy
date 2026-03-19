@@ -42,8 +42,8 @@ export default function MoreGamesPage() {
   const { recordActivity } = useSessionExpiry()
   const { formatted: refreshFormatted, isReady: refreshReady } = useRefreshCountdown()
 
-  const [selected, setSelected] = useState<string | null>(null)
-  const [difficulty, setDifficulty] = useState<Difficulty | null>(null)
+  const [selected, setSelected] = useState<string | null>(MORE_GAMES[0].id)
+  const [difficulty, setDifficulty] = useState<Difficulty | null>('easy')
   const [gamesCount, setGamesCount] = useState(DEFAULT_COUNT)
   const [isNavigating, setIsNavigating] = useState(false)
 

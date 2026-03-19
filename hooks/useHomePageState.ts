@@ -61,7 +61,7 @@ export function useHomePageState() {
 
   // ── Local UI state ─────────────────────────────────────────────────
   const [activeGame, setActiveGame] = useState<ActiveGame>('math')
-  const [activeMode, setActiveMode] = useState<ModeLabel>('Mixture')
+  const [activeMode, setActiveMode] = useState<ModeLabel>('Addition')
   const [isNavigating, setIsNavigating] = useState(false)
   const [isReloadingGames, setIsReloadingGames] = useState(false)
   const [mounted, setMounted] = useState(false)
