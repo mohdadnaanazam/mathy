@@ -167,7 +167,7 @@ export default function SscCglGame() {
           ← Home
         </button>
         <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono truncate">
-          {completedCount}/{questions.length} · {difficulty}
+          Q{currentIndex + 1} · {difficulty}
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -362,7 +362,7 @@ export default function SscCglGame() {
           ← Prev
         </button>
         <span className="text-[9px] sm:text-[10px] text-slate-600 font-mono">
-          {posInFiltered >= 0 ? posInFiltered + 1 : '–'}/{filteredIndices.length}
+          Q{currentIndex + 1}
         </span>
         <button
           onClick={goNext}
