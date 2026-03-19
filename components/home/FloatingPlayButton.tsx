@@ -4,7 +4,6 @@ import { useRef, useCallback } from 'react'
 
 interface FloatingPlayButtonProps {
   label: string
-  showArrow: boolean
   disabled: boolean
   isLocked: boolean
   isNavigating?: boolean
@@ -12,7 +11,7 @@ interface FloatingPlayButtonProps {
 }
 
 export default function FloatingPlayButton({
-  label, showArrow, disabled, isLocked, isNavigating, onClick,
+  label, disabled, isLocked, isNavigating, onClick,
 }: FloatingPlayButtonProps) {
   const btnRef = useRef<HTMLButtonElement>(null)
 
@@ -98,12 +97,7 @@ export default function FloatingPlayButton({
                   <span>Starting…</span>
                 </>
               ) : (
-                <>
-                  <span>{label}</span>
-                  {showArrow && (
-                    <span className="play-btn-arrow inline-block" aria-hidden="true">→</span>
-                  )}
-                </>
+                <span>{label}</span>
               )}
             </span>
           </button>
