@@ -17,7 +17,6 @@ const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
 const TrueFalseMathGame = dynamic(() => import('./TrueFalseMathGame'), { ssr: false })
 const MoreGame = dynamic(() => import('./MoreGame'), { ssr: false })
-const SscCglGame = dynamic(() => import('./SscCglGame'), { ssr: false })
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
