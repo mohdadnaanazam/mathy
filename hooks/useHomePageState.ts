@@ -17,11 +17,12 @@ import {
   getLastPlayedSettings, setLastPlayedSettings,
   resetMathSession, resetMemorySession, resetTrueFalseSession,
   getVariantProgress, getSelectedGameCount, setSelectedGameCount,
+  getGenericSessionMax, getGenericSessionPlayed, resetGenericSession,
 } from '@/lib/db'
 import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 
 export type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
-export type ActiveGame = 'math' | 'memory' | 'truefalse'
+export type ActiveGame = 'math' | 'memory' | 'truefalse' | 'ssccgl'
 
 export const MODE_TO_OPERATION: Record<ModeLabel, OperationMode> = {
   Addition: 'addition', Subtraction: 'subtraction', Multiplication: 'multiplication',
@@ -98,6 +99,14 @@ export function useHomePageState() {
   const [tfVariantTotal, setTfVariantTotal] = useState(20)
   const [tfVariantRemaining, setTfVariantRemaining] = useState(20)
 
+  // ── SSC CGL variant state ──────────────────────────────────────────
+  const [sscDifficulty, setSscDifficulty] = useState<Difficulty | null>(null)
+  const [sscGamesCount, setSscGamesCount] = useState(DEFAULT_GAME_COUNT)
+  const [sscSessionHydrated, setSscSessionHydrated] = useState(false)
+  const [sscVariantPlayed, setSscVariantPlayed] = useState(0)
+  const [sscVariantTotal, setSscVariantTotal] = useState(20)
+  const [sscVariantRemaining, setSscVariantRemaining] = useState(20)
+
   // ── Hydration effects ──────────────────────────────────────────────
 
   // Restore last-played settings from IndexedDB
@@ -118,6 +127,13 @@ export function useHomePageState() {
         }
         return
       }
+      if (last.gameType === 'ssc_cgl') {
+        setActiveGame('ssccgl'); setType('ssc_cgl')
+        if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
+          setSscDifficulty(last.difficulty as Difficulty); setStoreDifficulty(last.difficulty as Difficulty)
+        }
+        return
+      }
       setActiveGame('math'); setType('math')
       if (last.operation && last.operation in MODE_TO_OPERATION || ['addition','subtraction','multiplication','division','mixture','custom'].includes(last.operation ?? '')) {
         const opToLabel: Record<string, ModeLabel> = {
@@ -133,7 +149,7 @@ export function useHomePageState() {
     })
     getSelectedGameCount().then(saved => {
       const c = saved ?? DEFAULT_GAME_COUNT
-      setMathGamesCount(c); setMemoryGamesCount(c); setTfGamesCount(c)
+      setMathGamesCount(c); setMemoryGamesCount(c); setTfGamesCount(c); setSscGamesCount(c)
     })
   }, [setStoreDifficulty, setOperation, setType])
 
@@ -151,6 +167,8 @@ export function useHomePageState() {
       getTrueFalseSessionMax().then(m => setTfSessionMax(m)),
       getTrueFalseSessionPlayed().then(p => setTfSessionPlayed_(p)),
     ]).then(() => setTfSessionHydrated(true))
+    // SSC CGL uses generic session helpers
+    setSscSessionHydrated(true)
   }
 
   useEffect(() => { hydrateSessions(); setMounted(true) }, [isSessionExpired])
@@ -188,6 +206,14 @@ export function useHomePageState() {
   }, [tfDifficulty, isSessionExpired])
 
   useEffect(() => {
+    if (!sscDifficulty) return
+    getVariantProgress('ssc_cgl', sscDifficulty).then(p => {
+      setSscVariantPlayed(p.played); setSscVariantTotal(p.total); setSscVariantRemaining(p.remaining)
+      setSscGamesCount(prev => p.remaining <= 0 ? 0 : Math.min(Math.max(prev, 1), p.remaining))
+    })
+  }, [sscDifficulty, isSessionExpired])
+
+  useEffect(() => {
     const onVis = () => { if (document.visibilityState === 'visible') hydrateSessions() }
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
@@ -202,6 +228,7 @@ export function useHomePageState() {
     setMemoryVariantPlayed(0); setMemoryVariantRemaining(20)
     setTfSessionMax(DEFAULT_GAME_COUNT); setTfSessionPlayed_(0); setTfGamesCount(DEFAULT_GAME_COUNT)
     setTfVariantPlayed(0); setTfVariantRemaining(20)
+    setSscVariantPlayed(0); setSscVariantRemaining(20); setSscGamesCount(DEFAULT_GAME_COUNT)
   }
 
   const handleReload = useCallback(async () => {
@@ -293,10 +320,30 @@ export function useHomePageState() {
     }
   }
 
+  async function playSscCgl() {
+    if (isNavigating || sscDifficulty === null) return
+    setIsNavigating(true)
+    const timeout = setTimeout(() => setIsNavigating(false), NAV_TIMEOUT_MS)
+    try {
+      setType('ssc_cgl'); setStoreDifficulty(sscDifficulty)
+      await Promise.all([
+        recordActivity(),
+        setLastPlayedSettings({ gameType: 'ssc_cgl', operation: null, difficulty: sscDifficulty }),
+        setSelectedGameCount(sscGamesCount),
+        resetGenericSession('ssc_cgl', sscGamesCount),
+      ])
+      router.push('/game?mode=ssccgl')
+    } catch {
+      setIsNavigating(false)
+      clearTimeout(timeout)
+    }
+  }
+
   function handlePlay() {
     if (isLocked) return
     if (activeGame === 'math') { if (!mathDifficulty || mathVariantRemaining <= 0) return; playMath() }
     else if (activeGame === 'truefalse') { if (!tfDifficulty || tfVariantRemaining <= 0) return; playTrueFalse() }
+    else if (activeGame === 'ssccgl') { if (!sscDifficulty || sscVariantRemaining <= 0) return; playSscCgl() }
     else { if (!memoryDifficulty || memoryVariantRemaining <= 0) return; playMemory() }
   }
 
@@ -310,38 +357,43 @@ export function useHomePageState() {
   const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
   const canPlayMemory = memoryDifficulty !== null && memoryVariantRemaining > 0
   const canPlayTf = tfDifficulty !== null && tfVariantRemaining > 0
+  const canPlaySsc = sscDifficulty !== null && sscVariantRemaining > 0
   const canPlayActive =
     (activeGame === 'math' && canPlayMath) ||
     (activeGame === 'memory' && canPlayMemory) ||
-    (activeGame === 'truefalse' && canPlayTf)
+    (activeGame === 'truefalse' && canPlayTf) ||
+    (activeGame === 'ssccgl' && canPlaySsc)
 
   const mathVariantExhausted = mathVariantRemaining <= 0
   const memoryVariantExhausted = memoryVariantRemaining <= 0
   const tfVariantExhausted = tfVariantRemaining <= 0
+  const sscVariantExhausted = sscVariantRemaining <= 0
 
   // True when any active game type has unfinished variant games
   const hasUnfinishedGames =
     (activeGame === 'math' && canPlayMath) ||
     (activeGame === 'memory' && canPlayMemory) ||
-    (activeGame === 'truefalse' && canPlayTf)
+    (activeGame === 'truefalse' && canPlayTf) ||
+    (activeGame === 'ssccgl' && canPlaySsc)
 
   const playDisabled =
     isNavigating || isLocked || isReloadingGames ||
     (activeGame === 'math' && !canPlayMath) ||
     (activeGame === 'memory' && !canPlayMemory) ||
-    (activeGame === 'truefalse' && !canPlayTf)
+    (activeGame === 'truefalse' && !canPlayTf) ||
+    (activeGame === 'ssccgl' && !canPlaySsc)
 
   const playLabel = isReloadingGames
     ? 'Loading…'
     : isLocked
       ? 'Limit reached'
-      : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf)
+      : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf) || (activeGame === 'ssccgl' && !canPlaySsc)
         ? 'Choose difficulty'
         : isNavigating
           ? 'Starting…'
           : hasUnfinishedGames
             ? 'Continue playing'
-            : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
+            : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : activeGame === 'ssccgl' ? 'SSC CGL' : 'memory'}`
 
   // ── Return ─────────────────────────────────────────────────────────
   return {
@@ -372,6 +424,11 @@ export function useHomePageState() {
     tfDifficulty, setTfDifficulty: (d: Difficulty) => { setTfDifficulty(d); setActiveGame('truefalse') },
     tfGamesCount, setTfGamesCount,
     tfSessionHydrated, tfVariantPlayed, tfVariantTotal, tfVariantRemaining, tfVariantExhausted,
+
+    // SSC CGL
+    sscDifficulty, setSscDifficulty: (d: Difficulty) => { setSscDifficulty(d); setActiveGame('ssccgl') },
+    sscGamesCount, setSscGamesCount,
+    sscSessionHydrated, sscVariantPlayed, sscVariantTotal, sscVariantRemaining, sscVariantExhausted,
 
     // Custom ops (math)
     customOperations, toggleCustomOp,

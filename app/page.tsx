@@ -1,6 +1,6 @@
 'use client'
 
-import { Calculator, Grid3X3, CheckCircle } from 'lucide-react'
+import { Calculator, Grid3X3, CheckCircle, BookOpen } from 'lucide-react'
 import { useHomePageState, type ModeLabel } from '@/hooks/useHomePageState'
 import type { OperationMode } from '@/types'
 import GameCard from '@/components/home/GameCard'
@@ -70,7 +70,7 @@ export default function LandingPage() {
       )}
 
       {/* Refresh countdown */}
-      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted) && (
+      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted || s.sscVariantExhausted) && (
         <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
           <RefreshBanner tier={s.refreshTier} formatted={s.refreshFormatted} />
         </div>
@@ -191,6 +191,29 @@ export default function LandingPage() {
           variantTotal={s.tfVariantTotal}
           variantRemaining={s.tfVariantRemaining}
           variantExhausted={s.tfVariantExhausted}
+          refreshReady={s.refreshReady}
+          refreshFormatted={s.refreshFormatted}
+        />
+
+        {/* SSC CGL Math */}
+        <GameCard
+          id="ssccgl"
+          isActive={s.activeGame === 'ssccgl'}
+          onActivate={() => s.setActiveGame('ssccgl')}
+          icon={<BookOpen size={16} style={{ color: 'var(--accent-orange)' }} />}
+          title="SSC CGL Math"
+          description="Practice previous year SSC CGL questions."
+          difficulty={s.sscDifficulty}
+          onDifficultyChange={s.setSscDifficulty}
+          gamesCount={s.sscGamesCount}
+          onDecrement={() => { if (!s.sscVariantExhausted) s.setSscGamesCount(v => Math.max(1, Math.min(v - 1, s.sscVariantRemaining))) }}
+          onIncrement={() => { if (!s.sscVariantExhausted) s.setSscGamesCount(v => Math.min(Math.max(v + 1, 1), s.sscVariantRemaining)) }}
+          stepperDisabled={s.sscVariantExhausted}
+          sessionHydrated={s.sscSessionHydrated}
+          variantPlayed={s.sscVariantPlayed}
+          variantTotal={s.sscVariantTotal}
+          variantRemaining={s.sscVariantRemaining}
+          variantExhausted={s.sscVariantExhausted}
           refreshReady={s.refreshReady}
           refreshFormatted={s.refreshFormatted}
         />

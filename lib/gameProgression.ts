@@ -19,7 +19,6 @@ const MORE_GAMES_ORDER: string[] = [
   'algebra',
   'speed_math',
   'logic_puzzle',
-  'ssc_cgl',
 ]
 
 const MORE_GAME_LABELS: Record<string, string> = {

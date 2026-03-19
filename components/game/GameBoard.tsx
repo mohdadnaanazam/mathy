@@ -17,6 +17,7 @@ const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
 const TrueFalseMathGame = dynamic(() => import('./TrueFalseMathGame'), { ssr: false })
 const MoreGame = dynamic(() => import('./MoreGame'), { ssr: false })
+const SscCglGame = dynamic(() => import('./SscCglGame'), { ssr: false })
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
@@ -59,9 +60,10 @@ export default function GameBoard() {
   useEffect(() => {
     if (modeParam === 'memory') setGameType('memory')
     else if (modeParam === 'truefalse') setGameType('true_false')
+    else if (modeParam === 'ssccgl') setGameType('ssc_cgl')
     else if (modeParam === 'more') setGameType('square_root') // placeholder; MoreGame reads type from URL
   }, [modeParam, setGameType])
-  const effectiveGameType = modeParam === 'memory' ? 'memory' : modeParam === 'truefalse' ? 'true_false' : modeParam === 'more' ? 'more' : gameType
+  const effectiveGameType = modeParam === 'memory' ? 'memory' : modeParam === 'truefalse' ? 'true_false' : modeParam === 'ssccgl' ? 'ssc_cgl' : modeParam === 'more' ? 'more' : gameType
 
   const setOperation = useGameStore(s => s.setOperation)
   const customOperations = useGameStore(s => s.customOperations)
@@ -126,6 +128,8 @@ export default function GameBoard() {
             <MemoryGridGame />
           ) : effectiveGameType === 'true_false' ? (
             <TrueFalseMathGame />
+          ) : effectiveGameType === 'ssc_cgl' ? (
+            <SscCglGame />
           ) : effectiveGameType === 'more' ? (
             <MoreGame />
           ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
