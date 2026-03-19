@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useGameStore } from '@/store/gameStore'
 import { useScore } from '@/hooks/useScore'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import type { Difficulty } from '@/types'
@@ -18,25 +17,27 @@ interface SscQuestion {
   answer: string
   explanation: string
   year?: number
+  difficulty: Difficulty
 }
 
-const DATA_MAP: Record<Difficulty, SscQuestion[]> = {
-  easy: easyData as SscQuestion[],
-  medium: mediumData as SscQuestion[],
-  hard: hardData as SscQuestion[],
-}
+// Build the full question bank once — all difficulties combined
+const ALL_QUESTIONS: SscQuestion[] = [
+  ...(easyData as Omit<SscQuestion, 'difficulty'>[]).map(q => ({ ...q, difficulty: 'easy' as Difficulty })),
+  ...(mediumData as Omit<SscQuestion, 'difficulty'>[]).map(q => ({ ...q, difficulty: 'medium' as Difficulty })),
+  ...(hardData as Omit<SscQuestion, 'difficulty'>[]).map(q => ({ ...q, difficulty: 'hard' as Difficulty })),
+]
 
 const POINTS: Record<Difficulty, number> = { easy: 10, medium: 20, hard: 50 }
-const LS_KEY = 'ssc_cgl_progress'
+const LS_KEY = 'ssc_cgl_bank_progress'
 
 interface SavedProgress {
   completed: number[]
   lastIndex: number
 }
 
-function loadProgress(diff: Difficulty): SavedProgress {
+function loadProgress(): SavedProgress {
   try {
-    const raw = localStorage.getItem(`${LS_KEY}_${diff}`)
+    const raw = localStorage.getItem(LS_KEY)
     if (raw) {
       const p = JSON.parse(raw)
       if (p && Array.isArray(p.completed)) return { completed: p.completed, lastIndex: p.lastIndex ?? 0 }
@@ -45,59 +46,56 @@ function loadProgress(diff: Difficulty): SavedProgress {
   return { completed: [], lastIndex: 0 }
 }
 
-function saveProgress(diff: Difficulty, completed: number[], lastIndex: number) {
+function saveProgress(completed: number[], lastIndex: number) {
   try {
-    localStorage.setItem(`${LS_KEY}_${diff}`, JSON.stringify({ completed, lastIndex }))
+    localStorage.setItem(LS_KEY, JSON.stringify({ completed, lastIndex }))
   } catch {}
 }
 
 type YearFilter = 'all' | number
+type DifficultyFilter = 'all' | Difficulty
 type StatusFilter = 'all' | 'completed' | 'uncompleted'
 
 export default function SscCglGame() {
   const router = useRouter()
-  const difficulty = useGameStore(s => s.difficulty) as Difficulty
   const { userUuid } = useUserUUID()
   const { addScore } = useScore(userUuid)
 
-  const questions = useMemo(() => DATA_MAP[difficulty] ?? DATA_MAP.easy, [difficulty])
   const years = useMemo(() => {
     const set = new Set<number>()
-    questions.forEach(q => { if (q.year) set.add(q.year) })
+    ALL_QUESTIONS.forEach(q => { if (q.year) set.add(q.year) })
     return Array.from(set).sort()
-  }, [questions])
+  }, [])
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [completed, setCompleted] = useState<Set<number>>(new Set())
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
 
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all')
   const [yearFilter, setYearFilter] = useState<YearFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showPanel, setShowPanel] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
+  // Hydrate from localStorage (once)
   useEffect(() => {
-    const saved = loadProgress(difficulty)
+    const saved = loadProgress()
     setCompleted(new Set(saved.completed))
     setCurrentIndex(saved.lastIndex)
-    setSelectedAnswer(null)
-    setFeedback(null)
-    setSearchQuery('')
-    setYearFilter('all')
-    setStatusFilter('all')
-    setShowPanel(false)
-    setShowFilters(false)
-  }, [difficulty])
+  }, [])
 
+  // Persist on changes
   useEffect(() => {
-    saveProgress(difficulty, Array.from(completed), currentIndex)
-  }, [completed, currentIndex, difficulty])
+    saveProgress(Array.from(completed), currentIndex)
+  }, [completed, currentIndex])
 
+  // Filtered question indices into ALL_QUESTIONS
   const filteredIndices = useMemo(() => {
-    return questions.map((_, i) => i).filter(i => {
-      const q = questions[i]
+    return ALL_QUESTIONS.map((_, i) => i).filter(i => {
+      const q = ALL_QUESTIONS[i]
+      if (difficultyFilter !== 'all' && q.difficulty !== difficultyFilter) return false
       if (yearFilter !== 'all' && q.year !== yearFilter) return false
       if (statusFilter === 'completed' && !completed.has(i)) return false
       if (statusFilter === 'uncompleted' && completed.has(i)) return false
@@ -106,17 +104,16 @@ export default function SscCglGame() {
       }
       return true
     })
-  }, [questions, yearFilter, statusFilter, searchQuery, completed])
+  }, [difficultyFilter, yearFilter, statusFilter, searchQuery, completed])
 
-  const posInFiltered = filteredIndices.indexOf(currentIndex)
-  const currentQ = questions[currentIndex]
+  const currentQ = ALL_QUESTIONS[currentIndex]
 
   function handleAnswer(option: string) {
-    if (feedback) return
+    if (feedback || !currentQ) return
     setSelectedAnswer(option)
     const isCorrect = option === currentQ.answer
     setFeedback(isCorrect ? 'correct' : 'wrong')
-    if (isCorrect) addScore(POINTS[difficulty])
+    if (isCorrect) addScore(POINTS[currentQ.difficulty])
     setCompleted(prev => new Set(prev).add(currentIndex))
   }
 
@@ -153,8 +150,8 @@ export default function SscCglGame() {
     return <div className="text-center text-slate-400 text-sm py-6">No questions available.</div>
   }
 
-  const completedCount = completed.size
-  const hasActiveFilters = yearFilter !== 'all' || statusFilter !== 'all' || searchQuery.trim() !== ''
+  const hasActiveFilters = difficultyFilter !== 'all' || yearFilter !== 'all' || statusFilter !== 'all' || searchQuery.trim() !== ''
+  const diffLabel = currentQ.difficulty.charAt(0).toUpperCase() + currentQ.difficulty.slice(1)
 
   return (
     <div className="w-full space-y-2.5 sm:space-y-4">
@@ -167,7 +164,7 @@ export default function SscCglGame() {
           ← Home
         </button>
         <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono truncate">
-          Q{currentIndex + 1} · {difficulty}
+          Q{currentIndex + 1} · {diffLabel}
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -209,6 +206,16 @@ export default function SscCglGame() {
                 className="flex-1 min-w-[80px] text-[10px] px-2 py-1.5 rounded-lg bg-zinc-800/60 border border-zinc-700/50 text-white placeholder-slate-600 outline-none focus:border-orange-500/50"
               />
               <select
+                value={difficultyFilter}
+                onChange={e => setDifficultyFilter(e.target.value as DifficultyFilter)}
+                className="text-[10px] px-1.5 py-1.5 rounded-lg bg-zinc-800/60 border border-zinc-700/50 text-slate-300 outline-none"
+              >
+                <option value="all">All Levels</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+              <select
                 value={yearFilter}
                 onChange={e => setYearFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                 className="text-[10px] px-1.5 py-1.5 rounded-lg bg-zinc-800/60 border border-zinc-700/50 text-slate-300 outline-none"
@@ -227,7 +234,7 @@ export default function SscCglGame() {
               </select>
               {hasActiveFilters && (
                 <button
-                  onClick={() => { setSearchQuery(''); setYearFilter('all'); setStatusFilter('all') }}
+                  onClick={() => { setSearchQuery(''); setDifficultyFilter('all'); setYearFilter('all'); setStatusFilter('all') }}
                   className="text-[9px] text-orange-400 hover:text-orange-300"
                 >
                   Clear
@@ -290,7 +297,7 @@ export default function SscCglGame() {
           {/* Badge row */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[8px] sm:text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-zinc-800 border border-zinc-700/50 text-slate-400">
-              Q{currentIndex + 1}{currentQ.year ? ` · ${currentQ.year}` : ''}
+              Q{currentIndex + 1}{currentQ.year ? ` · ${currentQ.year}` : ''} · {diffLabel}
             </span>
             {completed.has(currentIndex) && (
               <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400">
