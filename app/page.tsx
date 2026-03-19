@@ -4,6 +4,7 @@ import { Calculator, Grid3X3, CheckCircle, BookOpen } from 'lucide-react'
 import { useHomePageState, type ModeLabel } from '@/hooks/useHomePageState'
 import type { OperationMode } from '@/types'
 import GameCard from '@/components/home/GameCard'
+import DifficultyPills from '@/components/home/DifficultyPills'
 import StatusBanner from '@/components/home/StatusBanner'
 import FloatingPlayButton from '@/components/home/FloatingPlayButton'
 import TopBanner from '@/components/home/TopBanner'
@@ -79,6 +80,12 @@ export default function LandingPage() {
       {/* Game cards */}
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4 space-y-3">
 
+        {/* Shared difficulty selector */}
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Difficulty</p>
+          <DifficultyPills value={s.globalDifficulty} onChange={s.setGlobalDifficulty} />
+        </div>
+
         {/* Math Challenge */}
         <GameCard
           id="math"
@@ -88,7 +95,8 @@ export default function LandingPage() {
           title="Math Challenge"
           description="Solve equations. Pick an operation and difficulty, then play."
           difficulty={s.mathDifficulty}
-          onDifficultyChange={s.setMathDifficulty}
+          onDifficultyChange={s.setGlobalDifficulty}
+          hideDifficulty
           gamesCount={s.mathGamesCount}
           onDecrement={() => { if (!s.mathVariantExhausted) s.setMathGamesCount(v => Math.max(1, Math.min(v - 1, s.mathVariantRemaining))) }}
           onIncrement={() => { if (!s.mathVariantExhausted) s.setMathGamesCount(v => Math.min(Math.max(v + 1, 1), s.mathVariantRemaining)) }}
@@ -155,9 +163,10 @@ export default function LandingPage() {
           onActivate={() => s.setActiveGame('memory')}
           icon={<Grid3X3 size={16} style={{ color: 'var(--accent-orange)' }} />}
           title="Memory Grid"
-          description="Remember highlighted blocks, then tap them in order."
+          description="Remember highlighted blocks, then tap them in order. Grid: 3×3 / 4×4 / 5×5"
           difficulty={s.memoryDifficulty}
-          onDifficultyChange={s.setMemoryDifficulty}
+          onDifficultyChange={s.setGlobalDifficulty}
+          hideDifficulty
           gridSizes={{ easy: '3×3', medium: '4×4', hard: '5×5' }}
           gamesCount={s.memoryGamesCount}
           onDecrement={() => { if (!s.memoryVariantExhausted) s.setMemoryGamesCount(v => Math.max(1, Math.min(v - 1, s.memoryVariantRemaining))) }}
@@ -181,7 +190,8 @@ export default function LandingPage() {
           title="True / False Math"
           description="Is the equation correct? Answer TRUE or FALSE."
           difficulty={s.tfDifficulty}
-          onDifficultyChange={s.setTfDifficulty}
+          onDifficultyChange={s.setGlobalDifficulty}
+          hideDifficulty
           gamesCount={s.tfGamesCount}
           onDecrement={() => { if (!s.tfVariantExhausted) s.setTfGamesCount(v => Math.max(1, Math.min(v - 1, s.tfVariantRemaining))) }}
           onIncrement={() => { if (!s.tfVariantExhausted) s.setTfGamesCount(v => Math.min(Math.max(v + 1, 1), s.tfVariantRemaining)) }}
@@ -204,7 +214,8 @@ export default function LandingPage() {
           title="SSC CGL Math"
           description="Practice previous year SSC CGL questions."
           difficulty={s.sscDifficulty}
-          onDifficultyChange={s.setSscDifficulty}
+          onDifficultyChange={s.setGlobalDifficulty}
+          hideDifficulty
           gamesCount={s.sscGamesCount}
           onDecrement={() => { if (!s.sscVariantExhausted) s.setSscGamesCount(v => Math.max(1, Math.min(v - 1, s.sscVariantRemaining))) }}
           onIncrement={() => { if (!s.sscVariantExhausted) s.setSscGamesCount(v => Math.min(Math.max(v + 1, 1), s.sscVariantRemaining)) }}

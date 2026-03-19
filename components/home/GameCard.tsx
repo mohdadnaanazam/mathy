@@ -37,6 +37,8 @@ export interface GameCardProps {
   refreshFormatted: string
   /** Optional extra content rendered between description and difficulty pills */
   children?: ReactNode
+  /** When true, hides the per-card difficulty pills (used when a shared selector exists) */
+  hideDifficulty?: boolean
 }
 
 export default function GameCard({
@@ -45,7 +47,7 @@ export default function GameCard({
   gamesCount, onDecrement, onIncrement, stepperDisabled,
   sessionHydrated, variantPlayed, variantTotal, variantRemaining,
   variantExhausted, refreshReady, refreshFormatted,
-  children,
+  children, hideDifficulty,
 }: GameCardProps) {
   const showControls = isActive && difficulty !== null
 
@@ -68,8 +70,10 @@ export default function GameCard({
       {/* Game-specific content (e.g. operation selector) */}
       {children}
 
-      {/* Difficulty */}
-      <DifficultyPills value={difficulty} onChange={onDifficultyChange} gridSizes={gridSizes} />
+      {/* Difficulty — hidden when shared selector is used */}
+      {!hideDifficulty && (
+        <DifficultyPills value={difficulty} onChange={onDifficultyChange} gridSizes={gridSizes} />
+      )}
 
       {/* Stepper + progress — only when active and difficulty chosen */}
       {showControls && (

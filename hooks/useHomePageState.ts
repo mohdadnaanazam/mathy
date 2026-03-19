@@ -112,26 +112,23 @@ export function useHomePageState() {
   // Restore last-played settings from IndexedDB
   useEffect(() => {
     getLastPlayedSettings().then((last) => {
+      // Restore the saved difficulty for ALL games (shared selector)
+      if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
+        const d = last.difficulty as Difficulty
+        setMathDifficulty(d); setMemoryDifficulty(d); setTfDifficulty(d); setSscDifficulty(d)
+        setStoreDifficulty(d)
+      }
       if (!last.gameType) return
       if (last.gameType === 'memory') {
         setActiveGame('memory'); setType('memory')
-        if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
-          setMemoryDifficulty(last.difficulty as Difficulty); setStoreDifficulty(last.difficulty as Difficulty)
-        }
         return
       }
       if (last.gameType === 'true_false') {
         setActiveGame('truefalse'); setType('true_false')
-        if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
-          setTfDifficulty(last.difficulty as Difficulty); setStoreDifficulty(last.difficulty as Difficulty)
-        }
         return
       }
       if (last.gameType === 'ssc_cgl') {
         setActiveGame('ssccgl'); setType('ssc_cgl')
-        if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
-          setSscDifficulty(last.difficulty as Difficulty); setStoreDifficulty(last.difficulty as Difficulty)
-        }
         return
       }
       setActiveGame('math'); setType('math')
@@ -140,11 +137,8 @@ export function useHomePageState() {
           addition: 'Addition', subtraction: 'Subtraction', multiplication: 'Multiplication',
           division: 'Division', mixture: 'Mixture', custom: 'Custom',
         }
-        setActiveMode(opToLabel[last.operation!] ?? 'Mixture')
+        setActiveMode(opToLabel[last.operation!] ?? 'Addition')
         setOperation(last.operation as OperationMode)
-      }
-      if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
-        setMathDifficulty(last.difficulty as Difficulty); setStoreDifficulty(last.difficulty as Difficulty)
       }
     })
     getSelectedGameCount().then(saved => {
@@ -395,11 +389,31 @@ export function useHomePageState() {
             ? 'Continue playing'
             : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : activeGame === 'ssccgl' ? 'SSC CGL' : 'memory'}`
 
+  // ── Global difficulty ────────────────────────────────────────────
+  // The active game's difficulty is the "global" one shown in the shared selector.
+  const globalDifficulty: Difficulty =
+    activeGame === 'math' ? (mathDifficulty ?? 'easy')
+    : activeGame === 'memory' ? (memoryDifficulty ?? 'easy')
+    : activeGame === 'truefalse' ? (tfDifficulty ?? 'easy')
+    : (sscDifficulty ?? 'easy')
+
+  /** Set difficulty for ALL games at once (shared selector). */
+  function setGlobalDifficulty(d: Difficulty) {
+    setMathDifficulty(d)
+    setMemoryDifficulty(d)
+    setTfDifficulty(d)
+    setSscDifficulty(d)
+    setStoreDifficulty(d)
+  }
+
   // ── Return ─────────────────────────────────────────────────────────
   return {
     // UI state
     mounted, activeGame, setActiveGame, activeMode, setActiveMode,
     isNavigating, isReloading: isReloadingGames,
+
+    // Global difficulty
+    globalDifficulty, setGlobalDifficulty,
 
     // Attempts / lock
     used, maxAttempts, timeToReset, isLocked,
