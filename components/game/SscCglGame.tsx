@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { useScore } from '@/hooks/useScore'
+import { useUserUUID } from '@/hooks/useUserUUID'
 import type { Difficulty } from '@/types'
 
 import easyData from '@/src/data/ssc-cgl/easy.json'
@@ -56,7 +57,8 @@ type StatusFilter = 'all' | 'completed' | 'uncompleted'
 export default function SscCglGame() {
   const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty) as Difficulty
-  const { addPoints } = useScore()
+  const { userUuid } = useUserUUID()
+  const { addScore } = useScore(userUuid)
 
   const questions = useMemo(() => DATA_MAP[difficulty] ?? DATA_MAP.easy, [difficulty])
   const years = useMemo(() => {
@@ -114,7 +116,7 @@ export default function SscCglGame() {
     setSelectedAnswer(option)
     const isCorrect = option === currentQ.answer
     setFeedback(isCorrect ? 'correct' : 'wrong')
-    if (isCorrect) addPoints(POINTS[difficulty])
+    if (isCorrect) addScore(POINTS[difficulty])
     setCompleted(prev => new Set(prev).add(currentIndex))
   }
 
