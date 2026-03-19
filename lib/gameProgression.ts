@@ -19,6 +19,7 @@ const MORE_GAMES_ORDER: string[] = [
   'algebra',
   'speed_math',
   'logic_puzzle',
+  'ssc_cgl',
 ]
 
 const MORE_GAME_LABELS: Record<string, string> = {
@@ -28,6 +29,7 @@ const MORE_GAME_LABELS: Record<string, string> = {
   algebra: 'Algebra',
   speed_math: 'Speed Math',
   logic_puzzle: 'Logic Grid',
+  ssc_cgl: 'SSC CGL Math',
 }
 
 export interface NextGameConfig {

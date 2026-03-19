@@ -1,6 +1,6 @@
 // Shared TypeScript types for the AI Gaming Platform
 
-export type GameType = 'math' | 'memory' | 'true_false' | 'square_root' | 'fractions' | 'percentage' | 'algebra' | 'speed_math' | 'logic_puzzle'
+export type GameType = 'math' | 'memory' | 'true_false' | 'square_root' | 'fractions' | 'percentage' | 'algebra' | 'speed_math' | 'logic_puzzle' | 'ssc_cgl'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type OperationMode =
   | 'addition'

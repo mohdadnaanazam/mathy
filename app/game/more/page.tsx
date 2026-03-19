@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Radical, PieChart, Percent, Variable, Zap, LayoutGrid } from 'lucide-react'
+import { ArrowLeft, Radical, PieChart, Percent, Variable, Zap, LayoutGrid, BookOpen } from 'lucide-react'
 import type { Difficulty } from '@/types'
 import { useGameStore } from '@/store/gameStore'
 import {
@@ -32,6 +32,7 @@ const MORE_GAMES: MoreGameDef[] = [
   { id: 'algebra',      title: 'Algebra',       desc: 'Solve for x in simple equations.',       icon: Variable,    operation: 'algebra' },
   { id: 'speed_math',   title: 'Speed Math',    desc: 'Rapid-fire chain calculations.',         icon: Zap,         operation: 'speed_math' },
   { id: 'logic_puzzle', title: 'Logic Grid',    desc: 'Find the next number in the sequence.',  icon: LayoutGrid,  operation: 'logic_puzzle' },
+  { id: 'ssc_cgl',     title: 'SSC CGL Math',  desc: 'Practice previous year SSC questions.',  icon: BookOpen,    operation: 'ssc_cgl' },
 ]
 
 const DEFAULT_COUNT = 5

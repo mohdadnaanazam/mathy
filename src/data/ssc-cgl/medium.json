@@ -1,0 +1,122 @@
+[
+  {
+    "question": "A and B can do a work in 12 and 18 days respectively. In how many days can they finish it together?",
+    "options": ["6.2 days", "7.2 days", "8.2 days", "9.2 days"],
+    "answer": "7.2 days",
+    "explanation": "Combined rate = 1/12 + 1/18 = 5/36. Time = 36/5 = 7.2 days"
+  },
+  {
+    "question": "The compound interest on ₹8000 at 10% per annum for 2 years is?",
+    "options": ["₹1600", "₹1680", "₹1720", "₹1800"],
+    "answer": "₹1680",
+    "explanation": "CI = P(1 + R/100)^T − P = 8000(1.1)² − 8000 = 9680 − 8000 = ₹1680"
+  },
+  {
+    "question": "A boat goes 12 km upstream in 3 hours and 16 km downstream in 2 hours. Find the speed of the stream.",
+    "options": ["1 km/h", "2 km/h", "3 km/h", "4 km/h"],
+    "answer": "2 km/h",
+    "explanation": "Upstream speed = 12/3 = 4 km/h. Downstream speed = 16/2 = 8 km/h. Stream speed = (8−4)/2 = 2 km/h"
+  },
+  {
+    "question": "If the selling price is ₹960 and loss is 20%, what is the cost price?",
+    "options": ["₹1100", "₹1150", "₹1200", "₹1250"],
+    "answer": "₹1200",
+    "explanation": "CP = SP × 100 / (100 − Loss%) = 960 × 100 / 80 = ₹1200"
+  },
+  {
+    "question": "The average of 5 consecutive odd numbers starting from 11 is?",
+    "options": ["13", "14", "15", "16"],
+    "answer": "15",
+    "explanation": "Numbers: 11, 13, 15, 17, 19. Average = 75/5 = 15 (middle number)"
+  },
+  {
+    "question": "Two pipes can fill a tank in 20 and 30 minutes. How long to fill together?",
+    "options": ["10 min", "12 min", "15 min", "18 min"],
+    "answer": "12 min",
+    "explanation": "Combined rate = 1/20 + 1/30 = 5/60 = 1/12. Time = 12 minutes"
+  },
+  {
+    "question": "A mixture of 40 litres has milk and water in ratio 3:1. How much water must be added to make the ratio 2:1?",
+    "options": ["5 litres", "6 litres", "8 litres", "10 litres"],
+    "answer": "5 litres",
+    "explanation": "Milk = 30L, Water = 10L. For 2:1 ratio: 30/(10+x) = 2/1, so 10+x = 15, x = 5 litres"
+  },
+  {
+    "question": "The diagonal of a rectangle is 13 cm and one side is 5 cm. Find the other side.",
+    "options": ["8 cm", "10 cm", "12 cm", "14 cm"],
+    "answer": "12 cm",
+    "explanation": "By Pythagoras: other side = √(13² − 5²) = √(169 − 25) = √144 = 12 cm"
+  },
+  {
+    "question": "If x:y = 2:3 and y:z = 4:5, find x:y:z.",
+    "options": ["8:12:15", "6:9:10", "4:6:9", "2:3:5"],
+    "answer": "8:12:15",
+    "explanation": "Make y common: x:y = 8:12, y:z = 12:15. So x:y:z = 8:12:15"
+  },
+  {
+    "question": "A number when divided by 5 gives remainder 3. What is the remainder when the square of the number is divided by 5?",
+    "options": ["1", "2", "3", "4"],
+    "answer": "4",
+    "explanation": "Let N = 5k + 3. N² = 25k² + 30k + 9. Remainder of 9/5 = 4"
+  },
+  {
+    "question": "The circumference of a circle is 44 cm. Find its area. (π = 22/7)",
+    "options": ["144 cm²", "150 cm²", "154 cm²", "160 cm²"],
+    "answer": "154 cm²",
+    "explanation": "2πr = 44, r = 7 cm. Area = πr² = 22/7 × 49 = 154 cm²"
+  },
+  {
+    "question": "A train 150 m long passes a pole in 15 seconds. What is its speed in km/h?",
+    "options": ["30 km/h", "36 km/h", "40 km/h", "45 km/h"],
+    "answer": "36 km/h",
+    "explanation": "Speed = 150/15 = 10 m/s = 10 × 18/5 = 36 km/h"
+  },
+  {
+    "question": "If the price of sugar increases by 25%, by what percent should consumption be reduced to keep expenditure the same?",
+    "options": ["15%", "20%", "25%", "30%"],
+    "answer": "20%",
+    "explanation": "Reduction = (increase / (100 + increase)) × 100 = 25/125 × 100 = 20%"
+  },
+  {
+    "question": "The product of two numbers is 192 and their sum is 28. Find the numbers.",
+    "options": ["12, 16", "10, 18", "8, 24", "14, 14"],
+    "answer": "12, 16",
+    "explanation": "x + y = 28, xy = 192. Solving: x = 12, y = 16 (12 × 16 = 192)"
+  },
+  {
+    "question": "A man invests ₹12000 at 5% simple interest. After how many years will it become ₹15000?",
+    "options": ["4 years", "5 years", "6 years", "7 years"],
+    "answer": "5 years",
+    "explanation": "SI = 15000 − 12000 = 3000. T = SI × 100 / (P × R) = 3000 × 100 / (12000 × 5) = 5 years"
+  },
+  {
+    "question": "The angles of a triangle are in ratio 2:3:4. Find the largest angle.",
+    "options": ["60°", "70°", "80°", "90°"],
+    "answer": "80°",
+    "explanation": "Sum = 180°. Parts = 2+3+4 = 9. Largest = 4/9 × 180 = 80°"
+  },
+  {
+    "question": "If 40% of a number is 80, what is 65% of that number?",
+    "options": ["120", "125", "130", "135"],
+    "answer": "130",
+    "explanation": "Number = 80/0.4 = 200. 65% of 200 = 130"
+  },
+  {
+    "question": "A can do a piece of work in 10 days. B is 25% more efficient than A. How many days does B take?",
+    "options": ["6 days", "7 days", "8 days", "9 days"],
+    "answer": "8 days",
+    "explanation": "B's efficiency = 1.25 × A's. If A takes 10 days, B takes 10/1.25 = 8 days"
+  },
+  {
+    "question": "The volume of a cube with side 5 cm is?",
+    "options": ["100 cm³", "125 cm³", "150 cm³", "175 cm³"],
+    "answer": "125 cm³",
+    "explanation": "Volume = side³ = 5³ = 125 cm³"
+  },
+  {
+    "question": "Two numbers are in ratio 5:7. If 6 is added to each, the ratio becomes 3:4. Find the numbers.",
+    "options": ["25, 35", "30, 42", "35, 49", "40, 56"],
+    "answer": "30, 42",
+    "explanation": "5x + 6 : 7x + 6 = 3:4. Cross multiply: 20x + 24 = 21x + 18. x = 6. Numbers: 30, 42"
+  }
+]

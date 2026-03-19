@@ -383,5 +383,5 @@ export async function resetGenericSession(gameType: string, max: number): Promis
 
 /** All new game type identifiers for session reset. */
 export const NEW_GAME_TYPES = [
-  'square_root', 'fractions', 'percentage', 'algebra', 'speed_math', 'logic_puzzle',
+  'square_root', 'fractions', 'percentage', 'algebra', 'speed_math', 'logic_puzzle', 'ssc_cgl',
 ] as const

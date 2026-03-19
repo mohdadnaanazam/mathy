@@ -1,0 +1,122 @@
+[
+  {
+    "question": "What is 25% of 480?",
+    "options": ["100", "120", "140", "160"],
+    "answer": "120",
+    "explanation": "25% of 480 = (25/100) × 480 = 120"
+  },
+  {
+    "question": "If a train travels 60 km in 1 hour, how far will it travel in 2.5 hours?",
+    "options": ["120 km", "150 km", "180 km", "200 km"],
+    "answer": "150 km",
+    "explanation": "Distance = Speed × Time = 60 × 2.5 = 150 km"
+  },
+  {
+    "question": "Find the average of 12, 18, 24, 30.",
+    "options": ["20", "21", "22", "24"],
+    "answer": "21",
+    "explanation": "Average = (12 + 18 + 24 + 30) / 4 = 84 / 4 = 21"
+  },
+  {
+    "question": "What is the simple interest on ₹5000 at 10% per annum for 2 years?",
+    "options": ["₹500", "₹1000", "₹1500", "₹2000"],
+    "answer": "₹1000",
+    "explanation": "SI = P × R × T / 100 = 5000 × 10 × 2 / 100 = ₹1000"
+  },
+  {
+    "question": "A shopkeeper sells an article for ₹450 at a profit of 25%. What was the cost price?",
+    "options": ["₹320", "₹340", "₹360", "₹380"],
+    "answer": "₹360",
+    "explanation": "CP = SP × 100 / (100 + Profit%) = 450 × 100 / 125 = ₹360"
+  },
+  {
+    "question": "The ratio of two numbers is 3:5. If their sum is 64, find the smaller number.",
+    "options": ["20", "24", "28", "32"],
+    "answer": "24",
+    "explanation": "Smaller = 3/(3+5) × 64 = 3/8 × 64 = 24"
+  },
+  {
+    "question": "What is the LCM of 12 and 18?",
+    "options": ["24", "36", "48", "72"],
+    "answer": "36",
+    "explanation": "12 = 2² × 3, 18 = 2 × 3². LCM = 2² × 3² = 36"
+  },
+  {
+    "question": "If the perimeter of a square is 48 cm, what is its area?",
+    "options": ["100 cm²", "121 cm²", "144 cm²", "169 cm²"],
+    "answer": "144 cm²",
+    "explanation": "Side = 48/4 = 12 cm. Area = 12² = 144 cm²"
+  },
+  {
+    "question": "A man walks 4 km/h. How long will he take to cover 10 km?",
+    "options": ["2 hours", "2.5 hours", "3 hours", "3.5 hours"],
+    "answer": "2.5 hours",
+    "explanation": "Time = Distance / Speed = 10 / 4 = 2.5 hours"
+  },
+  {
+    "question": "What is 15² ?",
+    "options": ["200", "215", "225", "250"],
+    "answer": "225",
+    "explanation": "15² = 15 × 15 = 225"
+  },
+  {
+    "question": "Find the HCF of 24 and 36.",
+    "options": ["6", "8", "12", "18"],
+    "answer": "12",
+    "explanation": "24 = 2³ × 3, 36 = 2² × 3². HCF = 2² × 3 = 12"
+  },
+  {
+    "question": "A discount of 20% on ₹500 gives a selling price of?",
+    "options": ["₹350", "₹380", "₹400", "₹420"],
+    "answer": "₹400",
+    "explanation": "Discount = 20% of 500 = ₹100. SP = 500 − 100 = ₹400"
+  },
+  {
+    "question": "What is the value of √196?",
+    "options": ["12", "13", "14", "15"],
+    "answer": "14",
+    "explanation": "14 × 14 = 196, so √196 = 14"
+  },
+  {
+    "question": "If 3x + 7 = 22, find x.",
+    "options": ["3", "4", "5", "6"],
+    "answer": "5",
+    "explanation": "3x = 22 − 7 = 15, so x = 15/3 = 5"
+  },
+  {
+    "question": "The sum of first 10 natural numbers is?",
+    "options": ["45", "50", "55", "60"],
+    "answer": "55",
+    "explanation": "Sum = n(n+1)/2 = 10 × 11 / 2 = 55"
+  },
+  {
+    "question": "A car covers 240 km in 4 hours. What is its speed?",
+    "options": ["50 km/h", "55 km/h", "60 km/h", "65 km/h"],
+    "answer": "60 km/h",
+    "explanation": "Speed = Distance / Time = 240 / 4 = 60 km/h"
+  },
+  {
+    "question": "What fraction of 1 hour is 45 minutes?",
+    "options": ["1/2", "2/3", "3/4", "4/5"],
+    "answer": "3/4",
+    "explanation": "45 minutes / 60 minutes = 45/60 = 3/4"
+  },
+  {
+    "question": "If a number is increased by 20% it becomes 60. What is the number?",
+    "options": ["45", "48", "50", "52"],
+    "answer": "50",
+    "explanation": "Let number = x. 1.2x = 60, so x = 60/1.2 = 50"
+  },
+  {
+    "question": "The area of a rectangle with length 12 cm and breadth 8 cm is?",
+    "options": ["80 cm²", "88 cm²", "96 cm²", "104 cm²"],
+    "answer": "96 cm²",
+    "explanation": "Area = length × breadth = 12 × 8 = 96 cm²"
+  },
+  {
+    "question": "What is 0.75 as a fraction?",
+    "options": ["1/2", "2/3", "3/4", "4/5"],
+    "answer": "3/4",
+    "explanation": "0.75 = 75/100 = 3/4"
+  }
+]
