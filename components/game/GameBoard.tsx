@@ -116,10 +116,10 @@ export default function GameBoard() {
       {/* Game */}
       <main
         id="live-game-area"
-        className="flex-1 mx-auto w-full max-w-lg md:max-w-xl lg:max-w-2xl px-4 sm:px-6 py-6 sm:py-10 flex items-center justify-center"
+        className="flex-1 mx-auto w-full max-w-lg md:max-w-xl lg:max-w-2xl px-2.5 sm:px-6 py-3 sm:py-10 flex items-center justify-center"
       >
         <div
-          className="card relative w-full border-zinc-800 bg-zinc-900/40 px-4 py-5 sm:px-6 sm:py-6 rounded-2xl"
+          className="card relative w-full border-zinc-800 bg-zinc-900/40 px-3 py-3.5 sm:px-6 sm:py-6 rounded-2xl"
           style={{
             boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset',
           }}

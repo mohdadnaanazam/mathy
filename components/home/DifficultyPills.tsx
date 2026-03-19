@@ -20,7 +20,7 @@ export default function DifficultyPills({ value, onChange, gridSizes }: Difficul
             key={d}
             type="button"
             onClick={() => onChange(d)}
-            className="flex-1 py-1.5 rounded-lg text-center transition-all duration-150 active:scale-[0.97]"
+            className="flex-1 py-2 sm:py-1.5 rounded-lg text-center transition-all duration-150 active:scale-[0.97] min-h-[36px]"
             style={{
               backgroundColor: active ? 'var(--accent-orange-muted)' : 'rgba(39,39,42,0.5)',
               border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',

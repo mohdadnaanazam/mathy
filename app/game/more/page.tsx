@@ -92,24 +92,24 @@ export default function MoreGamesPage() {
   return (
     <main
       className="min-h-screen bg-[var(--bg-surface)] overflow-x-hidden"
-      style={{ paddingBottom: 'max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 5.5rem))' }}
+      style={{ paddingBottom: 'max(4.5rem, calc(env(safe-area-inset-bottom, 0px) + 4.5rem))' }}
     >
       {/* Header */}
-      <header className="border-b border-[var(--border-subtle)] py-4 sm:py-5">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 flex items-center gap-3">
+      <header className="border-b border-[var(--border-subtle)] py-3 sm:py-5">
+        <div className="mx-auto max-w-2xl px-3 sm:px-6 flex items-center gap-3">
           <button type="button" onClick={() => router.push('/')}
             className="p-1.5 -ml-1.5 rounded-lg text-zinc-400 hover:text-white transition-colors"
             aria-label="Back to home">
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">More Games</h1>
-            <p className="text-[11px] text-slate-500">Pick a game, choose difficulty, and play</p>
+            <h1 className="text-base sm:text-xl font-bold text-white tracking-tight">More Games</h1>
+            <p className="text-[10px] sm:text-[11px] text-slate-500">Pick a game, choose difficulty, and play</p>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4 space-y-4">
+      <div className="mx-auto max-w-2xl px-3 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
         {/* Global difficulty selector */}
         <div>
           <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Difficulty</p>
@@ -123,7 +123,7 @@ export default function MoreGamesPage() {
             return (
               <div
                 key={id}
-                className="rounded-2xl border p-4 transition-colors cursor-pointer"
+                className="rounded-2xl border p-3 sm:p-4 transition-colors cursor-pointer"
                 style={{
                   borderColor: active ? 'var(--accent-orange)' : 'var(--border-subtle)',
                   backgroundColor: active ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
@@ -131,14 +131,14 @@ export default function MoreGamesPage() {
                 onClick={() => handleSelect(id)}
               >
                 <div className="flex items-center gap-2 mb-0.5">
-                  <Icon size={16} style={{ color: active ? 'var(--accent-orange)' : '#71717a' }} />
-                  <span className="text-sm font-semibold text-white">{title}</span>
+                  <Icon size={15} style={{ color: active ? 'var(--accent-orange)' : '#71717a' }} />
+                  <span className="text-[13px] sm:text-sm font-semibold text-white">{title}</span>
                 </div>
-                <p className="text-[11px] text-slate-500">{desc}</p>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 leading-snug">{desc}</p>
 
                 {/* Stepper + progress — only when this card is selected AND difficulty is chosen */}
                 {active && difficulty !== null && (
-                  <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]" onClick={e => e.stopPropagation()}>
+                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-[var(--border-subtle)]" onClick={e => e.stopPropagation()}>
                     <GameStepper
                       count={gamesCount}
                       onDecrement={() => { if (!variantExhausted) setGamesCount(v => Math.max(1, Math.min(v - 1, variantRemaining))) }}
@@ -172,15 +172,15 @@ export default function MoreGamesPage() {
             background: 'linear-gradient(to top, var(--bg-surface) 60%, transparent)',
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
-            paddingTop: '20px',
+            paddingTop: '16px',
           }}
         >
-          <div className="mx-auto w-full max-w-md px-5 sm:px-6 pb-4 sm:pb-5 flex justify-center">
+          <div className="mx-auto w-full max-w-md px-4 sm:px-6 pb-3 sm:pb-5 flex justify-center">
             <button
               type="button"
               disabled={!canPlay || isNavigating}
               onClick={handlePlay}
-              className="w-full rounded-2xl px-8 py-3.5 sm:py-4 text-[13px] sm:text-sm font-bold uppercase tracking-[0.12em] transition-all duration-200 disabled:pointer-events-none disabled:opacity-40"
+              className="w-full rounded-2xl px-6 py-3 sm:py-4 text-[12px] sm:text-sm font-bold uppercase tracking-[0.12em] transition-all duration-200 disabled:pointer-events-none disabled:opacity-40"
               style={{
                 background: canPlay
                   ? 'linear-gradient(135deg, var(--accent-orange) 0%, #ea580c 100%)'

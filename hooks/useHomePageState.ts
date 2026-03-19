@@ -323,8 +323,6 @@ export function useHomePageState() {
       await Promise.all([
         recordActivity(),
         setLastPlayedSettings({ gameType: 'ssc_cgl', operation: null, difficulty: sscDifficulty }),
-        setSelectedGameCount(sscGamesCount),
-        resetGenericSession('ssc_cgl', sscGamesCount),
       ])
       router.push('/game?mode=ssccgl')
     } catch {
@@ -337,7 +335,7 @@ export function useHomePageState() {
     if (isLocked) return
     if (activeGame === 'math') { if (!mathDifficulty || mathVariantRemaining <= 0) return; playMath() }
     else if (activeGame === 'truefalse') { if (!tfDifficulty || tfVariantRemaining <= 0) return; playTrueFalse() }
-    else if (activeGame === 'ssccgl') { if (!sscDifficulty || sscVariantRemaining <= 0) return; playSscCgl() }
+    else if (activeGame === 'ssccgl') { if (!sscDifficulty) return; playSscCgl() }
     else { if (!memoryDifficulty || memoryVariantRemaining <= 0) return; playMemory() }
   }
 
@@ -351,7 +349,7 @@ export function useHomePageState() {
   const canPlayMath = mathDifficulty !== null && mathVariantRemaining > 0
   const canPlayMemory = memoryDifficulty !== null && memoryVariantRemaining > 0
   const canPlayTf = tfDifficulty !== null && tfVariantRemaining > 0
-  const canPlaySsc = sscDifficulty !== null && sscVariantRemaining > 0
+  const canPlaySsc = sscDifficulty !== null
   const canPlayActive =
     (activeGame === 'math' && canPlayMath) ||
     (activeGame === 'memory' && canPlayMemory) ||
@@ -385,9 +383,11 @@ export function useHomePageState() {
         ? 'Choose difficulty'
         : isNavigating
           ? 'Starting…'
-          : hasUnfinishedGames
-            ? 'Continue playing'
-            : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : activeGame === 'ssccgl' ? 'SSC CGL' : 'memory'}`
+          : activeGame === 'ssccgl'
+            ? 'Practice SSC CGL'
+            : hasUnfinishedGames
+              ? 'Continue playing'
+              : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
 
   // ── Global difficulty ────────────────────────────────────────────
   // The active game's difficulty is the "global" one shown in the shared selector.

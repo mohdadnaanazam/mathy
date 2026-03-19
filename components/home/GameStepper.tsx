@@ -17,7 +17,7 @@ export default function GameStepper({ count, onDecrement, onIncrement, disabled 
         type="button"
         onClick={onDecrement}
         disabled={disabled}
-        className="h-7 w-7 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-slate-300 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-30"
+        className="h-8 w-8 sm:h-7 sm:w-7 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-slate-300 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-30"
       >
         <Minus size={12} />
       </button>
@@ -28,7 +28,7 @@ export default function GameStepper({ count, onDecrement, onIncrement, disabled 
         type="button"
         onClick={onIncrement}
         disabled={disabled}
-        className="h-7 w-7 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-slate-300 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-30"
+        className="h-8 w-8 sm:h-7 sm:w-7 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-slate-300 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-30"
       >
         <Plus size={12} />
       </button>

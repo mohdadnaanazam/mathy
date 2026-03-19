@@ -41,17 +41,17 @@ export default function FloatingPlayButton({
           background: 'linear-gradient(to top, var(--bg-surface) 60%, transparent)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          paddingTop: '20px',
+          paddingTop: '16px',
         }}
       >
-        <div className="mx-auto w-full max-w-md px-5 sm:px-6 pb-4 sm:pb-5 flex justify-center">
+        <div className="mx-auto w-full max-w-md px-4 sm:px-6 pb-3 sm:pb-5 flex justify-center">
           <button
             ref={btnRef}
             type="button"
             onClick={handleClick}
             disabled={disabled}
             aria-busy={isNavigating}
-            className="play-btn group relative w-full overflow-hidden rounded-2xl px-8 py-3.5 sm:py-4 text-[13px] sm:text-sm font-bold uppercase tracking-[0.12em] transition-all duration-200 ease-out disabled:pointer-events-none"
+            className="play-btn group relative w-full overflow-hidden rounded-2xl px-6 py-3 sm:py-4 text-[12px] sm:text-sm font-bold uppercase tracking-[0.12em] transition-all duration-200 ease-out disabled:pointer-events-none"
             style={{
               /* --- colours by state --- */
               background: isLocked

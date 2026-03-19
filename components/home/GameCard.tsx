@@ -53,7 +53,7 @@ export default function GameCard({
 
   return (
     <div
-      className="rounded-2xl border p-4 transition-colors"
+      className="rounded-2xl border p-3 sm:p-4 transition-colors"
       style={{
         borderColor: isActive ? 'var(--accent-orange)' : 'var(--border-subtle)',
         backgroundColor: isActive ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
@@ -61,11 +61,11 @@ export default function GameCard({
       onClick={onActivate}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
         {icon}
-        <span className="text-sm font-semibold text-white">{title}</span>
+        <span className="text-[13px] sm:text-sm font-semibold text-white">{title}</span>
       </div>
-      <p className="text-[11px] text-slate-500 mb-3">{description}</p>
+      <p className="text-[10px] sm:text-[11px] text-slate-500 mb-2 sm:mb-3 leading-snug">{description}</p>
 
       {/* Game-specific content (e.g. operation selector) */}
       {children}
@@ -77,7 +77,7 @@ export default function GameCard({
 
       {/* Stepper + progress — only when active and difficulty chosen */}
       {showControls && (
-        <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+        <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-[var(--border-subtle)]">
           <GameStepper
             count={gamesCount}
             onDecrement={onDecrement}

@@ -34,21 +34,21 @@ export default function LandingPage() {
   return (
     <main
       className="min-h-screen overflow-x-hidden bg-[var(--bg-surface)]"
-      style={{ paddingBottom: 'max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 5.5rem))' }}
+      style={{ paddingBottom: 'max(4.5rem, calc(env(safe-area-inset-bottom, 0px) + 4.5rem))' }}
     >
       {/* Top banner */}
       <TopBanner />
 
       {/* Header */}
-      <header className="border-b border-[var(--border-subtle)] py-5 sm:py-6">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 flex items-end justify-between">
+      <header className="border-b border-[var(--border-subtle)] py-3 sm:py-6">
+        <div className="mx-auto max-w-2xl px-3 sm:px-6 flex items-end justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Mathy</h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Train your brain with free math and memory games</p>
+            <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">Mathy</h1>
+            <p className="text-[10px] sm:text-sm text-slate-500 mt-0.5">Train your brain with free math and memory games</p>
           </div>
           <div className="flex items-center gap-2">
             {s.isLocked && (
-              <span className="text-[10px] font-mono text-amber-400">
+              <span className="text-[9px] sm:text-[10px] font-mono text-amber-400">
                 Limit {s.used}/{s.maxAttempts} · resets {s.timeToReset}
               </span>
             )}
@@ -71,14 +71,14 @@ export default function LandingPage() {
       )}
 
       {/* Refresh countdown */}
-      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted || s.sscVariantExhausted) && (
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
+      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted) && (
+        <div className="mx-auto max-w-2xl px-3 sm:px-6 pt-2 sm:pt-3">
           <RefreshBanner tier={s.refreshTier} formatted={s.refreshFormatted} />
         </div>
       )}
 
       {/* Game cards */}
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4 space-y-3">
+      <div className="mx-auto max-w-2xl px-3 sm:px-6 py-3 sm:py-4 space-y-2 sm:space-y-3">
 
         {/* Shared difficulty selector */}
         <div>
@@ -205,29 +205,21 @@ export default function LandingPage() {
           refreshFormatted={s.refreshFormatted}
         />
 
-        {/* SSC CGL Math */}
-        <GameCard
-          id="ssccgl"
-          isActive={s.activeGame === 'ssccgl'}
-          onActivate={() => s.setActiveGame('ssccgl')}
-          icon={<BookOpen size={16} style={{ color: 'var(--accent-orange)' }} />}
-          title="SSC CGL Math"
-          description="Practice previous year SSC CGL questions."
-          difficulty={s.sscDifficulty}
-          onDifficultyChange={s.setGlobalDifficulty}
-          hideDifficulty
-          gamesCount={s.sscGamesCount}
-          onDecrement={() => { if (!s.sscVariantExhausted) s.setSscGamesCount(v => Math.max(1, Math.min(v - 1, s.sscVariantRemaining))) }}
-          onIncrement={() => { if (!s.sscVariantExhausted) s.setSscGamesCount(v => Math.min(Math.max(v + 1, 1), s.sscVariantRemaining)) }}
-          stepperDisabled={s.sscVariantExhausted}
-          sessionHydrated={s.sscSessionHydrated}
-          variantPlayed={s.sscVariantPlayed}
-          variantTotal={s.sscVariantTotal}
-          variantRemaining={s.sscVariantRemaining}
-          variantExhausted={s.sscVariantExhausted}
-          refreshReady={s.refreshReady}
-          refreshFormatted={s.refreshFormatted}
-        />
+        {/* SSC CGL Math — unlimited practice, no stepper/progress */}
+        <div
+          className="rounded-2xl border p-3 sm:p-4 transition-colors"
+          style={{
+            borderColor: s.activeGame === 'ssccgl' ? 'var(--accent-orange)' : 'var(--border-subtle)',
+            backgroundColor: s.activeGame === 'ssccgl' ? 'rgba(249,115,22,0.04)' : 'var(--bg-card)',
+          }}
+          onClick={() => s.setActiveGame('ssccgl')}
+        >
+          <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+            <BookOpen size={16} style={{ color: 'var(--accent-orange)' }} />
+            <span className="text-[13px] sm:text-sm font-semibold text-white">SSC CGL Math</span>
+          </div>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 leading-snug">Unlimited practice — previous year SSC CGL questions.</p>
+        </div>
       </div>
 
       {/* More Games entry point */}

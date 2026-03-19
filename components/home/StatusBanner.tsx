@@ -27,18 +27,18 @@ export default function StatusBanner({
       : '🎯 Ready for new challenges? Reload to get fresh games.'
 
   return (
-    <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-2.5 flex items-center justify-between gap-3">
-        <p className="text-[11px] text-amber-400 leading-snug">{message}</p>
+    <div className="mx-auto max-w-2xl px-3 sm:px-6 pt-2 sm:pt-3">
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3">
+        <p className="text-[10px] sm:text-[11px] text-amber-400 leading-snug">{message}</p>
         <div className="shrink-0 flex items-center gap-2">
           <button
             type="button"
             onClick={onReload}
             disabled={isReloading}
-            className="rounded-full px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider disabled:opacity-60 transition-colors"
+            className="rounded-full px-3 sm:px-4 py-1.5 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider disabled:opacity-60 transition-colors whitespace-nowrap"
             style={{ backgroundColor: 'var(--accent-orange)', color: '#111827' }}
           >
-            {isReloading ? 'Loading…' : 'Reload New Games'}
+            {isReloading ? 'Loading…' : 'Reload'}
           </button>
         </div>
       </div>
