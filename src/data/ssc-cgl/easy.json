@@ -238,5 +238,1589 @@
     "answer": "3/4",
     "explanation": "0.75 = 75/100 = 3/4",
     "year": 2019
+  },
+  {
+    "question": "If the 8-digit number is divisible by 789x531y is divisible by 72, then the value of (5x 3y) is:",
+    "options": [
+      "1",
+      "2",
+      "0",
+      "-1"
+    ],
+    "answer": "-1",
+    "explanation": "Step 1: Divisibility by 789: split into coprime factors 789.\nStep 2: Apply each rule: last 3 digits for ÷8; digit sum for ÷9; alternating sum for ÷11.\nStep 3: Solve the resulting equations for the unknown digits.\nFinal Answer: -1",
+    "year": 2018
+  },
+  {
+    "question": "The income of Raju is 20% more than his expenditure. If his income increases by 60% and his expenditure increases by 70%, then by what percent does his savings increase/decrease?",
+    "options": [
+      "It decreases by 2%",
+      "It increases by 2%",
+      "It decreases by 10%",
+      "It increases by 10%"
+    ],
+    "answer": "It increases by 10%",
+    "explanation": "Step 1: Let expenditure = 100. Income is 20% more → income = 120. Savings = 120 − 100 = 20.\nStep 2: After increases: new income = 120 × 1.6 = 192, new expenditure = 100 × 1.7 = 170.\nStep 3: New savings = 192 − 170 = 22. Change% = (22 − 20) / 20 × 100 = 10%.\nFinal Answer: It increases by 10%",
+    "year": 2018
+  },
+  {
+    "question": "The average weight of a certain number of students in a class is 68.5 kg. If 4 new students having weights 72.2 kg, 70.8 kg, 70.3 kg and 66.7 kg join the class, then the average weight of all the students increases by 300 g. The number of students in the class, initially, is:",
+    "options": [
+      "16",
+      "21",
+      "11",
+      "26"
+    ],
+    "answer": "16",
+    "explanation": "Step 1: Sum of 4 new students' weights = 280.0 kg. New average = 68.5 + 0.3 = 68.8 kg.\nStep 2: Let n = original students. Equation: n×68.5 + 280.0 = (n+4)×68.8.\nStep 3: Rearrange: n×(68.5−68.8) = 4×68.8 − 280.0 = -4.8. So n = -4.8 ÷ -0.3 = 16.\nFinal Answer: 16",
+    "year": 2018
+  },
+  {
+    "question": "If x is subtracted from each of 23, 39, 32 and 56, the numbers so obtained, in this order, are in proportion. What is the mean proportional between (x + 4) and (3x + 1) ?",
+    "options": [
+      "10",
+      "14",
+      "12",
+      "15"
+    ],
+    "answer": "12",
+    "explanation": "Step 1: For four numbers in proportion: (1st × 4th) = (2nd × 3rd).\nStep 2: (23−x)×(56−x) = (39−x)×(32−x). Expanding and simplifying gives x = 5.\nStep 3: Mean proportional between (x+a) and (x+b) = √[(x+a)(x+b)]. Substituting x = 5 gives 12.\nFinal Answer: 12",
+    "year": 2018
+  },
+  {
+    "question": "Renu bought an article for ₹1,240 and sold it at a loss of 25%. With this amount, she bought another article and sold it at a gain of 40%. Her overall percentage profit is:",
+    "options": [
+      "4.5%",
+      "6%",
+      "5%",
+      "7%"
+    ],
+    "answer": "5%",
+    "explanation": "Step 1: SP = 1240. Loss = 25% of SP means CP = SP/(1-25/100) = 1653.\nStep 2: To gain 40% on CP: New SP = 1653 x 1.4 = 2315.\nFinal Answer: 5%",
+    "year": 2018
+  },
+  {
+    "question": "The compound interest on a certain sum in 22 years at 10% p.a., interest compounded yearly, is ₹1,623 The sum is:",
+    "options": [
+      "₹5,000",
+      "₹6,000",
+      "₹7,200",
+      "₹6,500"
+    ],
+    "answer": "₹6,000",
+    "explanation": "Step 1: Formula: CI = P × [(1 + r/100)ⁿ − 1].\nStep 2: Substitute: 623 = P × [(1 + 1/100)^623 − 1].\nStep 3: Calculate factor = (1.01)^623 − 1, then P = CI / factor = ₹6,000.\nFinal Answer: ₹6,000",
+    "year": 2018
+  },
+  {
+    "question": "If 0∘ < θ< 90∘ and cos2θ= 3(cot2θ−cos2θ) then the value of (2 1 secθ+sinθ) −1 is:",
+    "options": [
+      "2( 3−1)",
+      "3+1",
+      "3+2",
+      "2(2−"
+    ],
+    "answer": "2(2−",
+    "explanation": "Step 1: Set up the equation from the given conditions.\nStep 2: Simplify using algebraic identities.\nStep 3: Solve to get 2(2−.\nFinal Answer: 2(2−",
+    "year": 2018
+  },
+  {
+    "question": "On selling an article for ₹800, a person loses 20% of its selling price. At what price should he sell it to gain 25% on its cost price?",
+    "options": [
+      "₹1,280",
+      "₹1,152",
+      "₹1,250",
+      "₹1,200"
+    ],
+    "answer": "₹1,200",
+    "explanation": "Step 1: Loss is 20% of SP. So CP = SP / 0.8 = 800.0 / 0.8 = 1000.\nStep 2: To gain 20.0% on CP: new SP = CP × 1.2 = 1000 × 1.2 = 1200.\nFinal Answer: ₹1,200",
+    "year": 2018
+  },
+  {
+    "question": "The ratio of the efficiencies of A, B and C is 7 : 5 : 4. Working together, they can finish a work in 35 days?",
+    "options": [
+      "56",
+      "63",
+      "49",
+      "60"
+    ],
+    "answer": "56",
+    "explanation": "Step 1: Combined efficiency = 7+5+4 = 16 parts.\nStep 2: Total work = 16 × 35 = 560 units.\nStep 3: Find the required person's efficiency and divide total work by it.\nFinal Answer: 56",
+    "year": 2018
+  },
+  {
+    "question": "If x + y = 1 and xy(xy - 2) = 12, then the value of x4+y4 is:",
+    "options": [
+      "19",
+      "25",
+      "20",
+      "23"
+    ],
+    "answer": "25",
+    "explanation": "Step 1: Use the given equations to find x+y, xy, and x-y.\nStep 2: Apply algebraic identities: (x-y)^2 = (x+y)^2 - 4xy.\nStep 3: Compute the required expression = 25.\nFinal Answer: 25",
+    "year": 2018
+  },
+  {
+    "question": "If x is added to each of 12, 28, 21 and 45, the numbers so obtained, in this order, are in proportion. What is the mean proportional between (x +a3) and (4x+ 1)?",
+    "options": [
+      "15",
+      "18",
+      "10",
+      "12"
+    ],
+    "answer": "15",
+    "explanation": "Step 1: For four numbers in proportion: (1st × 4th) = (2nd × 3rd).\nStep 2: (12−x)×(45−x) = (28−x)×(21−x). Expanding and simplifying gives x = 6.\nStep 3: Mean proportional between (x+a) and (x+b) = √[(x+a)(x+b)]. Substituting x = 6 gives 15.\nFinal Answer: 15",
+    "year": 2018
+  },
+  {
+    "question": "The income of A is 25% more than that of B and the income of C is 65% less than the sum of the incomes of A and B. Income of C is what percent less than the income of A?",
+    "options": [
+      "28",
+      "32",
+      "35",
+      "37"
+    ],
+    "answer": "37",
+    "explanation": "Step 1: Let B's income = 100. A = 100 × 1.25 = 125.\nStep 2: C = 65.0% less than A+B = 225 × 0.35 = 78.8.\nStep 3: C is less than A by: (125 − 78.8) / 125 × 100 = 37%.\nFinal Answer: 37",
+    "year": 2018
+  },
+  {
+    "question": "The areas of the three adjacent faces of a cuboid are 32 cm2, 24 cm2 and 48 cm2 . What is the volume of the cuboid?",
+    "options": [
+      "192 cm3",
+      "256 cm3",
+      "288 cm3",
+      "128 cm3"
+    ],
+    "answer": "192 cm3",
+    "explanation": "Step 1: Let dimensions be l, w, h. Adjacent face areas: lw=24, wh=32, lh=48.\nStep 2: (lwh)² = lw × wh × lh = 24×32×48 = 36864. Volume = √36864 = 192 cm³.\nFinal Answer: 192 cm3",
+    "year": 2018
+  },
+  {
+    "question": "The area of a triangle is 15 sq cm and the radius of its incircle is 3 cm. Its perimeter is equal to:",
+    "options": [
+      "12 cm",
+      "20 cm",
+      "5 cm",
+      "10 cm"
+    ],
+    "answer": "10 cm",
+    "explanation": "Step 1: Formula: Area of triangle = r × s, where r = inradius, s = semi-perimeter.\nStep 2: s = Area / r = 15 / 3 = 5 cm.\nStep 3: Perimeter = 2s = 2 × 5 = 10 cm.\nFinal Answer: 10 cm",
+    "year": 2018
+  },
+  {
+    "question": "ABCD is a cyclic quadrilateral in which ∠A = 67∘ and ∠B = 92∘. What is the difference between the measures of ∠C and ∠D?",
+    "options": [
+      "29∘",
+      "27∘",
+      "19∘",
+      "25∘"
+    ],
+    "answer": "25∘",
+    "explanation": "Step 1: In a cyclic quadrilateral, opposite angles sum to 180 .\nStep 2: Use the given angle values to find the unknown angles.\nStep 3: Calculate the required difference or sum = 25∘.\nFinal Answer: 25∘",
+    "year": 2018
+  },
+  {
+    "question": "The income of A is 50% more than that of B. If the income of A is increased by 40% and the income of B is increased by 90%, then the percentage increase in their combined income will be:",
+    "options": [
+      "64",
+      "60",
+      "55",
+      "70"
+    ],
+    "answer": "60",
+    "explanation": "Step 1: Let B's income = 100. A's income = 150 (50% more than B).\nStep 2: After increases: A = 150 × 1.40 = 210, B = 100 × 1.90 = 190.\nStep 3: Combined: was 250, now 400. Increase% = (400−250)/250 × 100 = 60%.\nFinal Answer: 60",
+    "year": 2018
+  },
+  {
+    "question": "The average production of type D cars in 5 years is what percent less than the production of type E cars in 2018? (Correct to one decimal place)",
+    "options": [
+      "17.4",
+      "15.9",
+      "18.6",
+      "16.8"
+    ],
+    "answer": "18.6",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 18.6.\nFinal Answer: 18.6",
+    "year": 2018
+  },
+  {
+    "question": "When x is subtracted from each of 21, 22, 60 and 64, the numbers so obtained, in this order, are in proportion. What is the mean proportional between (x + 1) and (7x + 8) ?",
+    "options": [
+      "24",
+      "18",
+      "21",
+      "27"
+    ],
+    "answer": "24",
+    "explanation": "Step 1: For four numbers in proportion: (1st × 4th) = (2nd × 3rd).\nStep 2: (21−x)×(64−x) = (22−x)×(60−x). Expanding and simplifying gives x = 8.\nStep 3: Mean proportional between (x+a) and (x+b) = √[(x+a)(x+b)]. Substituting x = 8 gives 24.\nFinal Answer: 24",
+    "year": 2018
+  },
+  {
+    "question": "The volume of a metallic cylindrical pipe is 7480 cm3 . If its length is 1.4 m and its external radius is 9 22 cm, then its thickness (given π= 7 ) is:",
+    "options": [
+      "32.2",
+      "57.3",
+      "47.5",
+      "49.5"
+    ],
+    "answer": "47.5",
+    "explanation": "Step 1: Volume of hollow cylinder = π(R² − r²) × Length.\nStep 2: Substitute the outer radius, volume, and length to find inner radius.\nStep 3: Thickness = R − r.\nFinal Answer: 47.5",
+    "year": 2018
+  },
+  {
+    "question": "The average of thirteen numbers is 80. The average of the first five numbers is 74.5 and that of the next five numbers is 82.5. The 11th number is 6 more than the 12th number and the 12th number is 6 less than the 13th number. What is the average of the 11th and the 13th numbers ?",
+    "options": [
+      "86.5",
+      "87.5",
+      "87",
+      "86"
+    ],
+    "answer": "87",
+    "explanation": "Step 1: Total sum = Overall average × Total count.\nStep 2: Sum of first group = first-group avg × count. Sum of last group = last-group avg × count.\nStep 3: Remaining numbers' sum = Total − First group sum − Last group sum. Use individual conditions to solve.\nFinal Answer: 87",
+    "year": 2018
+  },
+  {
+    "question": "In △ABC with sides 6 cm, 7 cm and 8 cm,the angle bisector. of the largest angle divides the opposite side into two segments. What is the length of the shorter segment?",
+    "options": [
+      "5 cm 21",
+      "5 cm i 48",
+      "13 cm 56",
+      "13 cm"
+    ],
+    "answer": "13 cm 56",
+    "explanation": "Step 1: By the angle bisector theorem, the bisector divides the opposite side in the ratio of adjacent sides.\nStep 2: Set up the ratio and solve.\nStep 3: Calculate the required segment = 13 cm 56.\nFinal Answer: 13 cm 56",
+    "year": 2018
+  },
+  {
+    "question": "The vertices of a △PQR lie on a circle with centre O. SR is a tangent to the circle at the point R. If QR bisects the ∠ORS, then what is the measure of ∠RPQ?",
+    "options": [
+      "150∘",
+      "100∘",
+      "110∘",
+      "120∘"
+    ],
+    "answer": "120∘",
+    "explanation": "Step 1: A tangent is perpendicular to the radius at the point of contact.\nStep 2: Use the circle-tangent theorem and Pythagoras theorem for the given configuration.\nStep 3: Solve for the unknown length.\nFinal Answer: 120∘",
+    "year": 2018
+  },
+  {
+    "question": "The average of twelve numbers is 46. The average of the first four numbers is 43 and that of the last five numbers is 49.4.The 5th and the 6th numbers are respectively 4 and 6 more than the 7th number. What is the average of the 5th and the 7th numbers?",
+    "options": [
+      "43.5",
+      "43",
+      "44.5",
+      "44"
+    ],
+    "answer": "43",
+    "explanation": "Step 1: Total sum = Overall average × Total count.\nStep 2: Sum of first group = first-group avg × count. Sum of last group = last-group avg × count.\nStep 3: Remaining numbers' sum = Total − First group sum − Last group sum. Use individual conditions to solve.\nFinal Answer: 43",
+    "year": 2018
+  },
+  {
+    "question": "If x+y =12 and xy = 27, x > y, then the value of (x3−y3) is:",
+    "options": [
+      "720",
+      "702",
+      "724",
+      "710"
+    ],
+    "answer": "702",
+    "explanation": "Step 1: Use the given equations to find x+y, xy, and x-y.\nStep 2: Apply algebraic identities: (x-y)^2 = (x+y)^2 - 4xy.\nStep 3: Compute the required expression = 702.\nFinal Answer: 702",
+    "year": 2018
+  },
+  {
+    "question": "What is the compound interest on a sum of ₹10,000 at 14% p.a. for 27 years where the interest is compounded yearly? (nearest to ₹1)",
+    "options": [
+      "₹4,259",
+      "₹4,296",
+      "₹4,439",
+      "₹4,394"
+    ],
+    "answer": "₹4,296",
+    "explanation": "Step 1: Formula: CI = P × [(1 + r/100)ⁿ − 1].\nStep 2: Substitute: 0 = P × [(1 + 27/100)^1 − 1].\nStep 3: Calculate factor = (1.27)^1 − 1, then P = CI / factor = ₹4,296.\nFinal Answer: ₹4,296",
+    "year": 2018
+  },
+  {
+    "question": "Abhi bought two articles for ₹624. He sold one at a loss of 14% and the other at a profit of 14%.If the selling price of both the articles is equal, then the difference between their cost prices (in ₹)is:",
+    "options": [
+      "89.64",
+      "87.36",
+      "89.68",
+      "88.84"
+    ],
+    "answer": "87.36",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: 87.36",
+    "year": 2018
+  },
+  {
+    "question": "The length of a metallic pipe is 7.56 m.Its external and internal radii are 2.5 cm and 1.5 cm respectively. 22 If 1 cm3 of the metal weigh 7.5 g, then the weight of the pipe is:(Take π= 7 )",
+    "options": [
+      "72.82kg",
+      "70.14kg",
+      "71.28kg",
+      "69.68 kg"
+    ],
+    "answer": "70.14kg",
+    "explanation": "Step 1: Rate of each pipe = 1/(time to fill or empty). Filling is positive, emptying is negative.\nStep 2: Net rate = sum of individual rates when pipes work together.\nStep 3: Track work done in each interval to find when tank fills/empties = 70.14kg.\nFinal Answer: 70.14kg",
+    "year": 2018
+  },
+  {
+    "question": "If the data related to the production of type D cars is represented by a pie chart, then the central angle of the sector representing the production of cars in 2013 will be:",
+    "options": [
+      "84∘",
+      "75∘",
+      "60∘",
+      "77∘"
+    ],
+    "answer": "60∘",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 60∘.\nFinal Answer: 60∘",
+    "year": 2018
+  },
+  {
+    "question": "When the price of an item was reduced by 20%, then its sale increased by x%.If there is an increase of 60% in the receipt of the revenue, then the value of x is:",
+    "options": [
+      "120",
+      "96",
+      "100",
+      "80"
+    ],
+    "answer": "100",
+    "explanation": "Step 1: Revenue = Price × Sales. Let original price = 1, original sales = 1.\nStep 2: New price = 1 − 20.0/100 = 0.80. New revenue = 1.60.\nStep 3: New sales = 1.60 / 0.80 = 2.00. Increase = 100%.\nFinal Answer: 100",
+    "year": 2018
+  },
+  {
+    "question": "The ratio of the present ages of A and is 8 : 9. After 9 years, this ratio will become 19 : 21. C is 3 years younger to B. What is the present age (in years) of C?",
+    "options": [
+      "49",
+      "48",
+      "51",
+      "52"
+    ],
+    "answer": "51",
+    "explanation": "Step 1: Let the current ages be in the given ratio (multiply by k).\nStep 2: Form an equation using the past/future age ratio condition.\nStep 3: Solve for k to find both ages, then apply the final condition.\nFinal Answer: 51",
+    "year": 2018
+  },
+  {
+    "question": "Ina circle with center O and radius 10 cm, PQ and RS are two parallel chords of lengths x cm and 12 cm, respectively, and both the chords are on the opposite side of O. If the distance between PQ and RS is 14 cm,the value of x is:",
+    "options": [
+      "16",
+      "15",
+      "20",
+      "18"
+    ],
+    "answer": "16",
+    "explanation": "Step 1: For parallel chords on opposite sides, distance = d1 + d2 where d = sqrt(r^2 - (l/2)^2).\nStep 2: Set up the equation using the given distance between chords.\nStep 3: Solve for the unknown chord length = 16.\nFinal Answer: 16",
+    "year": 2018
+  },
+  {
+    "question": "In △ACE, B and D are the points on side AC and CE,respectively, such that BD ∥ AE and AE = 3 BD. What is the ratio of the area of △BDC to that of △AEC?",
+    "options": [
+      "9 : 16",
+      "9 : 64",
+      "3 : 8",
+      "8 : 11"
+    ],
+    "answer": "9 : 64",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 9 : 64",
+    "year": 2018
+  },
+  {
+    "question": "Sudha saves 15% of her income. If her expenditure increases by 20% and savings increase by 60%, then by what percent has her income increased?",
+    "options": [
+      "",
+      "30",
+      "26",
+      "35"
+    ],
+    "answer": "26",
+    "explanation": "Step 1: Let expenditure = 100. Income is 20% more → income = 120. Savings = 120 − 100 = 20.\nStep 2: After increases: new income = 120 × 1.2 = 144, new expenditure = 100 × 1.6 = 160.\nStep 3: New savings = 144 − 160 = -16. Change% = (-16 − 20) / 20 × 100 = -180%.\nFinal Answer: 26",
+    "year": 2018
+  },
+  {
+    "question": "The area of a △ABC is one unit. DE is a straight line parallel to BC, joining the points D and E on AB and AC respectively such that AD : DB = 1 : 6. The ratio of the areas of the triangles ADE and ABC is:",
+    "options": [
+      "1 : 6",
+      "1 : 36",
+      "1 : 7",
+      "1 : 49"
+    ],
+    "answer": "1 : 49",
+    "explanation": "Step 1: Since DE ∥ AE, △BDC is similar to △AEC by AA similarity.\nStep 2: Ratio of corresponding sides = BD : AE = 1 : 3.\nStep 3: Ratio of areas = (1)² : (3)² = 1 : 9.\nFinal Answer: 1 : 49",
+    "year": 2018
+  },
+  {
+    "question": "The ratio of the present ages of A and is 8 : 15. Eight years ago,the ratio of their ages was 6 : 13. What will be the ratio of ages of A and B after 8 years from now?",
+    "options": [
+      "10:17",
+      "5:8",
+      "5:9",
+      "9:14"
+    ],
+    "answer": "10:17",
+    "explanation": "Step 1: Let the current ages be in the given ratio (multiply by k).\nStep 2: Form an equation using the past/future age ratio condition.\nStep 3: Solve for k to find both ages, then apply the final condition.\nFinal Answer: 10:17",
+    "year": 2018
+  },
+  {
+    "question": "Sushma bought 6 tables and 12 chairs for ₹12,000. She sold the tables at a profit of 15% and the chairs at a loss of 10%. If her total gain was ₹300,then the total cost of the tables was:",
+    "options": [
+      "₹5,000",
+      "₹6,000",
+      "₹4,800",
+      "₹5,400"
+    ],
+    "answer": "₹6,000",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: ₹6,000",
+    "year": 2018
+  },
+  {
+    "question": "AB is a diameter of a circle with centre O. CB is a tangent to the circle at B. AC intersects the circle at G. If the radius of the circle is 6 cm and AG = 8 cm, then the length of BC is:",
+    "options": [
+      "2 6 cm",
+      "6 5 cm",
+      "2 5 cm",
+      "6 6 cm"
+    ],
+    "answer": "6 5 cm",
+    "explanation": "Step 1: A tangent is perpendicular to the radius at the point of contact.\nStep 2: Use the circle-tangent theorem and Pythagoras theorem for the given configuration.\nStep 3: Solve for the unknown length.\nFinal Answer: 6 5 cm",
+    "year": 2018
+  },
+  {
+    "question": "Some equations have been solved on the basis of a certain pattern. Find the correct answer for the unsolved equation on that basis. 8x7x6=765 5x3x2=421 9x6x4= ?",
+    "options": [
+      "583",
+      "853",
+      "841",
+      "481"
+    ],
+    "answer": "853",
+    "explanation": "Step 1: Identify the algebraic expression or equation.\nStep 2: Apply the relevant identity or substitution.\nStep 3: Simplify to reach the answer.\nFinal Answer: 853",
+    "year": 2016
+  },
+  {
+    "question": "Find the missing term in the following question:-?",
+    "options": [
+      "56",
+      "12",
+      "120",
+      "51"
+    ],
+    "answer": "120",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 120.\nFinal Answer: 120",
+    "year": 2016
+  },
+  {
+    "question": "The reciprocals of the squares of the numbers 1 and 1 are in the ratio 1 1 ?",
+    "options": [
+      "64 : 81",
+      "8 : 9",
+      "81 : 64",
+      "9 : 8"
+    ],
+    "answer": "64 : 81",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 64 : 81",
+    "year": 2016
+  },
+  {
+    "question": "What is the difference between 0.6 and 0.6%? 0.6 0.6% ?",
+    "options": [
+      "5.94",
+      "0.594",
+      "60",
+      "54"
+    ],
+    "answer": "0.594",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 0.594.\nFinal Answer: 0.594",
+    "year": 2016
+  },
+  {
+    "question": "√3 = 1.732 , ?",
+    "options": [
+      "7.169",
+      "7.196",
+      "5.198",
+      "7.296"
+    ],
+    "answer": "7.196",
+    "explanation": "Step 1: This is a telescoping series: each term cancels the next.\nStep 2: (1−√2)+(√2−√3)+...+(√15−√16) — all middle terms cancel.\nStep 3: What remains: 1 − √16 = 1 − 4 = −3.\nFinal Answer: 7.196",
+    "year": 2016
+  },
+  {
+    "question": "In ∆ABC, the medians AD and BE meet at G. The ratio of the areas of ∆BDG and the quadrilateral GDCE is ∆ABC AD BE G ∆BDG GDCE ?",
+    "options": [
+      "1 : 2",
+      "1 : 3",
+      "2 : 3",
+      "3 : 4"
+    ],
+    "answer": "1 : 2",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 1 : 2",
+    "year": 2016
+  },
+  {
+    "question": "XYZ is a right angled triangle and ∠Y = 90°. If XY = 2.5 cm and YZ = 6 cm then the circumradius of ∆XYZ is XYZ ∠Y = 90° XY = 2.5 . . YZ = 6 . . ∆XYZ ?",
+    "options": [
+      "6.5 cm 6.5 . .",
+      "3.25 cm 3.25 . .",
+      "3 cm 3 . .",
+      "2.5 cm 2.5 . ."
+    ],
+    "answer": "3.25 cm 3.25 . .",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 3.25 cm 3.25 . ..\nFinal Answer: 3.25 cm 3.25 . .",
+    "year": 2016
+  },
+  {
+    "question": "The length of shadow of a tower is √3 times that of its length. The angle of elevation of the sun is √3 ?",
+    "options": [
+      "45°",
+      "30°",
+      "60°",
+      "none"
+    ],
+    "answer": "30°",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 30°.\nFinal Answer: 30°",
+    "year": 2016
+  },
+  {
+    "question": "Find the missing number from the given alternatives?",
+    "options": [
+      "75",
+      "45",
+      "20",
+      "30"
+    ],
+    "answer": "30",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 30.\nFinal Answer: 30",
+    "year": 2016
+  },
+  {
+    "question": "The 14th Finance Commission has recommended increase in States share in net proceeds from tax collection from 32% to 14 32% ?",
+    "options": [
+      "35%",
+      "40%",
+      "42%",
+      "45%"
+    ],
+    "answer": "42%",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 42%.\nFinal Answer: 42%",
+    "year": 2016
+  },
+  {
+    "question": "If speed of rotation of the earth increases, the weight of the body ,?",
+    "options": [
+      "decreases",
+      "increases",
+      "remains the same",
+      "may increase or decrease"
+    ],
+    "answer": "decreases",
+    "explanation": "Step 1: Use Distance = Speed x Time (or rearrange as needed).\nStep 2: For relative motion: add speeds (opposite direction) or subtract (same direction).\nStep 3: Solve the equation to get decreases.\nFinal Answer: decreases",
+    "year": 2016
+  },
+  {
+    "question": "Which of the following ratios can be the ratio of the sides of a right angled triangle? - ?",
+    "options": [
+      "9:6:3",
+      "13:12:5",
+      "7:6:5",
+      "5:3:2"
+    ],
+    "answer": "13:12:5",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 13:12:5",
+    "year": 2016
+  },
+  {
+    "question": "The average of 9 observations was found to be 35. Later on, it was detected that an observation 81 was misread as 18. The correct average of the observations is 9 35 81 18 ?",
+    "options": [
+      "28",
+      "42",
+      "32",
+      "45"
+    ],
+    "answer": "42",
+    "explanation": "Step 1: Total sum = Average × Number of items.\nStep 2: Use sub-group sums and the total to form an equation.\nStep 3: Solve for the unknown quantity.\nFinal Answer: 42",
+    "year": 2016
+  },
+  {
+    "question": "The radius and the height of a cone are each increased by 20%. Then the volume of the cone increases by 20% ?",
+    "options": [
+      "20%",
+      "20.5%",
+      "62%",
+      "72.8%"
+    ],
+    "answer": "72.8%",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 72.8%.\nFinal Answer: 72.8%",
+    "year": 2016
+  },
+  {
+    "question": "Find the missing number in the following series: 43, 172, 86, 344, ?",
+    "options": [
+      "172",
+      "258",
+      "129",
+      "430"
+    ],
+    "answer": "172",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 172.\nFinal Answer: 172",
+    "year": 2016
+  },
+  {
+    "question": "The centroid of an equilateral triangle ABC is G. If AB is 6 cms, the length of AG is ABC G AB = 6 .. , AG ?",
+    "options": [
+      "√3 cm √3 .",
+      "2√3 cm 2√3 .",
+      "3√2 cm 3√2 .",
+      "2√2 cm 2√2 ."
+    ],
+    "answer": "2√3 cm 2√3 .",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 2√3 cm 2√3 ..\nFinal Answer: 2√3 cm 2√3 .",
+    "year": 2016
+  },
+  {
+    "question": "If percentage of profit made,when an article is sold for Rs.78, is twice as when it is sold for Rs.69, the cost price of the article is Rs. 69 Rs. 78 ?",
+    "options": [
+      "Rs. 49",
+      "Rs. 51",
+      "Rs. 57",
+      "Rs. 60"
+    ],
+    "answer": "Rs. 60",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: Rs. 60",
+    "year": 2016
+  },
+  {
+    "question": "The ratio between Ram's age and Rahim's age is 10:11. What is the age of Rahim in percentage of Ram's age 10:11 ?",
+    "options": [
+      "",
+      "110%",
+      "",
+      "111%"
+    ],
+    "answer": "110%",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 110%.\nFinal Answer: 110%",
+    "year": 2016
+  },
+  {
+    "question": "If x=3/2, then the value of 27x3 54x2+36x 11 is x=3/2 27x3 54x2+36x 11 ?",
+    "options": [
+      "11",
+      "11",
+      "12",
+      "12"
+    ],
+    "answer": "12",
+    "explanation": "Step 1: Set up the equation from the given conditions.\nStep 2: Simplify using algebraic identities.\nStep 3: Solve to get 12.\nFinal Answer: 12",
+    "year": 2016
+  },
+  {
+    "question": "If the angles of a triangle are in the ratio of 2:3:4, then the difference of the measure of greatest angle and smallest angle is 2:3:4 ?",
+    "options": [
+      "20°",
+      "30°",
+      "40°",
+      "50°"
+    ],
+    "answer": "40°",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 40°",
+    "year": 2016
+  },
+  {
+    "question": "The average of 12 numbers is 9. If each number is multiplied by 2 and added to 3, the average of the new set of numbers is 12 9 2 3 ?",
+    "options": [
+      "9",
+      "18",
+      "21",
+      "27"
+    ],
+    "answer": "21",
+    "explanation": "Step 1: Total sum = Average × Number of items.\nStep 2: Use sub-group sums and the total to form an equation.\nStep 3: Solve for the unknown quantity.\nFinal Answer: 21",
+    "year": 2016
+  },
+  {
+    "question": "In a triangle ABC, AB = 8 cm, AC = 10 cm and ∠B = 90°, then the area of ΔABC is ABC AB = 8 .. , AC = 10 .. ∠B = 90°, ΔABC ?",
+    "options": [
+      "49 sq.cm 49 ..2",
+      "36 sq.cm 36 ..2",
+      "25 sq.cm 25 ..2",
+      "24 sq.cm 24 ..2"
+    ],
+    "answer": "24 sq.cm 24 ..2",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 24 sq.cm 24 ..2.\nFinal Answer: 24 sq.cm 24 ..2",
+    "year": 2016
+  },
+  {
+    "question": "Study the pie chart given and answer the following questions. What should be the central angle of the sector 'cost of paper'? ?",
+    "options": [
+      "22.5°",
+      "54.8°",
+      "36°",
+      "16°"
+    ],
+    "answer": "36°",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 36°.\nFinal Answer: 36°",
+    "year": 2016
+  },
+  {
+    "question": "Study the pie chart given and answer the following questions. The ratio between royalty and binder's charges is ?",
+    "options": [
+      "5:6",
+      "5:8",
+      "6:5",
+      "8:13"
+    ],
+    "answer": "5:6",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 5:6",
+    "year": 2016
+  },
+  {
+    "question": "Find the missing number in the series. ? 75, 96, 116, 135, 153, ?",
+    "options": [
+      "173",
+      "170",
+      "178",
+      "175"
+    ],
+    "answer": "170",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 170.\nFinal Answer: 170",
+    "year": 2016
+  },
+  {
+    "question": "Find out the missing number on the basis of a certain trend. ,?",
+    "options": [
+      "13",
+      "24",
+      "36",
+      "48"
+    ],
+    "answer": "13",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 13.\nFinal Answer: 13",
+    "year": 2016
+  },
+  {
+    "question": "If T=20, MEDIA=32, then ELICIT=? T=20, MEDIA=32, ELICIT=?",
+    "options": [
+      "57",
+      "58",
+      "59",
+      "60"
+    ],
+    "answer": "58",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 58.\nFinal Answer: 58",
+    "year": 2016
+  },
+  {
+    "question": "Banks earn interest on ?",
+    "options": [
+      "Deposits",
+      "Loans",
+      "Demand Drafts",
+      "Bills of Exchange"
+    ],
+    "answer": "Loans",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = Loans.\nFinal Answer: Loans",
+    "year": 2016
+  },
+  {
+    "question": "Which is the most important factor that determines whether advertising by manufacturing sector will lead to higher sales? ?",
+    "options": [
+      "Demand is elastic",
+      "Demand is inelastic",
+      "The product can be differentiated",
+      "The product can be homogenous."
+    ],
+    "answer": "The product can be differentiated",
+    "explanation": "Step 1: Identify the algebraic expression or equation.\nStep 2: Apply the relevant identity or substitution.\nStep 3: Simplify to reach the answer.\nFinal Answer: The product can be differentiated 䍀 㾀",
+    "year": 2016
+  },
+  {
+    "question": "Who was the revolutionary leader who ended his days as a Swami of Ramakrishna Mission ? ?",
+    "options": [
+      "Ajit Singh",
+      "Aurobindo Ghosh",
+      "Jatindranath Bandopadhyay",
+      "Hemachandra Kanungo"
+    ],
+    "answer": "Jatindranath Bandopadhyay",
+    "explanation": "Step 1: Rate of work = 1/(days to complete alone).\nStep 2: Combined rate = sum of individual rates.\nStep 3: Time = Work / Rate = Jatindranath Bandopadhyay.\nFinal Answer: Jatindranath Bandopadhyay",
+    "year": 2016
+  },
+  {
+    "question": "A certain amount of money is divided between A and B in the ratio of 5:6. If B gets (cid:0) 360, the amount is A B 5:6 B (cid:0) 360 ?",
+    "options": [
+      "660",
+      "560",
+      "680",
+      "580"
+    ],
+    "answer": "660",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 660",
+    "year": 2016
+  },
+  {
+    "question": "The length of a rectangle is increased by 25%. To maintain the same area, the breadth has to be decreased by 25% ,?",
+    "options": [
+      "20%",
+      "25%",
+      "30%",
+      "40%"
+    ],
+    "answer": "20%",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 20%.\nFinal Answer: 20%",
+    "year": 2016
+  },
+  {
+    "question": "The ratio between the vertical angle and a base angle of an isosceles triangle is 4:3. The value of any one base angle is 4:3 ?",
+    "options": [
+      "18",
+      "54",
+      "72",
+      "10"
+    ],
+    "answer": "54",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 54",
+    "year": 2016
+  },
+  {
+    "question": "In ∆ABC, ∠B=90 o and BC= √3 AB. Find the measurement of ∠A ∆ABC ∠B=90 o BC= √3 AB | ∠A?",
+    "options": [
+      "45",
+      "90",
+      "30",
+      "60"
+    ],
+    "answer": "60",
+    "explanation": "Step 1: This is a telescoping series: each term cancels the next.\nStep 2: (1−√2)+(√2−√3)+...+(√15−√16) — all middle terms cancel.\nStep 3: What remains: 1 − √16 = 1 − 4 = −3.\nFinal Answer: 60",
+    "year": 2016
+  },
+  {
+    "question": "If a number is decreased by 10%, it becomes 54. To make it 72, it should be increased by 10% 54 72 , ?",
+    "options": [
+      "21%",
+      "18%",
+      "",
+      "20%"
+    ],
+    "answer": "20%",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 20%.\nFinal Answer: 20%",
+    "year": 2016
+  },
+  {
+    "question": "Absolute Zero is defined as \" \" ?",
+    "options": [
+      "The temperature at which all molecular motion ceases",
+      "At which water boils at 298K 298",
+      "At which liquid Helium boils",
+      "At which the volume becomes zero"
+    ],
+    "answer": "The temperature at which all molecular motion ceases",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = The temperature at which all molecular motion ceases.\nFinal Answer: The temperature at which all molecular motion ceases",
+    "year": 2016
+  },
+  {
+    "question": "If 7 spiders make 7 webs in 7 days , then 1 spider will make 1 web in how many days ? 7 7 7 , 1 1 ?",
+    "options": [
+      "1",
+      "7/2",
+      "7",
+      "49"
+    ],
+    "answer": "7/2",
+    "explanation": "Step 1: Rate of work = 1/(days to complete alone).\nStep 2: Combined rate = sum of individual rates.\nStep 3: Time = Work / Rate = 7/2.\nFinal Answer: 7/2",
+    "year": 2016
+  },
+  {
+    "question": "If by selling an article for ₹ 390 a shopkeeper gains 20% , then the cost is ₹ 390 20% , ?",
+    "options": [
+      "₹ 370",
+      "₹ 325",
+      "₹ 350",
+      "₹ 300"
+    ],
+    "answer": "₹ 325",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: ₹ 325",
+    "year": 2016
+  },
+  {
+    "question": "The rate of simple interest per annum at which a sum of money double itself in 16 yrs. is 16 ?",
+    "options": [
+      "4%",
+      "5%",
+      "6%",
+      ""
+    ],
+    "answer": "6%",
+    "explanation": "Step 1: SI = (Principal × Rate × Time) / 100.\nStep 2: = (0 × 16 × 2) / 100 = 0.\nFinal Answer: 6% 4)",
+    "year": 2016
+  },
+  {
+    "question": "PT is a tangent to a circle with centre O and radius 6 cm . If PT is 8 cm then length of OP is PT, O 6 . . , PT 8 . . , OP ?",
+    "options": [
+      "10 cm 10 . .",
+      "12 cm 12 . .",
+      "16 cm 16 . .",
+      "9 cm 9 . ."
+    ],
+    "answer": "10 cm 10 . .",
+    "explanation": "Step 1: A tangent is perpendicular to the radius at the point of contact.\nStep 2: Use the circle-tangent theorem and Pythagoras theorem for the given configuration.\nStep 3: Solve for the unknown length.\nFinal Answer: 10 cm 10 . .",
+    "year": 2016
+  },
+  {
+    "question": "What is the name of a memory buffer used to accommodate a speed differential ? ?",
+    "options": [
+      "Cache",
+      "Stack Pointer",
+      "Accumulator",
+      "DISC"
+    ],
+    "answer": "Cache",
+    "explanation": "Step 1: Use Distance = Speed x Time (or rearrange as needed).\nStep 2: For relative motion: add speeds (opposite direction) or subtract (same direction).\nStep 3: Solve the equation to get Cache.\nFinal Answer: Cache",
+    "year": 2016
+  },
+  {
+    "question": "The biogas used for cooking is a mixture of which of the following ? ?",
+    "options": [
+      "Carbon dioxide & oxygen",
+      "Isobutane & propane",
+      "Methane & carbon monoxide",
+      "Methane & carbon dioxide"
+    ],
+    "answer": "Methane & carbon monoxide",
+    "explanation": "Step 1: Identify the components and their quantities in each mixture.\nStep 2: Combine the mixtures and find the total of each component.\nStep 3: Express as a simplified ratio.\nFinal Answer: Methane & carbon monoxide 덭撌 ￿￿",
+    "year": 2016
+  },
+  {
+    "question": "AD is the Median of Δ ABC. If O is the centroid and AO = 10 cm then OD is AD Δ ABC O AO = 10 .. OD ?",
+    "options": [
+      "5 cm 5 .",
+      "20 cm 20 .",
+      "10 cm 10 .",
+      "30 cm 30 ."
+    ],
+    "answer": "5 cm 5 .",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 5 cm 5 ..\nFinal Answer: 5 cm 5 .",
+    "year": 2016
+  },
+  {
+    "question": "If in a triangle ABC, Sin A = Cos B then the value of Cos C is ABC Sin A = Cos B Cos C ?",
+    "options": [
+      "",
+      "0",
+      "1",
+      ""
+    ],
+    "answer": "0",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 0.\nFinal Answer: 0",
+    "year": 2016
+  },
+  {
+    "question": "If sinθ x cosθ = . The value of sinθ cosθ is where 0°< θ< 90° sinθ x cosθ = sinθ cosθ 0°<θ< 90°?",
+    "options": [
+      "0",
+      "√2",
+      "2",
+      "1"
+    ],
+    "answer": "0",
+    "explanation": "Step 1: Set up the equation from the given conditions.\nStep 2: Simplify using algebraic identities.\nStep 3: Solve to get 0.\nFinal Answer: 0",
+    "year": 2016
+  },
+  {
+    "question": "A sphere of radius 5 cm is melted to form a cone with base of same radius. The height (in cm) of the cone is 5 .. (.. ) ?",
+    "options": [
+      "5",
+      "10",
+      "20",
+      "22"
+    ],
+    "answer": "20",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 20.\nFinal Answer: 20",
+    "year": 2016
+  },
+  {
+    "question": "If A = 1, E = 5, then HEAR = ? A = 1, E = 5 , HEAR = ?",
+    "options": [
+      "38",
+      "32",
+      "31",
+      "30"
+    ],
+    "answer": "32",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 32.\nFinal Answer: 32",
+    "year": 2016
+  },
+  {
+    "question": "The famous work 'Anandmath' was written by ' ' ?",
+    "options": [
+      "Sri Aurobindo",
+      "Sri Bankim Chandra Chatterjee",
+      "Sri Rabindra Nath Tagore",
+      "Sri Aarti Chaudhary"
+    ],
+    "answer": "Sri Bankim Chandra Chatterjee",
+    "explanation": "Step 1: Rate of work = 1/(days to complete alone).\nStep 2: Combined rate = sum of individual rates.\nStep 3: Time = Work / Rate = Sri Bankim Chandra Chatterjee.\nFinal Answer: Sri Bankim Chandra Chatterjee",
+    "year": 2016
+  },
+  {
+    "question": "If the cost price of 25 pens is equal to the selling price of 20 pens, then the profit percent is 25 20 , ?",
+    "options": [
+      "20%",
+      "25%",
+      "15%",
+      "5%"
+    ],
+    "answer": "25%",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: 25%",
+    "year": 2016
+  },
+  {
+    "question": "A number is decreased by 10% and the resulting number is again decreased by 20%. What is the final percentage of decrease? 10% 20% , ?",
+    "options": [
+      "25%",
+      "26%",
+      "27%",
+      "28%"
+    ],
+    "answer": "28%",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 28%.\nFinal Answer: 28%",
+    "year": 2016
+  },
+  {
+    "question": "The sum of money that will yield ₹60 as simple interest at 6% per annum in 5 years is 5 6% . 60 ?",
+    "options": [
+      "200",
+      "225",
+      "175",
+      "300"
+    ],
+    "answer": "200",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 200.\nFinal Answer: 200",
+    "year": 2016
+  },
+  {
+    "question": "The orthocentre of a triangle is the point where - ?",
+    "options": [
+      "the medians meet",
+      "the altitudes meet",
+      "the right bisectors of the sides of",
+      "the bisectors of the angles"
+    ],
+    "answer": "the altitudes meet",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = the altitudes meet.\nFinal Answer: the altitudes meet",
+    "year": 2016
+  },
+  {
+    "question": "The sum of 10 terms of the arithmetic series is 390. If the third term of the series is 19. Find the first term 10 390 19 ?",
+    "options": [
+      "3",
+      "5",
+      "7",
+      "8"
+    ],
+    "answer": "7",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 7.\nFinal Answer: 7",
+    "year": 2016
+  },
+  {
+    "question": "The average of marks obtained by 100 candidates in a certain examination is 30. If the average marks of passed candidates is 35 and that of the failed candidates is 10, what is the number of candidates who passed the examination? 100 30 35 10 , ?",
+    "options": [
+      "60",
+      "70",
+      "80",
+      "90"
+    ],
+    "answer": "80",
+    "explanation": "Step 1: Total sum = Average × Number of items.\nStep 2: Use sub-group sums and the total to form an equation.\nStep 3: Solve for the unknown quantity.\nFinal Answer: 80",
+    "year": 2016
+  },
+  {
+    "question": "Thousand solid metallic spheres of diameter 6 cm are melted and recast into a new solid sphere. The diameter of the new sphere (in cm) is 6 .. (..) ?",
+    "options": [
+      "30",
+      "90",
+      "45",
+      "60"
+    ],
+    "answer": "60",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 60.\nFinal Answer: 60",
+    "year": 2016
+  },
+  {
+    "question": "A man standing close to the platform at a railway station experiences a pulling force towards a fast moving train because of __________ . ?",
+    "options": [
+      "gravitational force between train and man",
+      "illusion of the man",
+      "the centripetal force",
+      "pressure difference due to fast moving air in between"
+    ],
+    "answer": "pressure difference due to fast moving air in between",
+    "explanation": "Step 1: Identify the key values from the question.\nStep 2: Apply the speed distance formula/rule.\nStep 3: Compute and verify against the options.\nFinal Answer: pressure difference due to fast moving air in between 㾀",
+    "year": 2016
+  },
+  {
+    "question": "If the cost price of 20 books is the same as selling price of 25 books, then the loss percentage is 20 25 , ] ?",
+    "options": [
+      "20",
+      "25",
+      "22",
+      "24"
+    ],
+    "answer": "20",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: 20",
+    "year": 2016
+  },
+  {
+    "question": "The number of students in a class is increased by 20% and the number now becomes 66. Initially the number was 20% 66 , ] ?",
+    "options": [
+      "45",
+      "50",
+      "55",
+      "60"
+    ],
+    "answer": "55",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 55.\nFinal Answer: 55",
+    "year": 2016
+  },
+  {
+    "question": "When n is divided by 4, the remainder is 3. The remainder when 2n is divided by 4 is: n 4 3 2n 4 ?",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "6"
+    ],
+    "answer": "2",
+    "explanation": "Step 1: Set up the equation from the given conditions.\nStep 2: Simplify using algebraic identities.\nStep 3: Solve to get 2.\nFinal Answer: 2",
+    "year": 2016
+  },
+  {
+    "question": "The four sides of a quadrilateral are in the ratio of 2:3:4:5 and its perimeter is 280m. The length of the longest side is 2:3:4:5 280 ?",
+    "options": [
+      "100m 100",
+      "150m 150",
+      "175m 175",
+      "180m 180"
+    ],
+    "answer": "100m 100",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 100m 100",
+    "year": 2016
+  },
+  {
+    "question": "Kamal has some apples. He sold 40% more than he ate. If he sold 70 apples, how many did he eat? 40% 70 ?",
+    "options": [
+      "18",
+      "42",
+      "50",
+      "90"
+    ],
+    "answer": "50",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 50.\nFinal Answer: 50",
+    "year": 2016
+  },
+  {
+    "question": "The point equidistant from the sides of a triangle is called ⊆ ?",
+    "options": [
+      "Circumcenter",
+      "Incentre",
+      "Orthocentre",
+      "Centroid"
+    ],
+    "answer": "Incentre",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = Incentre.\nFinal Answer: Incentre",
+    "year": 2016
+  },
+  {
+    "question": "Find the missing number from the alternatives ?",
+    "options": [
+      "125",
+      "175",
+      "225",
+      "250"
+    ],
+    "answer": "225",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 225.\nFinal Answer: 225",
+    "year": 2016
+  },
+  {
+    "question": "What is the product formed when sodium bicarbonate is heated strongly? ?",
+    "options": [
+      "Sodium Carbonate",
+      "Sodium Hydroxide",
+      "Sodium Peroxide",
+      "Sodium Monoxide"
+    ],
+    "answer": "Sodium Carbonate",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = Sodium Carbonate.\nFinal Answer: Sodium Carbonate",
+    "year": 2016
+  },
+  {
+    "question": "Disguised unemployment in India is mainly related to ?",
+    "options": [
+      "Agricultural sector",
+      "Rural Area",
+      "Factory sector",
+      "Urban Area"
+    ],
+    "answer": "Agricultural sector",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = Agricultural sector.\nFinal Answer: Agricultural sector",
+    "year": 2016
+  },
+  {
+    "question": "Which of the following is not true about X rays? ?",
+    "options": [
+      "have low penetrating power",
+      "travel with the speed of light",
+      "Can be reflected or refracted",
+      "can affect photographic plates"
+    ],
+    "answer": "have low penetrating power",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = have low penetrating power.\nFinal Answer: have low penetrating power",
+    "year": 2016
+  },
+  {
+    "question": "The average of a,b,c is 20 and that of b,c,d is 25; if d=30, then the value of a is a,b, c 20 b,c,d, 25 d=30, a ?",
+    "options": [
+      "25",
+      "45",
+      "30",
+      "15"
+    ],
+    "answer": "15",
+    "explanation": "Step 1: Identify the algebraic expression or equation.\nStep 2: Apply the relevant identity or substitution.\nStep 3: Simplify to reach the answer.\nFinal Answer: 15",
+    "year": 2016
+  },
+  {
+    "question": "A store sells a watch for a profit of 25% of the cost. Then the percentage of profit against selling price is 25% ?",
+    "options": [
+      "22%",
+      "20%",
+      "18%",
+      "15%"
+    ],
+    "answer": "20%",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: 20%",
+    "year": 2016
+  },
+  {
+    "question": "If A is equal to 20% of B and B is equal to 25% of C; then what percent of C is equal to A? A, B 20 % B, C 25% , C A ?",
+    "options": [
+      "10",
+      "15",
+      "5",
+      "20"
+    ],
+    "answer": "5",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 5.\nFinal Answer: 5",
+    "year": 2016
+  },
+  {
+    "question": "The area of the largest triangle that can be inscribed in a semicircle of radius 6m is 6 . ?",
+    "options": [
+      "36 m2 36.2",
+      "72 m2 72.2",
+      "18 m2 18.2",
+      "12 m2 12.2"
+    ],
+    "answer": "36 m2 36.2",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 36 m2 36.2.\nFinal Answer: 36 m2 36.2",
+    "year": 2016
+  },
+  {
+    "question": "In a cyclic quadrilateral ABCD ∠BCD=120° and passes through the centre of the circle. Then ∠ABD = ? ABCD ∠BCD=120° AB ∠ABD = ?",
+    "options": [
+      "30°",
+      "40°",
+      "50°",
+      "60°"
+    ],
+    "answer": "30°",
+    "explanation": "Step 1: In a cyclic quadrilateral, opposite angles sum to 180 .\nStep 2: Use the given angle values to find the unknown angles.\nStep 3: Calculate the required difference or sum = 30°.\nFinal Answer: 30°",
+    "year": 2016
+  },
+  {
+    "question": "129 meter from the foot of a cliff on level of ground, the angle of elevation of the top of a cliff is 30°. The height of this cliff is 129 30° , ?",
+    "options": [
+      "50√3 metre 50√3",
+      "45√3 metre 45√3",
+      "43√3 metre 43√3",
+      "47√3 metre 47√3"
+    ],
+    "answer": "43√3 metre 43√3",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 43√3 metre 43√3.\nFinal Answer: 43√3 metre 43√3",
+    "year": 2016
+  },
+  {
+    "question": "A series is given, with one term missing. Choose the correct alternative from the given ones that will complete the series. , ? DCB, HGF, ? , PON?",
+    "options": [
+      "LKJ",
+      "QRO",
+      "SUM",
+      "XZY"
+    ],
+    "answer": "LKJ",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = LKJ.\nFinal Answer: LKJ",
+    "year": 2016
+  },
+  {
+    "question": "If S = 19, SUN = 54 and CAKE = 20 , then MISTAKE = ? S= 19, SUN = 54 CAKE = 20 , MISTAKE ?",
+    "options": [
+      "78",
+      "68",
+      "59",
+      "48"
+    ],
+    "answer": "78",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 78.\nFinal Answer: 78",
+    "year": 2016
+  },
+  {
+    "question": "Area of the circle inscribed in a square of diagonal 6√2 cm (in sq cm) is 6√2 .. ..2 ?",
+    "options": [
+      "9 Π",
+      "6 Π",
+      "3 Π",
+      ""
+    ],
+    "answer": "9 Π",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 9 Π.\nFinal Answer: 9 Π",
+    "year": 2016
+  },
+  {
+    "question": "A Bus travels at the speed of 36 km/hr, then the distance covered by it in one second is 36 ../ ?",
+    "options": [
+      "10 m 10",
+      "15 m 15",
+      "12.5 m 12.5",
+      "13.5 m 13.5"
+    ],
+    "answer": "10 m 10",
+    "explanation": "Step 1: Use Distance = Speed x Time (or rearrange as needed).\nStep 2: For relative motion: add speeds (opposite direction) or subtract (same direction).\nStep 3: Solve the equation to get 10 m 10.\nFinal Answer: 10 m 10",
+    "year": 2016
+  },
+  {
+    "question": "The diagonals of two squares are in the ratio 5:2.The ratio of their area is 5:2 ?",
+    "options": [
+      "5:6",
+      "25:4",
+      "5:4",
+      "125:8"
+    ],
+    "answer": "25:4",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 25:4",
+    "year": 2016
+  },
+  {
+    "question": "If it is Saturday on 27th September, what day will it be on 27th October of the same year? 27 27 ?",
+    "options": [
+      "Thursday",
+      "Sunday",
+      "Friday",
+      "Monday"
+    ],
+    "answer": "Monday",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = Monday.\nFinal Answer: Monday",
+    "year": 2016
+  },
+  {
+    "question": "In bio fortification technique plant breeders use breeding to overcome ?",
+    "options": [
+      "Loss due to insect pests",
+      "Decrease in food production",
+      "Deficiencies of micronutrients and vitamins",
+      "Loss due to plant diseases"
+    ],
+    "answer": "Deficiencies of micronutrients and vitamins",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = Deficiencies of micronutrients and vitamins.\nFinal Answer: Deficiencies of micronutrients and vitamins",
+    "year": 2016
+  },
+  {
+    "question": "The diameters of two cylinders are in the ratio 3:2 and their volumes are equal. The ratio of their heights is 3:2 ?",
+    "options": [
+      "2:3",
+      "3:2",
+      "9:4",
+      "4:9"
+    ],
+    "answer": "4:9",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 4:9",
+    "year": 2016
+  },
+  {
+    "question": "In a city, 40% of the people are illiterate and 60% are poor. Among the rich, 10% are illiterate. The percentage of the illiterate poor population is 40% 60% 10% ?",
+    "options": [
+      "36",
+      "60",
+      "40",
+      "50"
+    ],
+    "answer": "60",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 60.\nFinal Answer: 60",
+    "year": 2016
+  },
+  {
+    "question": "The centroid of a triangle is the point where ?",
+    "options": [
+      "the medians meet",
+      "the altitudes meet",
+      "the right bisectors of the sides of the triangle meet",
+      "the bisectors of the angles of the triangle meet"
+    ],
+    "answer": "the medians meet",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = the medians meet.\nFinal Answer: the medians meet",
+    "year": 2016
+  },
+  {
+    "question": "In a triangle PQR, the side QR is extended to S. ∠QPR = 72° and ∠PRS = 110°, then the value of ∠PQR is: PQR QR S ∠QPR = 72° ∠PRS = 110° , PQR ?",
+    "options": [
+      "38°",
+      "32°",
+      "25°",
+      "29°"
+    ],
+    "answer": "38°",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 38°.\nFinal Answer: 38°",
+    "year": 2016
+  },
+  {
+    "question": "When a number is divided by 56, the remainder will be 29. If the same number is divided by 8, then the remainder will be 56 29 8 , ?",
+    "options": [
+      "6",
+      "7",
+      "5",
+      "3"
+    ],
+    "answer": "5",
+    "explanation": "Step 1: Set up the equation from the given conditions.\nStep 2: Simplify using algebraic identities.\nStep 3: Solve to get 5.\nFinal Answer: 5",
+    "year": 2016
+  },
+  {
+    "question": "The simple interest on a sum for 5 years is two fifth of the sum. The rate of interest per annum is 5 2/5 ?",
+    "options": [
+      "0.1",
+      "0.08",
+      "0.06",
+      "0.04"
+    ],
+    "answer": "0.08",
+    "explanation": "Step 1: SI = (Principal × Rate × Time) / 100.\nStep 2: = (0 × 5 × 2) / 100 = 0.\nFinal Answer: 0.08",
+    "year": 2016
+  },
+  {
+    "question": "If A = 1, AND = 19, then ANT = ? A = 1, AND = 19 , ANT ?",
+    "options": [
+      "35",
+      "33",
+      "23",
+      "19"
+    ],
+    "answer": "35",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 35.\nFinal Answer: 35",
+    "year": 2016
+  },
+  {
+    "question": "The lengths of the diagonals of a rhombus are 8 cm and 6 cm. The area of rhombus is: 8 .. 6 .. ?",
+    "options": [
+      "96 cm2 96 ..2",
+      "60 cm2 60 ..2",
+      "48 cm2 48 ..2",
+      "24 cm2 24 ..2"
+    ],
+    "answer": "24 cm2 24 ..2",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = 24 cm2 24 ..2.\nFinal Answer: 24 cm2 24 ..2",
+    "year": 2016
+  },
+  {
+    "question": "If the selling price of 40 articles is equal to the cost price of 50 articles, the loss or gain percent is 40 50 ?",
+    "options": [
+      "25% gain 25%",
+      "20% gain 20%",
+      "25% loss 25%",
+      "20% loss 20%"
+    ],
+    "answer": "25% gain 25%",
+    "explanation": "Step 1: Identify CP and SP from the given information.\nStep 2: Apply profit/loss formula: Profit% = (SP-CP)/CP x 100.\nStep 3: Calculate to get the answer.\nFinal Answer: 25% gain 25%",
+    "year": 2016
+  },
+  {
+    "question": "A's income is 25% more than B's income. B's income is what percent of A's income? A B 25% B A ?",
+    "options": [
+      "80",
+      "75",
+      "50",
+      "25"
+    ],
+    "answer": "80",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 80.\nFinal Answer: 80",
+    "year": 2016
+  },
+  {
+    "question": "Find the missing number in the series: ? 219, 211, 204, 198, ?, 189",
+    "options": [
+      "189",
+      "192",
+      "193",
+      "196"
+    ],
+    "answer": "193",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 193.\nFinal Answer: 193",
+    "year": 2016
+  },
+  {
+    "question": "The sum of ages of 4 children born at intervals of 4 years each is 60. What is the age of the youngest child? 4 60 4 -4 ?",
+    "options": [
+      "7",
+      "9",
+      "10",
+      "12"
+    ],
+    "answer": "9",
+    "explanation": "Step 1: Analyze the given information and identify the approach.\nStep 2: Apply the relevant formula or method.\nStep 3: Calculate to get the answer = 9.\nFinal Answer: 9",
+    "year": 2016
+  },
+  {
+    "question": "What is the maximum number of days of employment a rural poor would get under 'MGNREGA'? ( MGNREGA ) ?",
+    "options": [
+      "180 days 180",
+      "120 days 120",
+      "100 days 100",
+      "90 days 90"
+    ],
+    "answer": "100 days 100",
+    "explanation": "Step 1: Rate of work = 1/(days to complete alone).\nStep 2: Combined rate = sum of individual rates.\nStep 3: Time = Work / Rate = 100 days 100.\nFinal Answer: 100 days 100",
+    "year": 2016
+  },
+  {
+    "question": "Sum of two numbers is thrice their difference. Their ratio is ?",
+    "options": [
+      "1:2",
+      "2:1",
+      "3:1",
+      "1:3"
+    ],
+    "answer": "2:1",
+    "explanation": "Step 1: Identify the quantities to be compared.\nStep 2: Set up the proportion or ratio equation from the given conditions.\nStep 3: Simplify to find the required ratio or value.\nFinal Answer: 2:1",
+    "year": 2016
+  },
+  {
+    "question": "If the simple interest on Rs. 1 for 1 month is 1 paisa, then the rate percent per annum will be Rs. 1 1 1 , ?",
+    "options": [
+      "10%",
+      "8%",
+      "12%",
+      "6%"
+    ],
+    "answer": "12%",
+    "explanation": "Step 1: Extract the given values and percentage from the question.\nStep 2: Apply the percentage formula: Result = (Rate/100) x Base.\nStep 3: Compute to get the answer = 12%.\nFinal Answer: 12%",
+    "year": 2016
+  },
+  {
+    "question": "The point where the 3 medians of a triangle meet is called ?",
+    "options": [
+      "centroid",
+      "Incentre",
+      "Circumcentre",
+      "orthocentre"
+    ],
+    "answer": "centroid",
+    "explanation": "Step 1: Identify the geometric property or theorem applicable.\nStep 2: Apply the formula with the given measurements.\nStep 3: Compute the answer = centroid.\nFinal Answer: centroid",
+    "year": 2016
   }
 ]
