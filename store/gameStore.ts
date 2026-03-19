@@ -25,7 +25,7 @@ export const useGameStore = create<GameState>((set) => ({
   score:            0,
   gamesPlayed:      0,
   isLocked:         false,
-  difficulty:       'medium',
+  difficulty:       'easy',
   operation:        'mixture',
   customOperations: ['addition', 'multiplication'],
 

@@ -168,7 +168,7 @@ export default function SscCglGame() {
     } else {
       setFeedback('wrong')
       recordHourlyAttempt()
-      setTimeout(goNext, 2500) // longer delay to read explanation
+      setTimeout(goNext, 1500)
     }
   }, [current, feedback, recordHourlyAttempt, addScore, pointsPerCorrect, syncNow, goNext])
 

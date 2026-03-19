@@ -70,7 +70,7 @@ export function useHomePageState() {
   const [justReloaded, setJustReloaded] = useState(false)
 
   // ── Math variant state ─────────────────────────────────────────────
-  const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>(null)
+  const [mathDifficulty, setMathDifficulty] = useState<Difficulty | null>('easy')
   const [mathGamesCount, setMathGamesCount] = useState(DEFAULT_GAME_COUNT)
   const [mathSessionMax, setMathSessionMax] = useState(10)
   const [mathSessionPlayed, setMathSessionPlayed_] = useState(0)
@@ -80,7 +80,7 @@ export function useHomePageState() {
   const [mathVariantRemaining, setMathVariantRemaining] = useState(20)
 
   // ── Memory variant state ───────────────────────────────────────────
-  const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty | null>(null)
+  const [memoryDifficulty, setMemoryDifficulty] = useState<Difficulty | null>('easy')
   const [memoryGamesCount, setMemoryGamesCount] = useState(DEFAULT_GAME_COUNT)
   const [memorySessionMax, setMemorySessionMax] = useState(10)
   const [memorySessionPlayed, setMemorySessionPlayed_] = useState(0)
@@ -90,7 +90,7 @@ export function useHomePageState() {
   const [memoryVariantRemaining, setMemoryVariantRemaining] = useState(20)
 
   // ── True/False variant state ───────────────────────────────────────
-  const [tfDifficulty, setTfDifficulty] = useState<Difficulty | null>(null)
+  const [tfDifficulty, setTfDifficulty] = useState<Difficulty | null>('easy')
   const [tfGamesCount, setTfGamesCount] = useState(DEFAULT_GAME_COUNT)
   const [tfSessionMax, setTfSessionMax] = useState(10)
   const [tfSessionPlayed, setTfSessionPlayed_] = useState(0)
@@ -100,7 +100,7 @@ export function useHomePageState() {
   const [tfVariantRemaining, setTfVariantRemaining] = useState(20)
 
   // ── SSC CGL variant state ──────────────────────────────────────────
-  const [sscDifficulty, setSscDifficulty] = useState<Difficulty | null>(null)
+  const [sscDifficulty, setSscDifficulty] = useState<Difficulty | null>('easy')
   const [sscGamesCount, setSscGamesCount] = useState(DEFAULT_GAME_COUNT)
   const [sscSessionHydrated, setSscSessionHydrated] = useState(false)
   const [sscVariantPlayed, setSscVariantPlayed] = useState(0)
@@ -261,7 +261,7 @@ export function useHomePageState() {
     const timeout = setTimeout(() => setIsNavigating(false), NAV_TIMEOUT_MS)
     try {
       const op = MODE_TO_OPERATION[activeMode]
-      const diff = (mathDifficulty ?? 'medium') as Difficulty
+      const diff = (mathDifficulty ?? 'easy') as Difficulty
       setType('math'); setStoreDifficulty(diff); setOperation(op)
       // Run all IndexedDB writes in parallel — they're independent
       await Promise.all([
