@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Poppins, Urbanist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
-import Footer from '@/components/layout/Footer'
+
 
 const SITE_URL = 'https://matthy.netlify.app'
 
@@ -102,7 +102,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div data-root-content className="flex flex-col min-h-0">
           {children}
         </div>
-        <Footer />
       </body>
     </html>
   )

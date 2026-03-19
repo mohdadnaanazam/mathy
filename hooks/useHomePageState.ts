@@ -29,7 +29,7 @@ export const MODE_TO_OPERATION: Record<ModeLabel, OperationMode> = {
   Division: 'division', Mixture: 'mixture', Custom: 'custom',
 }
 
-const DEFAULT_GAME_COUNT = 5
+const DEFAULT_GAME_COUNT = 10
 
 /** Per-game-type variant state (played/total/remaining/count/difficulty). */
 interface VariantState {

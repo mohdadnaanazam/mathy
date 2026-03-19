@@ -38,7 +38,7 @@ export default function GameBoard() {
     try {
       if (isSessionExpired) await resetAndResume()
       await resetAllProgress()
-      await setSelectedGameCount(5)
+      await setSelectedGameCount(10)
       await clearGameCache()
       const now = await fetchAndCacheAllGames()
       setLastFetchAt(now)

@@ -34,7 +34,7 @@ const MORE_GAMES: MoreGameDef[] = [
   { id: 'logic_puzzle', title: 'Logic Grid',    desc: 'Find the next number in the sequence.',  icon: LayoutGrid,  operation: 'logic_puzzle' },
 ]
 
-const DEFAULT_COUNT = 5
+const DEFAULT_COUNT = 10
 
 export default function MoreGamesPage() {
   const router = useRouter()
