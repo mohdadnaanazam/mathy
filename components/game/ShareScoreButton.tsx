@@ -85,7 +85,7 @@ async function generateShareImage(
   // CTA
   ctx.fillStyle = '#71717a'
   ctx.font = '26px system-ui, -apple-system, sans-serif'
-  ctx.fillText('Can you beat my score? → matthy.netlify.app', W / 2, tagY + 56)
+  ctx.fillText('Can you beat my score? → www.themathy.com', W / 2, tagY + 56)
 
   // Subtle inner border
   ctx.strokeStyle = 'rgba(249,115,22,0.15)'
@@ -109,7 +109,7 @@ export default function ShareScoreButton({ score, gameType, difficulty }: ShareS
     try {
       const blob = await generateShareImage(score, gameType, difficulty)
       const file = new File([blob], 'mathy-score.png', { type: 'image/png' })
-      const shareText = `I scored ${score.toLocaleString()} in Mathy 🧠🔥 Can you beat me? → matthy.netlify.app`
+      const shareText = `I scored ${score.toLocaleString()} in Mathy 🧠🔥 Can you beat me? → www.themathy.com`
 
       // Try native share (mobile)
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
