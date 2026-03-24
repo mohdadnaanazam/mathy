@@ -11,7 +11,6 @@ import TopBanner from '@/components/home/TopBanner'
 import ResetScoreButton from '@/components/home/ResetScoreButton'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import MoreGamesButton from '@/components/home/MoreGamesButton'
-import LeaderboardButton from '@/components/home/LeaderboardButton'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
   { symbol: '+', label: 'Addition' },
@@ -250,9 +249,6 @@ export default function LandingPage() {
 
       {/* More Games entry point */}
       <MoreGamesButton />
-
-      {/* Leaderboard entry point */}
-      <LeaderboardButton />
 
       {/* Floating Play button */}
       <FloatingPlayButton

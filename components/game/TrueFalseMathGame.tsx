@@ -12,8 +12,6 @@ import { useScore } from '@/hooks/useScore'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
-import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
-import UsernameModal from '@/components/ui/UsernameModal'
 import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
 import type { Difficulty } from '@/types'
@@ -47,7 +45,6 @@ export default function TrueFalseMathGame() {
   useGameTimer()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss } = useLeaderboardSubmit(userUuid)
   const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
 
   const difficultyRef = useRef(difficulty)
@@ -107,9 +104,6 @@ export default function TrueFalseMathGame() {
     if (!sessionComplete) return
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
-
-    // Submit score to leaderboard (async, silent failure)
-    promptAndSubmit(score, 'true_false_math', currentDiff)
 
     const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
     const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length
@@ -253,12 +247,6 @@ export default function TrueFalseMathGame() {
   if (sessionComplete) {
     return (
       <div className="w-full flex flex-col items-center mx-auto gap-5 sm:gap-6">
-        {/* Username modal for leaderboard */}
-        <UsernameModal
-          open={needsUsername}
-          onSubmit={submitWithUsername}
-          onClose={dismiss}
-        />
 
         <div className="api-game-item w-full flex items-center gap-2">
           <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
