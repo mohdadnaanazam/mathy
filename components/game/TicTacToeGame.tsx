@@ -28,9 +28,10 @@ import {
   getAiMove,
   getEmptyCells,
   POINTS,
+  MODES,
   type Board,
   type Result,
-  type Difficulty as TttDifficulty,
+  type TttDifficulty,
 } from '@/lib/tictactoe'
 
 const GAME_TYPE = 'tictactoe'
@@ -47,6 +48,10 @@ export default function TicTacToeGame() {
   const difficultyRef = useRef(difficulty)
   difficultyRef.current = difficulty
 
+  const mode = MODES[difficulty] ?? MODES.easy
+  const gridSize = mode.grid
+  const winLen = mode.win
+
   // Session state
   const [sessionMax, setSessionMax] = useState(10)
   const [sessionPlayed, setSessionPlayed] = useState(0)
@@ -61,12 +66,24 @@ export default function TicTacToeGame() {
   const [nextGamesCount, setNextGamesCount] = useState(10)
 
   // Board state
-  const [board, setBoard] = useState<Board>(emptyBoard())
+  const [board, setBoard] = useState<Board>(emptyBoard(gridSize))
   const [isPlayerTurn, setIsPlayerTurn] = useState(true)
   const [result, setResult] = useState<Result>(null)
   const [winLine, setWinLine] = useState<number[] | null>(null)
   const aiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Reset board when difficulty changes (grid size changes)
+  const prevGridRef = useRef(gridSize)
+  useEffect(() => {
+    if (prevGridRef.current !== gridSize && !sessionComplete) {
+      setBoard(emptyBoard(gridSize))
+      setIsPlayerTurn(true)
+      setResult(null)
+      setWinLine(null)
+    }
+    prevGridRef.current = gridSize
+  }, [gridSize, sessionComplete])
 
   // Hydrate session
   useEffect(() => {
@@ -96,10 +113,7 @@ export default function TicTacToeGame() {
     if (!sessionComplete) return
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
-
-    // Submit to leaderboard
     promptAndSubmit(sessionScore, GAME_TYPE, currentDiff)
-
     const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
     const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length
     const newDiff = DIFFICULTY_ORDER[nextIdx]
@@ -116,52 +130,40 @@ export default function TicTacToeGame() {
   useEffect(() => {
     if (result || isPlayerTurn || sessionComplete) return
     if (getEmptyCells(board).length === 0) return
-
     aiTimeoutRef.current = setTimeout(() => {
       const move = getAiMove(board, difficulty)
       if (move === -1) return
       const next = [...board]
       next[move] = 'O'
       setBoard(next)
-
-      const { winner, line } = checkWinner(next)
+      const { winner, line } = checkWinner(next, gridSize, winLen)
       if (winner || next.every(c => c !== null)) {
         setWinLine(line)
-        const r = getResult(next)
+        const r = getResult(next, gridSize, winLen)
         setResult(r)
         if (r) finishRound(r)
       } else {
         setIsPlayerTurn(true)
       }
     }, 400)
-
     return () => { if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board, isPlayerTurn, result, sessionComplete])
 
   const finishRound = useCallback(async (r: 'win' | 'draw' | 'lose') => {
     const pts = POINTS[r]
-    if (pts > 0) {
-      await addScore(pts)
-      syncNow()
-    }
+    if (pts > 0) { await addScore(pts); syncNow() }
     setSessionScore(prev => prev + pts)
-
     const currentDiff = difficultyRef.current as Difficulty
-    if (currentDiff) {
-      await incrementVariantPlayed(GAME_TYPE, currentDiff)
-    }
-
+    if (currentDiff) await incrementVariantPlayed(GAME_TYPE, currentDiff)
     const next = await incrementGenericSessionPlayed(GAME_TYPE)
     setSessionPlayed(next)
-
-    // Auto-advance to next round or session complete after delay
+    const currentGridSize = MODES[difficultyRef.current as TttDifficulty]?.grid ?? 3
     autoAdvanceRef.current = setTimeout(() => {
       if (next >= sessionMax) {
         setSessionComplete(true)
       } else {
-        // Start new round
-        setBoard(emptyBoard())
+        setBoard(emptyBoard(currentGridSize))
         setIsPlayerTurn(true)
         setResult(null)
         setWinLine(null)
@@ -178,16 +180,23 @@ export default function TicTacToeGame() {
     const next = [...board]
     next[index] = 'X'
     setBoard(next)
-
-    const { winner, line } = checkWinner(next)
+    const { winner, line } = checkWinner(next, gridSize, winLen)
     if (winner || next.every(c => c !== null)) {
       setWinLine(line)
-      const r = getResult(next)
+      const r = getResult(next, gridSize, winLen)
       setResult(r)
       if (r) finishRound(r)
     } else {
       setIsPlayerTurn(false)
     }
+  }
+
+  const handleRestart = () => {
+    if (result === null) return // can only restart after a result
+    setBoard(emptyBoard(gridSize))
+    setIsPlayerTurn(true)
+    setResult(null)
+    setWinLine(null)
   }
 
   const nextVariantExhausted = nextVariantRemaining <= 0
@@ -205,16 +214,16 @@ export default function TicTacToeGame() {
   // ── Session Complete ──
   if (sessionComplete) {
     return (
-      <div className="w-full flex flex-col items-center mx-auto gap-4 sm:gap-5">
+      <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-2 sm:px-2 sm:py-4 gap-3 sm:gap-5">
         <UsernameModal open={needsUsername} onSubmit={submitWithUsername} onClose={dismiss} />
 
-        <div className="api-game-item w-full flex items-center gap-2">
-          <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+        <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
+          <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
             Tic Tac Toe
           </span>
         </div>
 
-        <div className="api-game-item w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-6 sm:px-6 sm:py-8 space-y-5">
+        <div className="api-game-item w-full rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 sm:px-4 sm:py-5 space-y-4">
           <div className="text-center space-y-2">
             <p className="section-label justify-center text-xs text-slate-400">Session complete</p>
             <p className="text-3xl sm:text-4xl font-bold text-white">{sessionScore}</p>
@@ -224,25 +233,28 @@ export default function TicTacToeGame() {
             </p>
           </div>
 
-          {/* Difficulty selector */}
+          {/* Difficulty selector with grid preview */}
           <div className="space-y-2">
-            <p className="section-label text-xs text-slate-400">Choose difficulty</p>
-            <div className="grid grid-cols-3 gap-2">
+            <p className="section-label text-[11px] text-slate-400">Choose difficulty</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {DIFFICULTY_ORDER.map(d => {
                 const active = nextDifficulty === d
+                const m = MODES[d as TttDifficulty]
                 return (
                   <button
                     key={d}
                     type="button"
                     onClick={() => setNextDifficulty(d)}
-                    className="rounded-xl px-3 py-3 text-xs sm:text-sm font-semibold transition-all active:scale-[0.97]"
+                    className="rounded-xl px-2 py-2.5 sm:px-3 sm:py-3 text-[11px] sm:text-xs font-semibold transition-all flex flex-col items-center gap-1.5"
                     style={{
                       backgroundColor: active ? 'var(--accent-orange-muted)' : 'var(--bg-surface)',
                       border: active ? '1.5px solid var(--accent-orange)' : '1px solid var(--border-subtle)',
                       color: active ? 'var(--accent-orange)' : '#d1d5db',
                     }}
                   >
-                    {d === 'easy' ? 'Easy' : d === 'medium' ? 'Medium' : 'Hard'}
+                    <span>{m.label}</span>
+                    <MiniGrid size={m.grid} active={active} />
+                    <span className="text-[9px] text-slate-500">{m.grid}×{m.grid} · {m.win} in a row</span>
                   </button>
                 )
               })}
@@ -250,10 +262,10 @@ export default function TicTacToeGame() {
           </div>
 
           {/* Game count */}
-          <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-zinc-900/40 px-3 py-2.5 sm:px-4 sm:py-3">
             <div className="flex flex-col gap-1">
               <span className="section-label text-xs">Number of games</span>
-              <span className="text-[11px] font-mono text-slate-500">
+              <span className="text-[10px] font-mono text-slate-500">
                 {nextVariantPlayed} / 20 played · {nextVariantRemaining} remaining
               </span>
             </div>
@@ -262,20 +274,20 @@ export default function TicTacToeGame() {
                 type="button"
                 onClick={() => { if (!nextVariantExhausted) setNextGamesCount(v => Math.max(1, Math.min(v - 1, nextVariantRemaining))) }}
                 disabled={nextVariantExhausted}
-                className="h-9 w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
               >−</button>
-              <div className="min-w-[2.5rem] text-center font-mono text-base text-white font-semibold">{nextGamesCount}</div>
+              <div className="min-w-[2.25rem] text-center font-mono text-sm text-white font-semibold">{nextGamesCount}</div>
               <button
                 type="button"
                 onClick={() => { if (!nextVariantExhausted) setNextGamesCount(v => Math.min(Math.max(v + 1, 1), nextVariantRemaining)) }}
                 disabled={nextVariantExhausted}
-                className="h-9 w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
+                className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full border border-[var(--border-subtle)] text-sm text-slate-200 transition-colors hover:border-zinc-500 active:bg-zinc-800 disabled:opacity-40"
               >+</button>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1">
             <button
               type="button"
               disabled={nextVariantExhausted || nextGamesCount <= 0}
@@ -285,16 +297,17 @@ export default function TicTacToeGame() {
                 await setSelectedGameCount(nextGamesCount)
                 await setLastPlayedSettings({ gameType: GAME_TYPE, difficulty: nextDifficulty })
                 setDifficulty(nextDifficulty)
+                const newGrid = MODES[nextDifficulty as TttDifficulty]?.grid ?? 3
                 setSessionMax(nextGamesCount)
                 setSessionPlayed(0)
                 setSessionComplete(false)
                 setSessionScore(0)
-                setBoard(emptyBoard())
+                setBoard(emptyBoard(newGrid))
                 setIsPlayerTurn(true)
                 setResult(null)
                 setWinLine(null)
               }}
-              className="w-full sm:w-auto rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-8 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-900 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+              className="rounded-full border border-[var(--accent-orange-hover)] bg-[var(--accent-orange)] px-5 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-900 disabled:opacity-60"
             >
               Play game
             </button>
@@ -302,7 +315,7 @@ export default function TicTacToeGame() {
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="w-full sm:w-auto rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-6 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.1em] text-slate-300 transition-all hover:border-zinc-600 hover:text-white active:scale-[0.98]"
+              className="rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-200"
             >
               Go to home
             </button>
@@ -314,12 +327,13 @@ export default function TicTacToeGame() {
 
   // ── Active Gameplay ──
   const currentRound = Math.min(sessionPlayed + 1, sessionMax)
+  const cells = Array.from({ length: gridSize * gridSize }, (_, i) => i)
 
   return (
-    <div className="w-full flex flex-col items-center mx-auto gap-3 sm:gap-4">
+    <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-1 sm:px-2 sm:py-3 gap-2 sm:gap-4">
       {/* Title */}
-      <div className="api-game-item w-full flex items-center gap-2">
-        <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
+      <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
+        <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
           Tic Tac Toe
         </span>
       </div>
@@ -330,7 +344,9 @@ export default function TicTacToeGame() {
           <span className="section-label text-slate-400 text-xs">
             Round {currentRound} / {sessionMax}
           </span>
-          <span className="text-[10px] font-mono text-zinc-600 capitalize">{difficulty}</span>
+          <span className="rounded-full border border-zinc-700 bg-zinc-800/60 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-slate-400">
+            {mode.label} · {gridSize}×{gridSize} · {winLen} in a row
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="section-label text-slate-400 text-xs">Session</span>
@@ -342,7 +358,7 @@ export default function TicTacToeGame() {
       </div>
 
       {/* Turn indicator */}
-      <div className="min-h-[36px] flex items-center justify-center">
+      <div className="min-h-[40px] flex items-center justify-center">
         <AnimatePresence mode="wait">
           {result ? (
             <motion.div
@@ -351,36 +367,43 @@ export default function TicTacToeGame() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.25 }}
-              className="rounded-xl border px-6 py-2 text-sm sm:text-base font-bold text-center"
+              className="rounded-xl border px-6 py-2.5 text-sm sm:text-base font-bold text-center"
               style={{
                 color: result === 'win' ? '#22c55e' : result === 'draw' ? '#fbbf24' : '#f87171',
                 borderColor: result === 'win' ? 'rgba(34,197,94,0.4)' : result === 'draw' ? 'rgba(251,191,36,0.4)' : 'rgba(239,68,68,0.4)',
                 background: result === 'win' ? 'rgba(34,197,94,0.12)' : result === 'draw' ? 'rgba(251,191,36,0.12)' : 'rgba(239,68,68,0.12)',
               }}
             >
-              {result === 'win' ? '✓ You win! +10' : result === 'draw' ? '— Draw +5' : '✗ AI wins'}
+              {result === 'win' ? '✓ You Win! +10' : result === 'draw' ? '— Draw +5' : '✗ You Lose'}
             </motion.div>
           ) : (
             <motion.p
               key={`turn-${isPlayerTurn}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="section-label text-slate-400 text-xs"
+              className="section-label text-slate-400 text-xs flex items-center gap-2"
             >
-              {isPlayerTurn ? 'Your turn — tap a cell' : 'AI is thinking…'}
+              <span className={`inline-block w-3 h-3 rounded-full ${isPlayerTurn ? 'bg-white' : 'bg-zinc-500'}`} />
+              {isPlayerTurn ? 'Your turn (✕) — tap a cell' : 'AI is thinking (○)…'}
             </motion.p>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Board */}
+      {/* Dynamic Grid Board */}
       <div className="flex justify-center w-full">
         <div
-          className="grid grid-cols-3 gap-2 sm:gap-2.5 w-full max-w-[260px] sm:max-w-[300px]"
+          className="grid gap-1 sm:gap-1.5 w-full"
+          style={{
+            gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+            maxWidth: gridSize <= 3 ? '260px' : gridSize <= 4 ? '300px' : '340px',
+            aspectRatio: '1',
+          }}
           role="grid"
-          aria-label="Tic Tac Toe board"
+          aria-label={`Tic Tac Toe ${gridSize}×${gridSize} board`}
         >
-          {board.map((cell, i) => {
+          {cells.map(i => {
+            const cell = board[i]
             const isWinCell = winLine?.includes(i)
             const canClick = !cell && !result && isPlayerTurn
             return (
@@ -390,23 +413,27 @@ export default function TicTacToeGame() {
                 onClick={() => handleCellClick(i)}
                 disabled={!canClick}
                 whileTap={canClick ? { scale: 0.92 } : undefined}
+                whileHover={canClick ? { backgroundColor: 'rgba(63,63,70,0.8)' } : undefined}
                 className={`
-                  aspect-square rounded-xl border-2 text-2xl sm:text-3xl font-bold
-                  flex items-center justify-center transition-all duration-200
-                  ${canClick ? 'hover:border-zinc-500 hover:bg-zinc-800/80 cursor-pointer' : 'cursor-default'}
+                  aspect-square rounded-lg sm:rounded-xl border-2 font-bold
+                  flex items-center justify-center transition-all duration-200 touch-manipulation
+                  ${canClick ? 'hover:border-zinc-500 cursor-pointer' : 'cursor-default'}
                   ${isWinCell
                     ? 'border-[var(--accent-orange)] bg-[var(--accent-orange)]/15 shadow-[0_0_12px_rgba(249,115,22,0.25)]'
                     : 'border-zinc-700/60 bg-zinc-900/60'}
                 `}
-                style={{ boxShadow: isWinCell ? undefined : '0 2px 8px rgba(0,0,0,0.3)' }}
+                style={{
+                  boxShadow: isWinCell ? undefined : '0 4px 20px rgba(0,0,0,0.3)',
+                  fontSize: gridSize <= 3 ? '1.5rem' : gridSize <= 4 ? '1.25rem' : '1rem',
+                }}
                 aria-label={`Cell ${i + 1}: ${cell || 'empty'}`}
               >
                 <AnimatePresence mode="wait">
                   {cell && (
                     <motion.span
                       key={`${i}-${cell}`}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
+                      initial={{ scale: 0, opacity: 0, rotate: -90 }}
+                      animate={{ scale: 1, opacity: 1, rotate: 0 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                       className={
                         cell === 'X'
@@ -424,12 +451,43 @@ export default function TicTacToeGame() {
         </div>
       </div>
 
-      {/* Legend */}
+      {/* Legend + Restart */}
       <div className="flex items-center justify-center gap-4 text-[10px] text-zinc-500">
         <span className="flex items-center gap-1"><span className="text-white text-sm">✕</span> You</span>
         <span className="flex items-center gap-1"><span className="text-zinc-400 text-sm">○</span> AI</span>
         <span>Win +10 · Draw +5</span>
+        {result && (
+          <button
+            type="button"
+            onClick={handleRestart}
+            className="ml-2 px-2 py-0.5 rounded-md border border-zinc-700 text-[10px] text-slate-300 hover:border-zinc-500 hover:text-white transition-colors"
+          >
+            Restart
+          </button>
+        )}
       </div>
+    </div>
+  )
+}
+
+/** Mini grid preview for mode selection */
+function MiniGrid({ size, active }: { size: number; active: boolean }) {
+  return (
+    <div
+      className="grid gap-[2px]"
+      style={{ gridTemplateColumns: `repeat(${size}, 1fr)`, width: size * 8 + (size - 1) * 2 }}
+    >
+      {Array.from({ length: size * size }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-[2px]"
+          style={{
+            width: 8, height: 8,
+            backgroundColor: active ? 'var(--accent-orange)' : 'rgba(63,63,70,0.8)',
+            opacity: active ? 0.6 : 0.4,
+          }}
+        />
+      ))}
     </div>
   )
 }

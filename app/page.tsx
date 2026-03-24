@@ -213,7 +213,8 @@ export default function LandingPage() {
           onActivate={() => s.setActiveGame('tictactoe')}
           icon={<Gamepad2 size={16} style={{ color: 'var(--accent-orange)' }} />}
           title="Tic Tac Toe"
-          description="Play against AI — Easy (random), Medium (block+win), Hard (minimax)."
+          description="Play against AI — Easy (3×3), Medium (4×4), Hard (5×5). Dynamic grids."
+          gridSizes={{ easy: '3×3', medium: '4×4', hard: '5×5' }}
           difficulty={s.tttDifficulty}
           onDifficultyChange={s.setGlobalDifficulty}
           hideDifficulty
