@@ -72,7 +72,7 @@ export default function LandingPage() {
       )}
 
       {/* Refresh countdown */}
-      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted) && (
+      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted || s.tttVariantExhausted) && (
         <div className="mx-auto max-w-2xl px-3 sm:px-6 pt-2 sm:pt-3">
           <RefreshBanner tier={s.refreshTier} formatted={s.refreshFormatted} />
         </div>
@@ -206,6 +206,30 @@ export default function LandingPage() {
           refreshFormatted={s.refreshFormatted}
         />
 
+        {/* Tic Tac Toe */}
+        <GameCard
+          id="tictactoe"
+          isActive={s.activeGame === 'tictactoe'}
+          onActivate={() => s.setActiveGame('tictactoe')}
+          icon={<Gamepad2 size={16} style={{ color: 'var(--accent-orange)' }} />}
+          title="Tic Tac Toe"
+          description="Play against AI — Easy (random), Medium (block+win), Hard (minimax)."
+          difficulty={s.tttDifficulty}
+          onDifficultyChange={s.setGlobalDifficulty}
+          hideDifficulty
+          gamesCount={s.tttGamesCount}
+          onDecrement={() => { if (!s.tttVariantExhausted) s.setTttGamesCount(v => Math.max(1, Math.min(v - 1, s.tttVariantRemaining))) }}
+          onIncrement={() => { if (!s.tttVariantExhausted) s.setTttGamesCount(v => Math.min(Math.max(v + 1, 1), s.tttVariantRemaining)) }}
+          stepperDisabled={s.tttVariantExhausted}
+          sessionHydrated={s.tttSessionHydrated}
+          variantPlayed={s.tttVariantPlayed}
+          variantTotal={s.tttVariantTotal}
+          variantRemaining={s.tttVariantRemaining}
+          variantExhausted={s.tttVariantExhausted}
+          refreshReady={s.refreshReady}
+          refreshFormatted={s.refreshFormatted}
+        />
+
         {/* SSC CGL Math — unlimited practice, no stepper/progress */}
         <div
           className="rounded-2xl border p-3 sm:p-4 transition-colors"
@@ -221,18 +245,6 @@ export default function LandingPage() {
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-500 leading-snug">Unlimited practice — previous year SSC CGL questions.</p>
         </div>
-
-        {/* Tic Tac Toe — standalone game, links directly */}
-        <a
-          href="/game/tictactoe"
-          className="block rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 sm:p-4 transition-colors hover:border-zinc-700 active:scale-[0.99]"
-        >
-          <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
-            <Gamepad2 size={16} style={{ color: 'var(--accent-orange)' }} />
-            <span className="text-[13px] sm:text-sm font-semibold text-white">Tic Tac Toe</span>
-          </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-500 leading-snug">Play against AI — Easy, Medium, or Hard (minimax).</p>
-        </a>
       </div>
 
       {/* More Games entry point */}

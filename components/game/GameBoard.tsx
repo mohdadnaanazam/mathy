@@ -18,6 +18,7 @@ const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
 const TrueFalseMathGame = dynamic(() => import('./TrueFalseMathGame'), { ssr: false })
 const MoreGame = dynamic(() => import('./MoreGame'), { ssr: false })
 const SscCglGame = dynamic(() => import('./SscCglGame'), { ssr: false })
+const TicTacToeGame = dynamic(() => import('./TicTacToeGame'), { ssr: false })
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
@@ -61,9 +62,10 @@ export default function GameBoard() {
     if (modeParam === 'memory') setGameType('memory')
     else if (modeParam === 'truefalse') setGameType('true_false')
     else if (modeParam === 'ssccgl') setGameType('ssc_cgl')
+    else if (modeParam === 'tictactoe') setGameType('math') // placeholder; TicTacToeGame is self-contained
     else if (modeParam === 'more') setGameType('square_root') // placeholder; MoreGame reads type from URL
   }, [modeParam, setGameType])
-  const effectiveGameType = modeParam === 'memory' ? 'memory' : modeParam === 'truefalse' ? 'true_false' : modeParam === 'ssccgl' ? 'ssc_cgl' : modeParam === 'more' ? 'more' : gameType
+  const effectiveGameType = modeParam === 'memory' ? 'memory' : modeParam === 'truefalse' ? 'true_false' : modeParam === 'ssccgl' ? 'ssc_cgl' : modeParam === 'tictactoe' ? 'tictactoe' : modeParam === 'more' ? 'more' : gameType
 
   const setOperation = useGameStore(s => s.setOperation)
   const customOperations = useGameStore(s => s.customOperations)
@@ -130,6 +132,8 @@ export default function GameBoard() {
             <TrueFalseMathGame />
           ) : effectiveGameType === 'ssc_cgl' ? (
             <SscCglGame />
+          ) : effectiveGameType === 'tictactoe' ? (
+            <TicTacToeGame />
           ) : effectiveGameType === 'more' ? (
             <MoreGame />
           ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (

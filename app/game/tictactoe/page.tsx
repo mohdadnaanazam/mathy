@@ -1,9 +1,11 @@
 'use client'
 
-import dynamic from 'next/dynamic'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
-const TicTacToeGame = dynamic(() => import('@/components/game/TicTacToeGame'), { ssr: false })
-
+/** Redirect legacy /game/tictactoe URL to the unified game board. */
 export default function TicTacToePage() {
-  return <TicTacToeGame />
+  const router = useRouter()
+  useEffect(() => { router.replace('/game?mode=tictactoe') }, [router])
+  return null
 }
