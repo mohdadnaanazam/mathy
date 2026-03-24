@@ -32,6 +32,8 @@ import { getNextGameConfig, operationLabel, difficultyLabel } from '@/lib/gamePr
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
+import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
+import UsernameModal from '@/components/ui/UsernameModal'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -75,6 +77,9 @@ export default function ApiMathGame() {
   useGameTimer()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
+
+  // Leaderboard submission (modular, non-breaking)
+  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss } = useLeaderboardSubmit(userUuid)
 
   const [sessionMax, setSessionMax] = useState<number>(20)
   const [sessionPlayed, setSessionPlayed] = useState<number>(0)
@@ -153,6 +158,9 @@ export default function ApiMathGame() {
     const currentOp = operationRef.current
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
+
+    // Submit score to leaderboard (async, silent failure)
+    promptAndSubmit(score, currentOp, currentDiff)
 
     const next = getNextGameConfig(currentOp, currentDiff)
     setNextOperation(next.operation)
@@ -452,6 +460,13 @@ export default function ApiMathGame() {
   if (sessionComplete) {
     return (
       <div className="w-full flex flex-col items-center mx-auto gap-5 sm:gap-6">
+        {/* Username modal for leaderboard */}
+        <UsernameModal
+          open={needsUsername}
+          onSubmit={submitWithUsername}
+          onClose={dismiss}
+        />
+
         <div className="api-game-item w-full flex items-center gap-2">
           <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">
             Math Game

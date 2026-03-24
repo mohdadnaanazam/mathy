@@ -1,6 +1,6 @@
 'use client'
 
-import { Calculator, Grid3X3, CheckCircle, BookOpen } from 'lucide-react'
+import { Calculator, Grid3X3, CheckCircle, BookOpen, Gamepad2 } from 'lucide-react'
 import { useHomePageState, type ModeLabel } from '@/hooks/useHomePageState'
 import type { OperationMode } from '@/types'
 import GameCard from '@/components/home/GameCard'
@@ -11,6 +11,7 @@ import TopBanner from '@/components/home/TopBanner'
 import ResetScoreButton from '@/components/home/ResetScoreButton'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import MoreGamesButton from '@/components/home/MoreGamesButton'
+import LeaderboardButton from '@/components/home/LeaderboardButton'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
   { symbol: '+', label: 'Addition' },
@@ -220,10 +221,25 @@ export default function LandingPage() {
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-500 leading-snug">Unlimited practice — previous year SSC CGL questions.</p>
         </div>
+
+        {/* Tic Tac Toe — standalone game, links directly */}
+        <a
+          href="/game/tictactoe"
+          className="block rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 sm:p-4 transition-colors hover:border-zinc-700 active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+            <Gamepad2 size={16} style={{ color: 'var(--accent-orange)' }} />
+            <span className="text-[13px] sm:text-sm font-semibold text-white">Tic Tac Toe</span>
+          </div>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 leading-snug">Play against AI — Easy, Medium, or Hard (minimax).</p>
+        </a>
       </div>
 
       {/* More Games entry point */}
       <MoreGamesButton />
+
+      {/* Leaderboard entry point */}
+      <LeaderboardButton />
 
       {/* Floating Play button */}
       <FloatingPlayButton
