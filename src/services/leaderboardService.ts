@@ -4,7 +4,7 @@ export interface LeaderboardEntry {
   id: string
   user_id: string
   username: string
-  avatar_color: string
+  avatar_color?: string
   score: number
   game_type: string
   created_at: string
@@ -21,7 +21,7 @@ export const leaderboardApi = {
   submitScore: (data: {
     user_id: string
     username: string
-    avatar_color: string
+    avatar_color?: string
     score: number
     game_type: string
   }) => apiClient.post<LeaderboardEntry>('/leaderboard/submit-score', data),
