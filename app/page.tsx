@@ -2,6 +2,7 @@
 
 import { Calculator, Grid3X3, CheckCircle, BookOpen, Gamepad2 } from 'lucide-react'
 import { useHomePageState, type ModeLabel } from '@/hooks/useHomePageState'
+import { useUserUUID } from '@/hooks/useUserUUID'
 import type { OperationMode } from '@/types'
 import GameCard from '@/components/home/GameCard'
 import DifficultyPills from '@/components/home/DifficultyPills'
@@ -31,6 +32,7 @@ const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
 
 export default function LandingPage() {
   const s = useHomePageState()
+  const { username, avatar, loading: userLoading } = useUserUUID()
 
   return (
     <main
@@ -42,10 +44,27 @@ export default function LandingPage() {
 
       {/* Header */}
       <header className="border-b border-[var(--border-subtle)] py-3 sm:py-6">
-        <div className="mx-auto max-w-2xl px-3 sm:px-6 flex items-end justify-between">
-          <div>
-            <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">Mathy</h1>
-            <p className="text-[10px] sm:text-sm text-slate-500 mt-0.5">Train your brain with free math and memory games</p>
+        <div className="mx-auto max-w-2xl px-3 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            {/* DiceBear avatar */}
+            {!userLoading && avatar && (
+              <img
+                src={avatar}
+                alt={username || 'Avatar'}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[var(--border-subtle)] bg-zinc-800 shrink-0"
+              />
+            )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">Mathy</h1>
+                {!userLoading && username && (
+                  <span className="text-[10px] sm:text-xs text-zinc-400 font-medium truncate max-w-[100px] sm:max-w-[140px]">
+                    {username}
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] sm:text-sm text-slate-500 mt-0.5">Train your brain with free math and memory games</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {s.isLocked && (

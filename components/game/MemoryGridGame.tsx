@@ -22,7 +22,6 @@ import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
-import UsernameModal from '@/components/ui/UsernameModal'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
 import { difficultyLabel } from '@/lib/gameProgression'
@@ -54,7 +53,7 @@ export default function MemoryGridGame() {
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
+  const { promptAndSubmit, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
 
   // Keep a ref so async callbacks never read stale difficulty
   const difficultyRef = useRef(difficulty)
@@ -289,7 +288,6 @@ export default function MemoryGridGame() {
   if (sessionComplete) {
     return (
       <div className="w-full max-w-full flex flex-col items-center mx-auto px-0 py-2 sm:px-2 sm:py-4 gap-3 sm:gap-5">
-        <UsernameModal open={needsUsername} onSubmit={submitWithUsername} onClose={dismiss} />
 
         <div className="api-game-item w-full flex items-center gap-2 mb-0.5">
           <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">

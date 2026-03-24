@@ -13,7 +13,6 @@ import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import Timer from './Timer'
 import ShareScoreButton from './ShareScoreButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
-import UsernameModal from '@/components/ui/UsernameModal'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import type { BackendGame } from '@/src/services/gameService'
 import type { Difficulty } from '@/types'
@@ -50,7 +49,7 @@ export default function MoreGame() {
   useGameTimer()
   const { userUuid } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
+  const { promptAndSubmit, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
   const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
 
   const [sessionMax, setSessionMax] = useState(5)

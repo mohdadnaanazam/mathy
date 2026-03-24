@@ -5,6 +5,7 @@ import { ArrowLeft, Trophy, RefreshCw } from 'lucide-react'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import { useLeaderboard, type LeaderboardTab } from '@/hooks/useLeaderboard'
 import type { LeaderboardEntry } from '@/src/services/leaderboardService'
+import { getDiceBearAvatar } from '@/lib/userIdentity'
 
 const TABS: { label: string; value: LeaderboardTab }[] = [
   { label: 'All Time', value: 'global' },
@@ -13,10 +14,6 @@ const TABS: { label: string; value: LeaderboardTab }[] = [
 ]
 
 const MEDAL_EMOJI: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
-
-function getInitial(name: string): string {
-  return name.trim().charAt(0).toUpperCase() || '?'
-}
 
 export default function LeaderboardPage() {
   const router = useRouter()
@@ -150,29 +147,27 @@ export default function LeaderboardPage() {
 
 function PodiumCard({ entry, place, isUser }: { entry: LeaderboardEntry; place: 1 | 2 | 3; isUser: boolean }) {
   const heights = { 1: 'h-28 sm:h-32', 2: 'h-20 sm:h-24', 3: 'h-16 sm:h-20' }
-  const avatarSizes = { 1: 'w-14 h-14 sm:w-16 sm:h-16 text-xl', 2: 'w-11 h-11 sm:w-12 sm:h-12 text-base', 3: 'w-10 h-10 sm:w-11 sm:h-11 text-sm' }
+  const avatarSizes = { 1: 'w-14 h-14 sm:w-16 sm:h-16', 2: 'w-11 h-11 sm:w-12 sm:h-12', 3: 'w-10 h-10 sm:w-11 sm:h-11' }
   const glowColors: Record<number, string> = {
     1: 'rgba(234,179,8,0.15)',
     2: 'rgba(148,163,184,0.1)',
     3: 'rgba(180,83,9,0.1)',
   }
 
-  const initial = getInitial(entry.username)
-  const avatarColor = entry.avatar_color || '#f97316'
+  const avatarUrl = getDiceBearAvatar(entry.user_id)
 
   return (
     <div className={`flex flex-col items-center ${place === 1 ? 'order-2' : place === 2 ? 'order-1' : 'order-3'}`}>
       <div className="relative mb-1.5">
-        <div
-          className={`${avatarSizes[place]} rounded-full flex items-center justify-center font-bold text-white`}
+        <img
+          src={avatarUrl}
+          alt={entry.username}
+          className={`${avatarSizes[place]} rounded-full bg-zinc-800`}
           style={{
-            backgroundColor: avatarColor,
             boxShadow: place === 1 ? `0 0 20px ${glowColors[1]}, 0 0 40px ${glowColors[1]}` : undefined,
             border: isUser ? '2px solid var(--accent-orange)' : '2px solid transparent',
           }}
-        >
-          {initial}
-        </div>
+        />
         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-sm sm:text-base">
           {MEDAL_EMOJI[place]}
         </span>
@@ -198,8 +193,7 @@ function PodiumCard({ entry, place, isUser }: { entry: LeaderboardEntry; place: 
 // ─── Rank Row (4th+) ─────────────────────────────────────────────────
 
 function RankRow({ entry, isUser }: { entry: LeaderboardEntry; isUser: boolean }) {
-  const initial = getInitial(entry.username)
-  const avatarColor = entry.avatar_color || '#f97316'
+  const avatarUrl = getDiceBearAvatar(entry.user_id)
 
   return (
     <div
@@ -210,12 +204,11 @@ function RankRow({ entry, isUser }: { entry: LeaderboardEntry; isUser: boolean }
       }`}
     >
       <span className="text-[12px] font-bold text-zinc-500 w-8 text-center">#{entry.rank}</span>
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-        style={{ backgroundColor: avatarColor }}
-      >
-        {initial}
-      </div>
+      <img
+        src={avatarUrl}
+        alt={entry.username}
+        className="w-8 h-8 rounded-full bg-zinc-800 shrink-0"
+      />
       <div className="flex-1 min-w-0">
         <p className={`text-[13px] font-semibold truncate ${isUser ? 'text-[var(--accent-orange)]' : 'text-white'}`}>
           {entry.username}
