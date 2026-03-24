@@ -3,22 +3,26 @@
 import { useState, useCallback } from 'react'
 import { leaderboardApi } from '@/src/services/leaderboardService'
 import { getStoredUsername, getStoredAvatarColor } from '@/components/ui/UsernameModal'
+import { getLocalScore } from '@/lib/indexeddb'
 
 /**
  * Modular hook for submitting scores to the leaderboard.
  * Completely isolated — never modifies existing game logic.
  * Fails silently on any error.
+ *
+ * Always reads the latest total score from IndexedDB at submission time
+ * to avoid stale React closure values.
  */
 export function useLeaderboardSubmit(userUuid: string | null) {
   const [needsUsername, setNeedsUsername] = useState(false)
-  const [pendingScore, setPendingScore] = useState<{
-    score: number
-    gameType: string
-  } | null>(null)
+  const [pendingGameType, setPendingGameType] = useState<string | null>(null)
 
   const promptAndSubmit = useCallback(
-    async (score: number, gameType: string) => {
-      if (!userUuid || score <= 0) return
+    async (_score: number, gameType: string) => {
+      if (!userUuid) return
+      // Always read the freshest total score from IndexedDB
+      const freshScore = await getLocalScore()
+      if (freshScore <= 0) return
       const username = getStoredUsername()
       if (username) {
         try {
@@ -26,12 +30,12 @@ export function useLeaderboardSubmit(userUuid: string | null) {
             user_id: userUuid,
             username,
             avatar_color: getStoredAvatarColor(),
-            score,
+            score: freshScore,
             game_type: gameType,
           })
         } catch { /* fail silently */ }
       } else {
-        setPendingScore({ score, gameType })
+        setPendingGameType(gameType)
         setNeedsUsername(true)
       }
     },
@@ -41,24 +45,25 @@ export function useLeaderboardSubmit(userUuid: string | null) {
   const submitWithUsername = useCallback(
     async (username: string, avatarColor: string) => {
       setNeedsUsername(false)
-      if (!userUuid || !pendingScore) return
+      if (!userUuid || !pendingGameType) return
       try {
+        const freshScore = await getLocalScore()
         await leaderboardApi.submitScore({
           user_id: userUuid,
           username,
           avatar_color: avatarColor,
-          score: pendingScore.score,
-          game_type: pendingScore.gameType,
+          score: freshScore,
+          game_type: pendingGameType,
         })
       } catch { /* fail silently */ }
-      finally { setPendingScore(null) }
+      finally { setPendingGameType(null) }
     },
-    [userUuid, pendingScore],
+    [userUuid, pendingGameType],
   )
 
   const dismiss = useCallback(() => {
     setNeedsUsername(false)
-    setPendingScore(null)
+    setPendingGameType(null)
   }, [])
 
   return { promptAndSubmit, needsUsername, submitWithUsername, dismiss }
