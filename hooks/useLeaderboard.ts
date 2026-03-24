@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { leaderboardApi, type LeaderboardEntry, type UserRankInfo, type GameFilter } from '@/src/services/leaderboardService'
+import { leaderboardApi, type LeaderboardEntry, type UserRankInfo } from '@/src/services/leaderboardService'
 
 export type LeaderboardTab = 'global' | 'daily' | 'weekly'
 
 export function useLeaderboard(userUuid: string | null) {
   const [tab, setTab] = useState<LeaderboardTab>('global')
-  const [gameFilter, setGameFilter] = useState<GameFilter>('all')
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [userRank, setUserRank] = useState<UserRankInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -23,7 +22,7 @@ export function useLeaderboard(userUuid: string | null) {
           ? leaderboardApi.getWeekly
           : leaderboardApi.getGlobal
 
-      const data = await fetcher(gameFilter)
+      const data = await fetcher()
       setEntries(data)
 
       if (userUuid) {
@@ -37,7 +36,7 @@ export function useLeaderboard(userUuid: string | null) {
     } finally {
       setLoading(false)
     }
-  }, [tab, gameFilter, userUuid])
+  }, [tab, userUuid])
 
   useEffect(() => {
     fetchLeaderboard()
@@ -45,7 +44,6 @@ export function useLeaderboard(userUuid: string | null) {
 
   return {
     tab, setTab,
-    gameFilter, setGameFilter,
     entries, userRank,
     loading, error,
     refresh: fetchLeaderboard,

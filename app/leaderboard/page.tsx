@@ -4,20 +4,12 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Trophy, RefreshCw } from 'lucide-react'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import { useLeaderboard, type LeaderboardTab } from '@/hooks/useLeaderboard'
-import type { LeaderboardEntry, GameFilter } from '@/src/services/leaderboardService'
+import type { LeaderboardEntry } from '@/src/services/leaderboardService'
 
 const TABS: { label: string; value: LeaderboardTab }[] = [
   { label: 'All Time', value: 'global' },
   { label: 'Today', value: 'daily' },
   { label: 'This Week', value: 'weekly' },
-]
-
-const GAME_FILTERS: { label: string; value: GameFilter }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Math', value: 'math' },
-  { label: 'Memory', value: 'memory' },
-  { label: 'T/F', value: 'true_false_math' },
-  { label: 'TTT', value: 'tictactoe' },
 ]
 
 const MEDAL_EMOJI: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
@@ -29,7 +21,7 @@ function getInitial(name: string): string {
 export default function LeaderboardPage() {
   const router = useRouter()
   const { userUuid } = useUserUUID()
-  const { tab, setTab, gameFilter, setGameFilter, entries, userRank, loading, error, refresh } = useLeaderboard(userUuid)
+  const { tab, setTab, entries, userRank, loading, error, refresh } = useLeaderboard(userUuid)
 
   const top3 = entries.slice(0, 3)
   const rest = entries.slice(3)
@@ -89,23 +81,6 @@ export default function LeaderboardPage() {
           ))}
         </div>
 
-        {/* Game type filter */}
-        <div className="flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
-          {GAME_FILTERS.map(f => (
-            <button
-              key={f.value}
-              onClick={() => setGameFilter(f.value)}
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
-                gameFilter === f.value
-                  ? 'bg-[var(--accent-orange-muted)] text-[var(--accent-orange)] border border-[var(--accent-orange)]/30'
-                  : 'text-zinc-500 border border-transparent hover:text-zinc-300'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
         {/* User rank card */}
         {userRank && userRank.rank !== null && (
           <div className="rounded-2xl border border-[var(--accent-orange)]/20 bg-[var(--accent-orange)]/5 p-4">
@@ -115,12 +90,8 @@ export default function LeaderboardPage() {
                 <p className="text-2xl font-bold text-[var(--accent-orange)]">#{userRank.rank}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Best Score</p>
+                <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Total Score</p>
                 <p className="text-2xl font-bold text-white">{userRank.bestScore}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Games</p>
-                <p className="text-2xl font-bold text-zinc-400">{userRank.totalGames}</p>
               </div>
             </div>
           </div>
@@ -147,11 +118,8 @@ export default function LeaderboardPage() {
         {!loading && !error && top3.length > 0 && (
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 sm:p-6">
             <div className="flex items-end justify-center gap-3 sm:gap-4 pt-2 pb-1">
-              {/* 2nd place */}
               {top3[1] && <PodiumCard entry={top3[1]} place={2} isUser={top3[1].user_id === userUuid} />}
-              {/* 1st place */}
               {top3[0] && <PodiumCard entry={top3[0]} place={1} isUser={top3[0].user_id === userUuid} />}
-              {/* 3rd place */}
               {top3[2] && <PodiumCard entry={top3[2]} place={3} isUser={top3[2].user_id === userUuid} />}
             </div>
           </div>
@@ -194,7 +162,6 @@ function PodiumCard({ entry, place, isUser }: { entry: LeaderboardEntry; place: 
 
   return (
     <div className={`flex flex-col items-center ${place === 1 ? 'order-2' : place === 2 ? 'order-1' : 'order-3'}`}>
-      {/* Avatar */}
       <div className="relative mb-1.5">
         <div
           className={`${avatarSizes[place]} rounded-full flex items-center justify-center font-bold text-white`}
@@ -210,18 +177,12 @@ function PodiumCard({ entry, place, isUser }: { entry: LeaderboardEntry; place: 
           {MEDAL_EMOJI[place]}
         </span>
       </div>
-
-      {/* Name */}
       <p className={`text-[11px] sm:text-[12px] font-bold truncate max-w-[80px] sm:max-w-[90px] mt-1 ${
         isUser ? 'text-[var(--accent-orange)]' : 'text-white'
       }`}>
         {entry.username}
       </p>
-
-      {/* Score */}
       <p className="text-[10px] sm:text-[11px] font-bold text-[var(--accent-orange)] mt-0.5">{entry.score}</p>
-
-      {/* Podium bar */}
       <div
         className={`${heights[place]} w-20 sm:w-24 mt-2 rounded-t-xl border border-[var(--border-subtle)] border-b-0 flex items-center justify-center ${
           isUser ? 'ring-1 ring-[var(--accent-orange)]/40' : ''
@@ -249,15 +210,12 @@ function RankRow({ entry, isUser }: { entry: LeaderboardEntry; isUser: boolean }
       }`}
     >
       <span className="text-[12px] font-bold text-zinc-500 w-8 text-center">#{entry.rank}</span>
-
-      {/* Avatar */}
       <div
         className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
         style={{ backgroundColor: avatarColor }}
       >
         {initial}
       </div>
-
       <div className="flex-1 min-w-0">
         <p className={`text-[13px] font-semibold truncate ${isUser ? 'text-[var(--accent-orange)]' : 'text-white'}`}>
           {entry.username}

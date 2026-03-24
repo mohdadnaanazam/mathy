@@ -11,14 +11,14 @@ import { getLocalScore } from '@/lib/indexeddb'
  * Fails silently on any error.
  *
  * Always reads the latest total score from IndexedDB at submission time
- * to avoid stale React closure values.
+ * to avoid stale React closure values. Submits as game_type='total'.
  */
 export function useLeaderboardSubmit(userUuid: string | null) {
   const [needsUsername, setNeedsUsername] = useState(false)
-  const [pendingGameType, setPendingGameType] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
 
   const promptAndSubmit = useCallback(
-    async (_score: number, gameType: string) => {
+    async (_score: number, _gameType: string) => {
       if (!userUuid) return
       // Always read the freshest total score from IndexedDB
       const freshScore = await getLocalScore()
@@ -31,11 +31,11 @@ export function useLeaderboardSubmit(userUuid: string | null) {
             username,
             avatar_color: getStoredAvatarColor(),
             score: freshScore,
-            game_type: gameType,
+            game_type: 'total',
           })
         } catch { /* fail silently */ }
       } else {
-        setPendingGameType(gameType)
+        setPending(true)
         setNeedsUsername(true)
       }
     },
@@ -45,7 +45,7 @@ export function useLeaderboardSubmit(userUuid: string | null) {
   const submitWithUsername = useCallback(
     async (username: string, avatarColor: string) => {
       setNeedsUsername(false)
-      if (!userUuid || !pendingGameType) return
+      if (!userUuid || !pending) return
       try {
         const freshScore = await getLocalScore()
         await leaderboardApi.submitScore({
@@ -53,17 +53,17 @@ export function useLeaderboardSubmit(userUuid: string | null) {
           username,
           avatar_color: avatarColor,
           score: freshScore,
-          game_type: pendingGameType,
+          game_type: 'total',
         })
       } catch { /* fail silently */ }
-      finally { setPendingGameType(null) }
+      finally { setPending(false) }
     },
-    [userUuid, pendingGameType],
+    [userUuid, pending],
   )
 
   const dismiss = useCallback(() => {
     setNeedsUsername(false)
-    setPendingGameType(null)
+    setPending(false)
   }, [])
 
   return { promptAndSubmit, needsUsername, submitWithUsername, dismiss }

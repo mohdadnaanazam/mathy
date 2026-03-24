@@ -17,8 +17,6 @@ export interface UserRankInfo {
   totalGames: number
 }
 
-export type GameFilter = 'all' | 'math' | 'memory' | 'true_false_math' | 'tictactoe'
-
 export const leaderboardApi = {
   submitScore: (data: {
     user_id: string
@@ -28,20 +26,9 @@ export const leaderboardApi = {
     game_type: string
   }) => apiClient.post<LeaderboardEntry>('/leaderboard/submit-score', data),
 
-  getGlobal: (gameType?: GameFilter) => {
-    const q = gameType && gameType !== 'all' ? `?game_type=${gameType}` : ''
-    return apiClient.get<LeaderboardEntry[]>(`/leaderboard/global${q}`)
-  },
-
-  getDaily: (gameType?: GameFilter) => {
-    const q = gameType && gameType !== 'all' ? `?game_type=${gameType}` : ''
-    return apiClient.get<LeaderboardEntry[]>(`/leaderboard/daily${q}`)
-  },
-
-  getWeekly: (gameType?: GameFilter) => {
-    const q = gameType && gameType !== 'all' ? `?game_type=${gameType}` : ''
-    return apiClient.get<LeaderboardEntry[]>(`/leaderboard/weekly${q}`)
-  },
+  getGlobal: () => apiClient.get<LeaderboardEntry[]>('/leaderboard/global'),
+  getDaily: () => apiClient.get<LeaderboardEntry[]>('/leaderboard/daily'),
+  getWeekly: () => apiClient.get<LeaderboardEntry[]>('/leaderboard/weekly'),
 
   getUserRank: (userId: string) =>
     apiClient.get<UserRankInfo>(`/leaderboard/rank/${userId}`),
