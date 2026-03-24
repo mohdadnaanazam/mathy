@@ -108,7 +108,7 @@ export default function MoreGame() {
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
 
-    promptAndSubmit(sessionScore, gameTypeRef.current)
+    promptAndSubmit(score, gameTypeRef.current)
 
     const next = getNextMoreGameConfig(gameTypeRef.current, currentDiff)
     setNextGame(next.game)

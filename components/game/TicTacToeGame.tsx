@@ -117,7 +117,7 @@ export default function TicTacToeGame() {
     if (!sessionComplete) return
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
-    promptAndSubmit(sessionScore, GAME_TYPE)
+    promptAndSubmit(score, GAME_TYPE)
     const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
     const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length
     const newDiff = DIFFICULTY_ORDER[nextIdx]
