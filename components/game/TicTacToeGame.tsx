@@ -11,6 +11,8 @@ import UsernameModal from '@/components/ui/UsernameModal'
 import ShareScoreButton from './ShareScoreButton'
 import type { Difficulty } from '@/types'
 import { difficultyLabel } from '@/lib/gameProgression'
+import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
+import RefreshBanner from '@/components/ui/RefreshBanner'
 import {
   getGenericSessionMax,
   getGenericSessionPlayed,
@@ -47,6 +49,8 @@ export default function TicTacToeGame() {
 
   const difficultyRef = useRef(difficulty)
   difficultyRef.current = difficulty
+
+  const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
 
   const mode = MODES[difficulty] ?? MODES.easy
   const gridSize = mode.grid
@@ -268,6 +272,25 @@ export default function TicTacToeGame() {
               <span className="text-[10px] font-mono text-slate-500">
                 {nextVariantPlayed} / 20 played · {nextVariantRemaining} remaining
               </span>
+              {nextVariantExhausted && (() => {
+                const urgent = !refreshReady && /^(\d+)m/.test(refreshFormatted) && parseInt(refreshFormatted.match(/^(\d+)m/)![1], 10) < 2
+                return (
+                  <span
+                    className={`text-[10px] font-mono inline-flex items-center gap-1 mt-0.5 ${urgent ? 'progress-urgent' : ''}`}
+                    style={{ color: refreshReady ? '#22c55e' : urgent ? '#f87171' : '#fbbf24' }}
+                  >
+                    {refreshReady ? '🎉 New games available! Go home and tap Reload.' : (
+                      <>
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="shrink-0" style={{ opacity: 0.8 }}>
+                          <circle cx="8" cy="8" r="6.5" />
+                          <path d="M8 4.5V8l2.5 1.5" />
+                        </svg>
+                        Unlock in {refreshFormatted}
+                      </>
+                    )}
+                  </span>
+                )
+              })()}
             </div>
             <div className="flex items-center gap-2.5">
               <button
@@ -285,6 +308,11 @@ export default function TicTacToeGame() {
               >+</button>
             </div>
           </div>
+
+          {/* Refresh countdown banner */}
+          {nextVariantExhausted && (
+            <RefreshBanner tier={refreshTier} formatted={refreshFormatted} />
+          )}
 
           {/* Actions */}
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1">
