@@ -6,12 +6,9 @@ import { getStoredUsername, getStoredAvatarColor } from '@/components/ui/Usernam
 import { getLocalScore } from '@/lib/indexeddb'
 
 /**
- * Modular hook for submitting scores to the leaderboard.
- * Completely isolated — never modifies existing game logic.
- * Fails silently on any error.
- *
- * Always reads the latest total score from IndexedDB at submission time
- * to avoid stale React closure values. Submits as game_type='total'.
+ * Modular hook for submitting the TOTAL score to the leaderboard.
+ * Always reads the latest total from IndexedDB (single source of truth).
+ * Submits as game_type='total'. Fails silently — never breaks game logic.
  */
 export function useLeaderboardSubmit(userUuid: string | null) {
   const [needsUsername, setNeedsUsername] = useState(false)
@@ -20,20 +17,28 @@ export function useLeaderboardSubmit(userUuid: string | null) {
   const promptAndSubmit = useCallback(
     async (_score: number, _gameType: string) => {
       if (!userUuid) return
-      // Always read the freshest total score from IndexedDB
+
+      // Small delay to ensure IndexedDB write from addScore has settled
+      await new Promise(r => setTimeout(r, 100))
+
       const freshScore = await getLocalScore()
+      console.log('[Leaderboard] Total score from IndexedDB:', freshScore)
       if (freshScore <= 0) return
+
       const username = getStoredUsername()
       if (username) {
         try {
-          await leaderboardApi.submitScore({
+          const result = await leaderboardApi.submitScore({
             user_id: userUuid,
             username,
             avatar_color: getStoredAvatarColor(),
             score: freshScore,
             game_type: 'total',
           })
-        } catch { /* fail silently */ }
+          console.log('[Leaderboard] Submit success:', result)
+        } catch (err) {
+          console.error('[Leaderboard] Submit failed:', err)
+        }
       } else {
         setPending(true)
         setNeedsUsername(true)
@@ -48,15 +53,20 @@ export function useLeaderboardSubmit(userUuid: string | null) {
       if (!userUuid || !pending) return
       try {
         const freshScore = await getLocalScore()
-        await leaderboardApi.submitScore({
+        console.log('[Leaderboard] Submit with username, score:', freshScore)
+        const result = await leaderboardApi.submitScore({
           user_id: userUuid,
           username,
           avatar_color: avatarColor,
           score: freshScore,
           game_type: 'total',
         })
-      } catch { /* fail silently */ }
-      finally { setPending(false) }
+        console.log('[Leaderboard] Submit success:', result)
+      } catch (err) {
+        console.error('[Leaderboard] Submit failed:', err)
+      } finally {
+        setPending(false)
+      }
     },
     [userUuid, pending],
   )
