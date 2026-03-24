@@ -47,7 +47,7 @@ export default function TrueFalseMathGame() {
   useGameTimer()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss } = useLeaderboardSubmit(userUuid)
+  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
   const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
 
   const difficultyRef = useRef(difficulty)

@@ -77,7 +77,7 @@ export default function ApiMathGame() {
   useGameTimer()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss } = useLeaderboardSubmit(userUuid)
+  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
 
   const [sessionMax, setSessionMax] = useState<number>(20)
   const [sessionPlayed, setSessionPlayed] = useState<number>(0)
@@ -481,6 +481,12 @@ export default function ApiMathGame() {
             <p className="text-xs sm:text-sm text-slate-500">
               Or choose a different game below.
             </p>
+            {/* Debug: leaderboard sync status */}
+            {lastSubmitStatus && (
+              <p className="text-[10px] font-mono text-zinc-500 mt-1">
+                Leaderboard: {lastSubmitStatus}
+              </p>
+            )}
           </div>
 
           {/* Next game picker */}

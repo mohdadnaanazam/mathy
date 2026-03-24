@@ -50,7 +50,7 @@ export default function MoreGame() {
   useGameTimer()
   const { userUuid } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss } = useLeaderboardSubmit(userUuid)
+  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
   const { formatted: refreshFormatted, tier: refreshTier, isReady: refreshReady } = useRefreshCountdown()
 
   const [sessionMax, setSessionMax] = useState(5)

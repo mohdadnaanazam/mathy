@@ -54,7 +54,7 @@ export default function MemoryGridGame() {
   const { recordAttempt: recordHourlyAttempt } = useAttempts()
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss } = useLeaderboardSubmit(userUuid)
+  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
 
   // Keep a ref so async callbacks never read stale difficulty
   const difficultyRef = useRef(difficulty)

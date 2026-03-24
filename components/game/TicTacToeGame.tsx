@@ -45,7 +45,7 @@ export default function TicTacToeGame() {
   const setDifficulty = useGameStore(s => s.setDifficulty)
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
-  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss } = useLeaderboardSubmit(userUuid)
+  const { promptAndSubmit, needsUsername, submitWithUsername, dismiss, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
 
   const difficultyRef = useRef(difficulty)
   difficultyRef.current = difficulty
@@ -235,6 +235,12 @@ export default function TicTacToeGame() {
             <p className="text-xs sm:text-sm text-[var(--accent-orange)]">
               Next up: {difficultyLabel(nextDifficulty)}
             </p>
+            {/* Debug: leaderboard sync status */}
+            {lastSubmitStatus && (
+              <p className="text-[10px] font-mono text-zinc-500 mt-1">
+                Leaderboard: {lastSubmitStatus}
+              </p>
+            )}
           </div>
 
           {/* Difficulty selector with grid preview */}
