@@ -11,6 +11,7 @@ import TopBanner from '@/components/home/TopBanner'
 import ResetScoreButton from '@/components/home/ResetScoreButton'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import MoreGamesButton from '@/components/home/MoreGamesButton'
+import LeaderboardButton from '@/components/home/LeaderboardButton'
 
 const OP_BUTTONS: { symbol: string; label: ModeLabel }[] = [
   { symbol: '+', label: 'Addition' },
@@ -181,30 +182,6 @@ export default function LandingPage() {
           refreshFormatted={s.refreshFormatted}
         />
 
-        {/* True / False Math */}
-        <GameCard
-          id="truefalse"
-          isActive={s.activeGame === 'truefalse'}
-          onActivate={() => s.setActiveGame('truefalse')}
-          icon={<CheckCircle size={16} style={{ color: 'var(--accent-orange)' }} />}
-          title="True / False Math"
-          description="Is the equation correct? Answer TRUE or FALSE."
-          difficulty={s.tfDifficulty}
-          onDifficultyChange={s.setGlobalDifficulty}
-          hideDifficulty
-          gamesCount={s.tfGamesCount}
-          onDecrement={() => { if (!s.tfVariantExhausted) s.setTfGamesCount(v => Math.max(1, Math.min(v - 1, s.tfVariantRemaining))) }}
-          onIncrement={() => { if (!s.tfVariantExhausted) s.setTfGamesCount(v => Math.min(Math.max(v + 1, 1), s.tfVariantRemaining)) }}
-          stepperDisabled={s.tfVariantExhausted}
-          sessionHydrated={s.tfSessionHydrated}
-          variantPlayed={s.tfVariantPlayed}
-          variantTotal={s.tfVariantTotal}
-          variantRemaining={s.tfVariantRemaining}
-          variantExhausted={s.tfVariantExhausted}
-          refreshReady={s.refreshReady}
-          refreshFormatted={s.refreshFormatted}
-        />
-
         {/* Tic Tac Toe */}
         <GameCard
           id="tictactoe"
@@ -230,6 +207,30 @@ export default function LandingPage() {
           refreshFormatted={s.refreshFormatted}
         />
 
+        {/* True / False Math */}
+        <GameCard
+          id="truefalse"
+          isActive={s.activeGame === 'truefalse'}
+          onActivate={() => s.setActiveGame('truefalse')}
+          icon={<CheckCircle size={16} style={{ color: 'var(--accent-orange)' }} />}
+          title="True / False Math"
+          description="Is the equation correct? Answer TRUE or FALSE."
+          difficulty={s.tfDifficulty}
+          onDifficultyChange={s.setGlobalDifficulty}
+          hideDifficulty
+          gamesCount={s.tfGamesCount}
+          onDecrement={() => { if (!s.tfVariantExhausted) s.setTfGamesCount(v => Math.max(1, Math.min(v - 1, s.tfVariantRemaining))) }}
+          onIncrement={() => { if (!s.tfVariantExhausted) s.setTfGamesCount(v => Math.min(Math.max(v + 1, 1), s.tfVariantRemaining)) }}
+          stepperDisabled={s.tfVariantExhausted}
+          sessionHydrated={s.tfSessionHydrated}
+          variantPlayed={s.tfVariantPlayed}
+          variantTotal={s.tfVariantTotal}
+          variantRemaining={s.tfVariantRemaining}
+          variantExhausted={s.tfVariantExhausted}
+          refreshReady={s.refreshReady}
+          refreshFormatted={s.refreshFormatted}
+        />
+
         {/* SSC CGL Math — unlimited practice, no stepper/progress */}
         <div
           className="rounded-2xl border p-3 sm:p-4 transition-colors"
@@ -249,6 +250,9 @@ export default function LandingPage() {
 
       {/* More Games entry point */}
       <MoreGamesButton />
+
+      {/* Leaderboard */}
+      <LeaderboardButton />
 
       {/* Floating Play button */}
       <FloatingPlayButton
