@@ -111,6 +111,28 @@ async function createUserInDB(identity: UserIdentity): Promise<void> {
   }
 }
 
+// ─── Username Migration ──────────────────────────────────────────────
+
+/**
+ * Migrate a legacy underscore username to the clean format.
+ * "Name_X" style → strip underscores ("NameX").
+ * "Player_XXXXXX" fallback style → generate a fresh random name.
+ */
+async function migrateUsername(identity: UserIdentity): Promise<string> {
+  if (/^Player_/i.test(identity.username)) {
+    const fresh = await fetchRandomUsername()
+    return fresh || generateFallbackUsername(identity.userId)
+  }
+  return identity.username.replace(/_/g, '')
+}
+
+/**
+ * Push the cleaned username to the leaderboard row via backend PATCH.
+ */
+async function syncLeaderboardUsername(userId: string, username: string): Promise<void> {
+  await apiClient.patch('/leaderboard/username', { user_id: userId, username })
+}
+
 // ─── Main Entry Point ────────────────────────────────────────────────
 
 /**
@@ -125,6 +147,17 @@ export async function getOrCreateUser(): Promise<UserIdentity> {
   // 1. Check local storage
   const stored = getStoredIdentity()
   if (stored) {
+    // Migrate legacy underscore usernames (e.g. "Abby_L" → "AbbyL", "Player_ABC123" → fresh name)
+    if (stored.username.includes('_')) {
+      const cleanName = await migrateUsername(stored)
+      stored.username = cleanName
+      setStoredIdentity(stored)
+      createUserInDB(stored).catch(() => {})
+      // Push clean username to leaderboard immediately (fire-and-forget)
+      syncLeaderboardUsername(stored.userId, cleanName).catch(() => {})
+      console.log('[UserIdentity] Migrated username →', cleanName)
+      return stored
+    }
     // Ensure synced to DB (fire-and-forget)
     createUserInDB(stored).catch(() => {})
     return stored
