@@ -66,14 +66,14 @@ export default function LandingPage() {
               <p className="text-[10px] sm:text-sm text-slate-500 mt-0.5">Train your brain with free math and memory games</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <LeaderboardButton />
+          <div className="flex items-center gap-1.5">
             {s.isLocked && (
               <span className="text-[9px] sm:text-[10px] font-mono text-amber-400">
                 Limit {s.used}/{s.maxAttempts} · resets {s.timeToReset}
               </span>
             )}
             <ResetScoreButton />
+            <LeaderboardButton />
           </div>
         </div>
       </header>
