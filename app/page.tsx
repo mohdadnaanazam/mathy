@@ -67,6 +67,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LeaderboardButton />
             {s.isLocked && (
               <span className="text-[9px] sm:text-[10px] font-mono text-amber-400">
                 Limit {s.used}/{s.maxAttempts} · resets {s.timeToReset}
@@ -269,9 +270,6 @@ export default function LandingPage() {
 
       {/* More Games entry point */}
       <MoreGamesButton />
-
-      {/* Leaderboard */}
-      <LeaderboardButton />
 
       {/* Floating Play button */}
       <FloatingPlayButton

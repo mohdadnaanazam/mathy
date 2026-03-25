@@ -68,7 +68,9 @@ async function fetchRandomUsername(): Promise<string | null> {
     const data = await res.json()
     const name = data?.results?.[0]?.name
     if (name?.first) {
-      return `${name.first}${name.last ? '_' + name.last.charAt(0) : ''}`
+      const first = name.first.replace(/[^a-zA-Z]/g, '')
+      const lastInitial = name.last ? name.last.charAt(0).toUpperCase() : ''
+      return `${first}${lastInitial}`
     }
     return null
   } catch {
@@ -77,7 +79,7 @@ async function fetchRandomUsername(): Promise<string | null> {
 }
 
 function generateFallbackUsername(userId: string): string {
-  return `Player_${userId.slice(0, 6).toUpperCase()}`
+  return `Player${userId.slice(0, 4).toUpperCase()}`
 }
 
 // ─── DB Check ────────────────────────────────────────────────────────
