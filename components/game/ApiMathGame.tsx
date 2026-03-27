@@ -33,6 +33,9 @@ import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
+import { useFirstTimeUser } from '@/hooks/useFirstTimeUser'
+import ConfettiOverlay from './ConfettiOverlay'
+import AutoShareModal from './AutoShareModal'
 
 const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 10,
@@ -77,6 +80,9 @@ export default function ApiMathGame() {
   const { userUuid, loading: userLoading } = useUserUUID()
   const { score, addScore, syncNow } = useScore(userUuid)
   const { promptAndSubmit, lastSubmitStatus } = useLeaderboardSubmit(userUuid)
+  const { isFirstTime, hydrated: firstTimeHydrated, markPlayed } = useFirstTimeUser()
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [showAutoShare, setShowAutoShare] = useState(false)
 
   const [sessionMax, setSessionMax] = useState<number>(20)
   const [sessionPlayed, setSessionPlayed] = useState<number>(0)
@@ -158,6 +164,11 @@ export default function ApiMathGame() {
 
     // Submit score to leaderboard (async, silent failure)
     promptAndSubmit(score, currentOp)
+
+    // First-time user: trigger confetti → auto-share flow
+    if (isFirstTime && firstTimeHydrated) {
+      setShowConfetti(true)
+    }
 
     const next = getNextGameConfig(currentOp, currentDiff)
     setNextOperation(next.operation)
@@ -457,6 +468,25 @@ export default function ApiMathGame() {
   if (sessionComplete) {
     return (
       <div className="w-full flex flex-col items-center mx-auto gap-5 sm:gap-6">
+
+        {/* First-time user: confetti → auto-share */}
+        {showConfetti && (
+          <ConfettiOverlay
+            onComplete={() => {
+              setShowConfetti(false)
+              setShowAutoShare(true)
+              markPlayed()
+            }}
+          />
+        )}
+        {showAutoShare && (
+          <AutoShareModal
+            score={score}
+            gameType={operationLabel(operation)}
+            difficulty={difficultyLabel(difficulty as Difficulty)}
+            onClose={() => setShowAutoShare(false)}
+          />
+        )}
 
         <div className="api-game-item w-full flex items-center gap-2">
           <span className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.18em] text-[var(--accent-orange)]">

@@ -9,7 +9,7 @@ interface ShareScoreButtonProps {
 }
 
 /** Draw a branded share card on a canvas and return it as a Blob. */
-async function generateShareImage(
+export async function generateShareImage(
   score: number,
   gameType?: string,
   difficulty?: string,
