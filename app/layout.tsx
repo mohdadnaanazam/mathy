@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Poppins, Urbanist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
+import NotificationRegistrar from '@/components/ui/NotificationRegistrar'
 
 
 const SITE_URL = 'https://matthy.netlify.app'
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="antialiased overflow-x-hidden">
+        <NotificationRegistrar />
         <div className="hidden" aria-hidden="true">
           <Navbar />
         </div>
