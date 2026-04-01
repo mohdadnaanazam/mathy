@@ -1,0 +1,29 @@
+{
+  "name": "Mathy",
+  "short_name": "Mathy",
+  "description": "Free AI-generated math puzzles, memory grid challenges, and brain training games.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0c0f",
+  "theme_color": "#0c0c0f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
