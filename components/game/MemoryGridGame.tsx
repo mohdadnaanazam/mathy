@@ -46,7 +46,11 @@ const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
 type Phase = 'highlight' | 'recall' | 'result'
 
-export default function MemoryGridGame() {
+export default function MemoryGridGame({
+  onFirstGameComplete,
+}: {
+  onFirstGameComplete?: () => void
+} = {}) {
   const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty)
   const setDifficulty = useGameStore(s => s.setDifficulty)
@@ -251,6 +255,9 @@ export default function MemoryGridGame() {
 
     // Submit score to leaderboard (async, silent failure)
     promptAndSubmit(score, 'memory')
+
+    // Notify parent that first game has been completed (for signup banner)
+    onFirstGameComplete?.()
 
     const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
     const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length

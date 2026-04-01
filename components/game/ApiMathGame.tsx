@@ -50,7 +50,11 @@ function operationFromUrl(opParam: string | null): OperationMode | null {
   return opParam as OperationMode
 }
 
-export default function ApiMathGame() {
+export default function ApiMathGame({
+  onFirstGameComplete,
+}: {
+  onFirstGameComplete?: () => void
+} = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const storeOperation = useGameStore(s => s.operation)
@@ -165,6 +169,9 @@ export default function ApiMathGame() {
     // Submit score to leaderboard (async, silent failure)
     promptAndSubmit(score, currentOp)
 
+    // Notify parent that first game has been completed (for signup banner)
+    onFirstGameComplete?.()
+
     // First-time user: trigger confetti → auto-share flow
     if (isFirstTime && firstTimeHydrated) {
       setShowConfetti(true)
@@ -182,6 +189,7 @@ export default function ApiMathGame() {
         return Math.min(Math.max(prev, 1), p.remaining)
       })
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 
   // Auto-retry: if we have no current question but aren't loading, trigger a refresh.

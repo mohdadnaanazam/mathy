@@ -36,7 +36,11 @@ import {
 
 const POINTS: Record<Difficulty, number> = { easy: 10, medium: 20, hard: 50 }
 
-export default function MoreGame() {
+export default function MoreGame({
+  onFirstGameComplete,
+}: {
+  onFirstGameComplete?: () => void
+} = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const gameType = searchParams.get('type') ?? 'square_root'
@@ -108,6 +112,9 @@ export default function MoreGame() {
     if (!currentDiff) return
 
     promptAndSubmit(score, gameTypeRef.current)
+
+    // Notify parent that first game has been completed (for signup banner)
+    onFirstGameComplete?.()
 
     const next = getNextMoreGameConfig(gameTypeRef.current, currentDiff)
     setNextGame(next.game)

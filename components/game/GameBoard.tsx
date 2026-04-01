@@ -11,7 +11,9 @@ import { useGameStore } from '@/store/gameStore'
 import { useGameRefreshStore } from '@/store/gameRefreshStore'
 import { clearGameCache, resetAllProgress, setSelectedGameCount } from '@/lib/db'
 import { fetchAndCacheAllGames } from '@/lib/refreshGames'
+import { useSignupBanner } from '@/hooks/useSignupBanner'
 import GameLockScreen from './GameLockScreen'
+import SignupBanner from './SignupBanner'
 
 const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
@@ -32,6 +34,22 @@ export default function GameBoard() {
 
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const [isReloading, setIsReloading] = useState(false)
+
+  // ── Signup banner ──────────────────────────────────────────────────
+  const { showBanner, markFirstGamePlayed, closeBanner, markSignedUp } =
+    useSignupBanner()
+
+  /**
+   * Placeholder: replace this body with your Supabase Google OAuth call
+   * when you're ready to enable authentication.
+   */
+  async function handleGoogleSignup() {
+    // TODO: await supabase.auth.signInWithOAuth({ provider: 'google' })
+    // On success:
+    // await markSignedUp()
+    console.info('[SignupBanner] Google sign-in triggered — integrate Supabase OAuth here.')
+  }
+  // ──────────────────────────────────────────────────────────────────
 
   const handleReload = useCallback(async () => {
     if (isReloading) return
@@ -127,24 +145,31 @@ export default function GameBoard() {
           }}
         >
           {effectiveGameType === 'memory' ? (
-            <MemoryGridGame />
+            <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} />
           ) : effectiveGameType === 'true_false' ? (
-            <TrueFalseMathGame />
+            <TrueFalseMathGame onFirstGameComplete={markFirstGamePlayed} />
           ) : effectiveGameType === 'ssc_cgl' ? (
             <SscCglGame />
           ) : effectiveGameType === 'tictactoe' ? (
-            <TicTacToeGame />
+            <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} />
           ) : effectiveGameType === 'more' ? (
-            <MoreGame />
+            <MoreGame onFirstGameComplete={markFirstGamePlayed} />
           ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
             <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
               Select operations on the home screen, then press Play to start a custom game.
             </div>
           ) : (
-            <MathGame />
+            <MathGame onFirstGameComplete={markFirstGamePlayed} />
           )}
         </div>
       </main>
+
+      {/* ── Signup banner (fixed, bottom, non-blocking) ── */}
+      <SignupBanner
+        show={showBanner}
+        onSignup={handleGoogleSignup}
+        onClose={closeBanner}
+      />
     </div>
   )
 }

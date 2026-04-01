@@ -37,7 +37,11 @@ const POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
 
 const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-export default function TrueFalseMathGame() {
+export default function TrueFalseMathGame({
+  onFirstGameComplete,
+}: {
+  onFirstGameComplete?: () => void
+} = {}) {
   const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty)
   const setDifficulty = useGameStore(s => s.setDifficulty)
@@ -108,6 +112,9 @@ export default function TrueFalseMathGame() {
     if (!currentDiff) return
 
     promptAndSubmit(score, 'true_false_math')
+
+    // Notify parent that first game has been completed (for signup banner)
+    onFirstGameComplete?.()
 
     const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
     const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length

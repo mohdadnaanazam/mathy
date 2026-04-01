@@ -38,7 +38,11 @@ import {
 const GAME_TYPE = 'tictactoe'
 const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-export default function TicTacToeGame() {
+export default function TicTacToeGame({
+  onFirstGameComplete,
+}: {
+  onFirstGameComplete?: () => void
+} = {}) {
   const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty) as TttDifficulty
   const setDifficulty = useGameStore(s => s.setDifficulty)
@@ -117,6 +121,10 @@ export default function TicTacToeGame() {
     const currentDiff = difficultyRef.current as Difficulty
     if (!currentDiff) return
     promptAndSubmit(score, GAME_TYPE)
+
+    // Notify parent that first game has been completed (for signup banner)
+    onFirstGameComplete?.()
+
     const diffIdx = DIFFICULTY_ORDER.indexOf(currentDiff)
     const nextIdx = diffIdx === -1 ? 0 : (diffIdx + 1) % DIFFICULTY_ORDER.length
     const newDiff = DIFFICULTY_ORDER[nextIdx]
