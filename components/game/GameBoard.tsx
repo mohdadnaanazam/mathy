@@ -36,8 +36,11 @@ export default function GameBoard() {
   const [isReloading, setIsReloading] = useState(false)
 
   // ── Signup banner ──────────────────────────────────────────────────
-  const { showBanner, markFirstGamePlayed, closeBanner, markSignedUp } =
+  // TEMP DISABLED: Signup/Login flow (will be re-enabled later)
+  const { showBanner: _showBanner, markFirstGamePlayed: _markFirstGamePlayed, closeBanner, markSignedUp } =
     useSignupBanner()
+  const showBanner = false
+  const markFirstGamePlayed = async () => {} // no-op
 
   /**
    * Placeholder: replace this body with your Supabase Google OAuth call
@@ -164,12 +167,12 @@ export default function GameBoard() {
         </div>
       </main>
 
-      {/* ── Signup banner (fixed, bottom, non-blocking) ── */}
+      {/* TEMP DISABLED: Signup/Login flow (will be re-enabled later)
       <SignupBanner
         show={showBanner}
         onSignup={handleGoogleSignup}
         onClose={closeBanner}
-      />
+      /> */}
     </div>
   )
 }
