@@ -40,8 +40,10 @@ const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
 export default function TicTacToeGame({
   onFirstGameComplete,
+  onPerfectScore,
 }: {
   onFirstGameComplete?: () => void
+  onPerfectScore?: (gameLabel: string) => void
 } = {}) {
   const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty) as TttDifficulty
@@ -65,6 +67,9 @@ export default function TicTacToeGame({
   const [sessionHydrated, setSessionHydrated] = useState(false)
   const [sessionComplete, setSessionComplete] = useState(false)
   const [sessionScore, setSessionScore] = useState(0)
+  const [sessionCorrect, setSessionCorrect] = useState(0)
+  const sessionCorrectRef = useRef(0)
+  useEffect(() => { sessionCorrectRef.current = sessionCorrect }, [sessionCorrect])
 
   // Next-session picker
   const [nextDifficulty, setNextDifficulty] = useState<Difficulty>(difficulty)
@@ -137,6 +142,16 @@ export default function TicTacToeGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 
+  // Check for perfect score achievement (all wins)
+  useEffect(() => {
+    if (!sessionComplete) return
+    if (sessionCorrectRef.current >= sessionMax && sessionMax >= 20) {
+      const currentDiff = difficultyRef.current as Difficulty
+      onPerfectScore?.(`Tic Tac Toe ${difficultyLabel(currentDiff)}`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionComplete])
+
   // AI move
   useEffect(() => {
     if (result || isPlayerTurn || sessionComplete) return
@@ -164,6 +179,7 @@ export default function TicTacToeGame({
   const finishRound = useCallback(async (r: 'win' | 'draw' | 'lose') => {
     const pts = POINTS[r]
     if (pts > 0) { await addScore(pts); syncNow() }
+    if (r === 'win') setSessionCorrect(c => c + 1)
     setSessionScore(prev => prev + pts)
     const currentDiff = difficultyRef.current as Difficulty
     if (currentDiff) await incrementVariantPlayed(GAME_TYPE, currentDiff)
@@ -342,6 +358,7 @@ export default function TicTacToeGame({
                 setSessionPlayed(0)
                 setSessionComplete(false)
                 setSessionScore(0)
+                setSessionCorrect(0)
                 setBoard(emptyBoard(newGrid))
                 setIsPlayerTurn(true)
                 setResult(null)

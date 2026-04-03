@@ -48,8 +48,10 @@ type Phase = 'highlight' | 'recall' | 'result'
 
 export default function MemoryGridGame({
   onFirstGameComplete,
+  onPerfectScore,
 }: {
   onFirstGameComplete?: () => void
+  onPerfectScore?: (gameLabel: string) => void
 } = {}) {
   const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty)
@@ -75,6 +77,9 @@ export default function MemoryGridGame({
   const [roundResult, setRoundResult] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
   const [sessionComplete, setSessionComplete] = useState(false)
+  const [sessionCorrect, setSessionCorrect] = useState(0)
+  const sessionCorrectRef = useRef(0)
+  useEffect(() => { sessionCorrectRef.current = sessionCorrect }, [sessionCorrect])
   const [nextVariantPlayed, setNextVariantPlayed] = useState(0)
   const [nextVariantRemaining, setNextVariantRemaining] = useState(20)
   const [nextGamesCount, setNextGamesCount] = useState(5)
@@ -138,6 +143,8 @@ export default function MemoryGridGame({
   const finishRound = useCallback(
     async (wasCorrect: boolean) => {
       const currentDiff = difficultyRef.current as Difficulty
+
+      if (wasCorrect) setSessionCorrect(c => c + 1)
 
       // Record attempt
       recordHourlyAttempt()
@@ -222,6 +229,7 @@ export default function MemoryGridGame({
     hasInitialized.current = true
     setRoundIndex(0)
     setSessionComplete(false)
+    setSessionCorrect(0)
     // Call startRound inline (can't call the callback because it checks
     // sessionComplete from its closure which may be stale). Replicate
     // the logic directly so the pattern is set in the same batch.
@@ -271,6 +279,16 @@ export default function MemoryGridGame({
         return Math.min(Math.max(prev, 1), p.remaining)
       })
     })
+  }, [sessionComplete])
+
+  // Check for perfect score achievement
+  useEffect(() => {
+    if (!sessionComplete) return
+    if (sessionCorrectRef.current >= sessionMax && sessionMax >= 20) {
+      const currentDiff = difficultyRef.current as Difficulty
+      onPerfectScore?.(`Memory Grid ${difficultyLabel(currentDiff)}`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 
   const currentRoundDisplay = Math.min(Math.max(roundIndex || 1, 1), sessionMax || 1)
@@ -426,6 +444,7 @@ export default function MemoryGridGame({
                 })
                 setSessionMax(nextGamesCount)
                 setSessionComplete(false)
+                setSessionCorrect(0)
                 setRoundIndex(0)
                 // Start the first round synchronously so the pattern is
                 // visible immediately (no setTimeout flicker).

@@ -39,8 +39,10 @@ const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
 export default function TrueFalseMathGame({
   onFirstGameComplete,
+  onPerfectScore,
 }: {
   onFirstGameComplete?: () => void
+  onPerfectScore?: (gameLabel: string) => void
 } = {}) {
   const router = useRouter()
   const difficulty = useGameStore(s => s.difficulty)
@@ -65,6 +67,9 @@ export default function TrueFalseMathGame({
   const [timerKey, setTimerKey] = useState(0)
   const [sessionComplete, setSessionComplete] = useState(false)
   const [shuffleKey, setShuffleKey] = useState(0)
+  const [sessionCorrect, setSessionCorrect] = useState(0)
+  const sessionCorrectRef = useRef(0)
+  useEffect(() => { sessionCorrectRef.current = sessionCorrect }, [sessionCorrect])
   const pointsPerCorrect = POINTS_BY_DIFFICULTY[difficulty as Difficulty] ?? 10
 
   // Session-complete picker state
@@ -194,6 +199,11 @@ export default function TrueFalseMathGame({
       }
       if (willBe >= sessionMax) {
         setSessionComplete(true)
+        // Check for perfect score achievement
+        if (sessionCorrectRef.current + (feedback === null ? 0 : 0) >= sessionMax && sessionMax >= 20) {
+          const currentDiff = difficultyRef.current as Difficulty
+          onPerfectScore?.(`True/False ${difficultyLabel(currentDiff)}`)
+        }
       }
       if (played < sessionMax) {
         incrementTrueFalseSessionPlayed().then(next => setSessionPlayed(next))
@@ -214,6 +224,7 @@ export default function TrueFalseMathGame({
 
       if (isCorrect) {
         setFeedback('correct')
+        setSessionCorrect(c => c + 1)
         recordHourlyAttempt()
         addScore(pointsPerCorrect).then(() => syncNow())
         setTimeout(goNext, 800)
@@ -353,6 +364,7 @@ export default function TrueFalseMathGame({
                 setSessionMax(nextGamesCount)
                 setSessionPlayed(0)
                 setSessionComplete(false)
+                setSessionCorrect(0)
                 setShuffleKey(k => k + 1)
                 setCurrentIndex(0)
                 setFeedback(null)

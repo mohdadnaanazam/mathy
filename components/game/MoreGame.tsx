@@ -38,8 +38,10 @@ const POINTS: Record<Difficulty, number> = { easy: 10, medium: 20, hard: 50 }
 
 export default function MoreGame({
   onFirstGameComplete,
+  onPerfectScore,
 }: {
   onFirstGameComplete?: () => void
+  onPerfectScore?: (gameLabel: string) => void
 } = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -67,6 +69,9 @@ export default function MoreGame({
   const [sessionComplete, setSessionComplete] = useState(false)
   const [shuffleKey, setShuffleKey] = useState(0)
   const [sessionScore, setSessionScore] = useState(0)
+  const [sessionCorrect, setSessionCorrect] = useState(0)
+  const sessionCorrectRef = useRef(0)
+  useEffect(() => { sessionCorrectRef.current = sessionCorrect }, [sessionCorrect])
   const pointsPerCorrect = POINTS[difficulty as Difficulty] ?? 10
 
   // Refs for stable access in async callbacks
@@ -119,6 +124,16 @@ export default function MoreGame({
     const next = getNextMoreGameConfig(gameTypeRef.current, currentDiff)
     setNextGame(next.game)
     setNextDifficulty(next.difficulty)
+  }, [sessionComplete])
+
+  // Check for perfect score achievement
+  useEffect(() => {
+    if (!sessionComplete) return
+    if (sessionCorrectRef.current >= sessionMax && sessionMax >= 20) {
+      const currentDiff = difficultyRef.current as Difficulty
+      onPerfectScore?.(`${moreGameLabel(gameTypeRef.current)} ${difficultyLabel(currentDiff)}`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 
   // Filter games by difficulty and type
@@ -198,6 +213,7 @@ export default function MoreGame({
 
       if (isCorrect) {
         setFeedback('correct')
+        setSessionCorrect(c => c + 1)
         recordHourlyAttempt()
         setSessionScore(s => s + pointsPerCorrect)
         addScore(pointsPerCorrect).then(() => syncNow())
@@ -364,6 +380,7 @@ export default function MoreGame({
                 setSessionPlayed(0)
                 setSessionComplete(false)
                 setSessionScore(0)
+                setSessionCorrect(0)
                 setShuffleKey(k => k + 1)
                 setCurrentIndex(0)
                 setAnswer('')

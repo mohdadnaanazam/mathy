@@ -14,6 +14,8 @@ import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 import { useSignupBanner } from '@/hooks/useSignupBanner'
 import GameLockScreen from './GameLockScreen'
 import SignupBanner from './SignupBanner'
+import AchievementModal from './AchievementModal'
+import { useAchievement } from '@/hooks/useAchievement'
 
 const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
@@ -34,6 +36,10 @@ export default function GameBoard() {
 
   const setLastFetchAt = useGameRefreshStore(s => s.setLastFetchAt)
   const [isReloading, setIsReloading] = useState(false)
+
+  // ── Achievement system ─────────────────────────────────────────────
+  const { reportPerfectGame, showCelebration, dismissCelebration, achievementGames } =
+    useAchievement()
 
   // ── Signup banner ──────────────────────────────────────────────────
   // TEMP DISABLED: Signup/Login flow (will be re-enabled later)
@@ -148,21 +154,21 @@ export default function GameBoard() {
           }}
         >
           {effectiveGameType === 'memory' ? (
-            <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} />
+            <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
           ) : effectiveGameType === 'true_false' ? (
-            <TrueFalseMathGame onFirstGameComplete={markFirstGamePlayed} />
+            <TrueFalseMathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
           ) : effectiveGameType === 'ssc_cgl' ? (
             <SscCglGame />
           ) : effectiveGameType === 'tictactoe' ? (
-            <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} />
+            <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
           ) : effectiveGameType === 'more' ? (
-            <MoreGame onFirstGameComplete={markFirstGamePlayed} />
+            <MoreGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
           ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
             <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
               Select operations on the home screen, then press Play to start a custom game.
             </div>
           ) : (
-            <MathGame onFirstGameComplete={markFirstGamePlayed} />
+            <MathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
           )}
         </div>
       </main>
@@ -173,6 +179,18 @@ export default function GameBoard() {
         onSignup={handleGoogleSignup}
         onClose={closeBanner}
       /> */}
+
+      {/* Achievement celebration overlay */}
+      {showCelebration && achievementGames && (
+        <AchievementModal
+          games={achievementGames}
+          onClose={dismissCelebration}
+          onPlayNext={() => {
+            dismissCelebration()
+            router.push('/')
+          }}
+        />
+      )}
     </div>
   )
 }
