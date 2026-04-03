@@ -22,7 +22,7 @@ import {
 import { fetchAndCacheAllGames } from '@/lib/refreshGames'
 
 export type ModeLabel = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division' | 'Mixture' | 'Custom'
-export type ActiveGame = 'math' | 'memory' | 'truefalse' | 'ssccgl' | 'tictactoe'
+export type ActiveGame = 'math' | 'memory' | 'truefalse' | 'ssccgl' | 'tictactoe' | 'speedsort'
 
 export const MODE_TO_OPERATION: Record<ModeLabel, OperationMode> = {
   Addition: 'addition', Subtraction: 'subtraction', Multiplication: 'multiplication',
@@ -115,6 +115,14 @@ export function useHomePageState() {
   const [tttVariantTotal, setTttVariantTotal] = useState(20)
   const [tttVariantRemaining, setTttVariantRemaining] = useState(20)
 
+  // ── Speed Sort variant state ───────────────────────────────────────
+  const [ssDifficulty, setSsDifficulty] = useState<Difficulty | null>('easy')
+  const [ssGamesCount, setSsGamesCount] = useState(DEFAULT_GAME_COUNT)
+  const [ssSessionHydrated, setSsSessionHydrated] = useState(false)
+  const [ssVariantPlayed, setSsVariantPlayed] = useState(0)
+  const [ssVariantTotal, setSsVariantTotal] = useState(20)
+  const [ssVariantRemaining, setSsVariantRemaining] = useState(20)
+
   // ── Hydration effects ──────────────────────────────────────────────
 
   // Restore last-played settings from IndexedDB
@@ -123,7 +131,7 @@ export function useHomePageState() {
       // Restore the saved difficulty for ALL games (shared selector)
       if (last.difficulty === 'easy' || last.difficulty === 'medium' || last.difficulty === 'hard') {
         const d = last.difficulty as Difficulty
-        setMathDifficulty(d); setMemoryDifficulty(d); setTfDifficulty(d); setSscDifficulty(d); setTttDifficulty(d)
+        setMathDifficulty(d); setMemoryDifficulty(d); setTfDifficulty(d); setSscDifficulty(d); setTttDifficulty(d); setSsDifficulty(d)
         setStoreDifficulty(d)
       }
       if (!last.gameType) return
@@ -151,7 +159,7 @@ export function useHomePageState() {
     })
     getSelectedGameCount().then(saved => {
       const c = saved ?? DEFAULT_GAME_COUNT
-      setMathGamesCount(c); setMemoryGamesCount(c); setTfGamesCount(c); setSscGamesCount(c); setTttGamesCount(c)
+      setMathGamesCount(c); setMemoryGamesCount(c); setTfGamesCount(c); setSscGamesCount(c); setTttGamesCount(c); setSsGamesCount(c)
     })
   }, [setStoreDifficulty, setOperation, setType])
 
@@ -173,6 +181,8 @@ export function useHomePageState() {
     setSscSessionHydrated(true)
     // Tic Tac Toe uses generic session helpers
     setTttSessionHydrated(true)
+    // Speed Sort uses generic session helpers
+    setSsSessionHydrated(true)
   }
 
   useEffect(() => { hydrateSessions(); setMounted(true) }, [isSessionExpired])
@@ -226,6 +236,14 @@ export function useHomePageState() {
   }, [tttDifficulty, isSessionExpired])
 
   useEffect(() => {
+    if (!ssDifficulty) return
+    getVariantProgress('speed_sort', ssDifficulty).then(p => {
+      setSsVariantPlayed(p.played); setSsVariantTotal(p.total); setSsVariantRemaining(p.remaining)
+      setSsGamesCount(prev => p.remaining <= 0 ? 0 : Math.min(Math.max(prev, 1), p.remaining))
+    })
+  }, [ssDifficulty, isSessionExpired])
+
+  useEffect(() => {
     const onVis = () => { if (document.visibilityState === 'visible') hydrateSessions() }
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
@@ -242,6 +260,7 @@ export function useHomePageState() {
     setTfVariantPlayed(0); setTfVariantRemaining(20)
     setSscVariantPlayed(0); setSscVariantRemaining(20); setSscGamesCount(DEFAULT_GAME_COUNT)
     setTttVariantPlayed(0); setTttVariantRemaining(20); setTttGamesCount(DEFAULT_GAME_COUNT)
+    setSsVariantPlayed(0); setSsVariantRemaining(20); setSsGamesCount(DEFAULT_GAME_COUNT)
   }
 
   const handleReload = useCallback(async () => {
@@ -369,11 +388,31 @@ export function useHomePageState() {
     }
   }
 
+  async function playSpeedSort() {
+    if (isNavigating || ssDifficulty === null) return
+    setIsNavigating(true)
+    const timeout = setTimeout(() => setIsNavigating(false), NAV_TIMEOUT_MS)
+    try {
+      setStoreDifficulty(ssDifficulty)
+      await Promise.all([
+        recordActivity(),
+        setLastPlayedSettings({ gameType: 'speed_sort', operation: null, difficulty: ssDifficulty }),
+        setSelectedGameCount(ssGamesCount),
+        resetGenericSession('speed_sort', ssGamesCount),
+      ])
+      router.push('/game?mode=more&type=speed_sort')
+    } catch {
+      setIsNavigating(false)
+      clearTimeout(timeout)
+    }
+  }
+
   function handlePlay() {
     if (isLocked) return
     if (activeGame === 'math') { if (!mathDifficulty || mathVariantRemaining <= 0) return; playMath() }
     else if (activeGame === 'truefalse') { if (!tfDifficulty || tfVariantRemaining <= 0) return; playTrueFalse() }
     else if (activeGame === 'tictactoe') { if (!tttDifficulty || tttVariantRemaining <= 0) return; playTicTacToe() }
+    else if (activeGame === 'speedsort') { if (!ssDifficulty || ssVariantRemaining <= 0) return; playSpeedSort() }
     else if (activeGame === 'ssccgl') { if (!sscDifficulty) return; playSscCgl() }
     else { if (!memoryDifficulty || memoryVariantRemaining <= 0) return; playMemory() }
   }
@@ -390,17 +429,20 @@ export function useHomePageState() {
   const canPlayTf = tfDifficulty !== null && tfVariantRemaining > 0
   const canPlaySsc = sscDifficulty !== null
   const canPlayTtt = tttDifficulty !== null && tttVariantRemaining > 0
+  const canPlaySs = ssDifficulty !== null && ssVariantRemaining > 0
   const canPlayActive =
     (activeGame === 'math' && canPlayMath) ||
     (activeGame === 'memory' && canPlayMemory) ||
     (activeGame === 'truefalse' && canPlayTf) ||
     (activeGame === 'tictactoe' && canPlayTtt) ||
+    (activeGame === 'speedsort' && canPlaySs) ||
     (activeGame === 'ssccgl' && canPlaySsc)
 
   const mathVariantExhausted = mathVariantRemaining <= 0
   const memoryVariantExhausted = memoryVariantRemaining <= 0
   const tfVariantExhausted = tfVariantRemaining <= 0
   const tttVariantExhausted = tttVariantRemaining <= 0
+  const ssVariantExhausted = ssVariantRemaining <= 0
   const sscVariantExhausted = sscVariantRemaining <= 0
 
   // True when any active game type has unfinished variant games
@@ -409,6 +451,7 @@ export function useHomePageState() {
     (activeGame === 'memory' && canPlayMemory) ||
     (activeGame === 'truefalse' && canPlayTf) ||
     (activeGame === 'tictactoe' && canPlayTtt) ||
+    (activeGame === 'speedsort' && canPlaySs) ||
     (activeGame === 'ssccgl' && canPlaySsc)
 
   const playDisabled =
@@ -417,13 +460,14 @@ export function useHomePageState() {
     (activeGame === 'memory' && !canPlayMemory) ||
     (activeGame === 'truefalse' && !canPlayTf) ||
     (activeGame === 'tictactoe' && !canPlayTtt) ||
+    (activeGame === 'speedsort' && !canPlaySs) ||
     (activeGame === 'ssccgl' && !canPlaySsc)
 
   const playLabel = isReloadingGames
     ? 'Loading…'
     : isLocked
       ? 'Limit reached'
-      : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf) || (activeGame === 'tictactoe' && !canPlayTtt) || (activeGame === 'ssccgl' && !canPlaySsc)
+      : (activeGame === 'math' && !canPlayMath) || (activeGame === 'memory' && !canPlayMemory) || (activeGame === 'truefalse' && !canPlayTf) || (activeGame === 'tictactoe' && !canPlayTtt) || (activeGame === 'speedsort' && !canPlaySs) || (activeGame === 'ssccgl' && !canPlaySsc)
         ? 'Choose difficulty'
         : isNavigating
           ? 'Starting…'
@@ -431,7 +475,9 @@ export function useHomePageState() {
             ? 'Practice SSC CGL'
             : activeGame === 'tictactoe'
               ? 'Play Tic Tac Toe'
-              : hasUnfinishedGames
+              : activeGame === 'speedsort'
+                ? 'Play Speed Sort'
+                : hasUnfinishedGames
                 ? 'Continue playing'
                 : `Play ${activeGame === 'math' ? 'math' : activeGame === 'truefalse' ? 'true/false' : 'memory'}`
 
@@ -442,6 +488,7 @@ export function useHomePageState() {
     : activeGame === 'memory' ? (memoryDifficulty ?? 'easy')
     : activeGame === 'truefalse' ? (tfDifficulty ?? 'easy')
     : activeGame === 'tictactoe' ? (tttDifficulty ?? 'easy')
+    : activeGame === 'speedsort' ? (ssDifficulty ?? 'easy')
     : (sscDifficulty ?? 'easy')
 
   /** Set difficulty for ALL games at once (shared selector). */
@@ -451,6 +498,7 @@ export function useHomePageState() {
     setTfDifficulty(d)
     setSscDifficulty(d)
     setTttDifficulty(d)
+    setSsDifficulty(d)
     setStoreDifficulty(d)
   }
 
@@ -496,6 +544,11 @@ export function useHomePageState() {
     tttDifficulty, setTttDifficulty: (d: Difficulty) => { setTttDifficulty(d); setActiveGame('tictactoe') },
     tttGamesCount, setTttGamesCount,
     tttSessionHydrated, tttVariantPlayed, tttVariantTotal, tttVariantRemaining, tttVariantExhausted,
+
+    // Speed Sort
+    ssDifficulty, setSsDifficulty: (d: Difficulty) => { setSsDifficulty(d); setActiveGame('speedsort') },
+    ssGamesCount, setSsGamesCount,
+    ssSessionHydrated, ssVariantPlayed, ssVariantTotal, ssVariantRemaining, ssVariantExhausted,
 
     // Custom ops (math)
     customOperations, toggleCustomOp,

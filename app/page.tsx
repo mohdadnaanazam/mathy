@@ -1,6 +1,6 @@
 'use client'
 
-import { Calculator, Grid3X3, CheckCircle, BookOpen, Gamepad2 } from 'lucide-react'
+import { Calculator, Grid3X3, CheckCircle, BookOpen, Gamepad2, ArrowUpDown } from 'lucide-react'
 import { useHomePageState, type ModeLabel } from '@/hooks/useHomePageState'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import type { OperationMode } from '@/types'
@@ -92,7 +92,7 @@ export default function LandingPage() {
       )}
 
       {/* Refresh countdown */}
-      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted || s.tttVariantExhausted) && (
+      {s.mounted && (s.mathVariantExhausted || s.memoryVariantExhausted || s.tfVariantExhausted || s.tttVariantExhausted || s.ssVariantExhausted) && (
         <div className="mx-auto max-w-2xl px-3 sm:px-6 pt-2 sm:pt-3">
           <RefreshBanner tier={s.refreshTier} formatted={s.refreshFormatted} />
         </div>
@@ -223,6 +223,30 @@ export default function LandingPage() {
           variantTotal={s.tttVariantTotal}
           variantRemaining={s.tttVariantRemaining}
           variantExhausted={s.tttVariantExhausted}
+          refreshReady={s.refreshReady}
+          refreshFormatted={s.refreshFormatted}
+        />
+
+        {/* Speed Sort */}
+        <GameCard
+          id="speedsort"
+          isActive={s.activeGame === 'speedsort'}
+          onActivate={() => s.setActiveGame('speedsort')}
+          icon={<ArrowUpDown size={16} style={{ color: 'var(--accent-orange)' }} />}
+          title="Speed Sort"
+          description="Sort numbers in the correct order — ascending or descending. Fast!"
+          difficulty={s.ssDifficulty}
+          onDifficultyChange={s.setGlobalDifficulty}
+          hideDifficulty
+          gamesCount={s.ssGamesCount}
+          onDecrement={() => { if (!s.ssVariantExhausted) s.setSsGamesCount(v => Math.max(1, Math.min(v - 1, s.ssVariantRemaining))) }}
+          onIncrement={() => { if (!s.ssVariantExhausted) s.setSsGamesCount(v => Math.min(Math.max(v + 1, 1), s.ssVariantRemaining)) }}
+          stepperDisabled={s.ssVariantExhausted}
+          sessionHydrated={s.ssSessionHydrated}
+          variantPlayed={s.ssVariantPlayed}
+          variantTotal={s.ssVariantTotal}
+          variantRemaining={s.ssVariantRemaining}
+          variantExhausted={s.ssVariantExhausted}
           refreshReady={s.refreshReady}
           refreshFormatted={s.refreshFormatted}
         />

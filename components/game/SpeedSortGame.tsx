@@ -42,6 +42,7 @@ import {
 const GAME_TYPE = 'speed_sort'
 const POINTS: Record<Difficulty, number> = { easy: 10, medium: 20, hard: 50 }
 const NUM_COUNT: Record<Difficulty, number> = { easy: 4, medium: 6, hard: 8 }
+const TIMER_SECONDS: Record<Difficulty, number> = { easy: 30, medium: 20, hard: 15 }
 const NUM_RANGE: Record<Difficulty, [number, number]> = {
   easy: [1, 50],
   medium: [1, 200],
@@ -386,7 +387,7 @@ export default function SpeedSortGame({
       </div>
 
       <div className="w-full flex items-center justify-between gap-3">
-        <Timer key={timerKey} seconds={60} onTimeUp={handleTimeUp} type="math" />
+        <Timer key={timerKey} seconds={TIMER_SECONDS[difficulty as Difficulty] ?? 30} onTimeUp={handleTimeUp} type="math" />
         <div className="flex items-center gap-2.5">
           <span className="text-xs text-slate-400">Total</span>
           <span className="text-sm sm:text-base font-semibold text-white tabular-nums">{score}</span>
