@@ -201,7 +201,7 @@ export default function ApiMathGame({
   // Check for perfect score achievement when session completes
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax >= 20) {
+    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
       const currentOp = operationRef.current
       const currentDiff = difficultyRef.current as Difficulty
       const label = `${operationLabel(currentOp)} ${difficultyLabel(currentDiff)}`

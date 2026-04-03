@@ -23,6 +23,7 @@ const TrueFalseMathGame = dynamic(() => import('./TrueFalseMathGame'), { ssr: fa
 const MoreGame = dynamic(() => import('./MoreGame'), { ssr: false })
 const SscCglGame = dynamic(() => import('./SscCglGame'), { ssr: false })
 const TicTacToeGame = dynamic(() => import('./TicTacToeGame'), { ssr: false })
+const SpeedSortGame = dynamic(() => import('./SpeedSortGame'), { ssr: false })
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
@@ -162,7 +163,9 @@ export default function GameBoard() {
           ) : effectiveGameType === 'tictactoe' ? (
             <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
           ) : effectiveGameType === 'more' ? (
-            <MoreGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
+            searchParams.get('type') === 'speed_sort'
+              ? <SpeedSortGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
+              : <MoreGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
           ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
             <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
               Select operations on the home screen, then press Play to start a custom game.

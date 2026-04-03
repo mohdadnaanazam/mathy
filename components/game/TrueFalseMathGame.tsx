@@ -200,7 +200,7 @@ export default function TrueFalseMathGame({
       if (willBe >= sessionMax) {
         setSessionComplete(true)
         // Check for perfect score achievement
-        if (sessionCorrectRef.current + (feedback === null ? 0 : 0) >= sessionMax && sessionMax >= 20) {
+        if (sessionCorrectRef.current + (feedback === null ? 0 : 0) >= sessionMax && sessionMax > 0) {
           const currentDiff = difficultyRef.current as Difficulty
           onPerfectScore?.(`True/False ${difficultyLabel(currentDiff)}`)
         }

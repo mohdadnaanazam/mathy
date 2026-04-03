@@ -145,7 +145,7 @@ export default function TicTacToeGame({
   // Check for perfect score achievement (all wins)
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax >= 20) {
+    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
       const currentDiff = difficultyRef.current as Difficulty
       onPerfectScore?.(`Tic Tac Toe ${difficultyLabel(currentDiff)}`)
     }

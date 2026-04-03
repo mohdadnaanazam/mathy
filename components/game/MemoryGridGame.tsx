@@ -284,7 +284,7 @@ export default function MemoryGridGame({
   // Check for perfect score achievement
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax >= 20) {
+    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
       const currentDiff = difficultyRef.current as Difficulty
       onPerfectScore?.(`Memory Grid ${difficultyLabel(currentDiff)}`)
     }
