@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Calculator, Grid3X3, CheckCircle, BookOpen, Gamepad2, ArrowUpDown } from 'lucide-react'
 import { useHomePageState, type ModeLabel } from '@/hooks/useHomePageState'
 import { useUserUUID } from '@/hooks/useUserUUID'
@@ -10,6 +11,7 @@ import StatusBanner from '@/components/home/StatusBanner'
 import FloatingPlayButton from '@/components/home/FloatingPlayButton'
 import { useDailyStreak } from '@/hooks/useDailyStreak'
 import StreakBadge from '@/components/game/StreakBadge'
+import StreakModal from '@/components/game/StreakModal'
 import TopBanner from '@/components/home/TopBanner'
 import ResetScoreButton from '@/components/home/ResetScoreButton'
 import RefreshBanner from '@/components/ui/RefreshBanner'
@@ -35,7 +37,8 @@ const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
 export default function LandingPage() {
   const s = useHomePageState()
   const { username, avatar, loading: userLoading } = useUserUUID()
-  const { currentStreak } = useDailyStreak()
+  const { currentStreak, longestStreak, lastPlayedDate } = useDailyStreak()
+  const [streakModalOpen, setStreakModalOpen] = useState(false)
 
   return (
     <main
@@ -70,7 +73,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <StreakBadge streak={currentStreak} />
+            <StreakBadge streak={currentStreak} onClick={() => setStreakModalOpen(true)} />
             {s.isLocked && (
               <span className="text-[9px] sm:text-[10px] font-mono text-amber-400">
                 Limit {s.used}/{s.maxAttempts} · resets {s.timeToReset}
@@ -306,6 +309,15 @@ export default function LandingPage() {
         isLocked={s.isLocked}
         isNavigating={s.isNavigating}
         onClick={s.handlePlay}
+      />
+
+      {/* Streak detail modal */}
+      <StreakModal
+        open={streakModalOpen}
+        onClose={() => setStreakModalOpen(false)}
+        currentStreak={currentStreak}
+        longestStreak={longestStreak}
+        lastPlayedDate={lastPlayedDate}
       />
     </main>
   )

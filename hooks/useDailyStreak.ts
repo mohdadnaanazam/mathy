@@ -75,6 +75,7 @@ function getValidatedStreak(): StreakData {
 export interface UseDailyStreakReturn {
   currentStreak: number
   longestStreak: number
+  lastPlayedDate: string
   /** Call when a game session completes */
   recordPlay: () => void
   /** True if streak just increased this session (for celebration) */
@@ -128,6 +129,7 @@ export function useDailyStreak(): UseDailyStreakReturn {
   return {
     currentStreak: streak.currentStreak,
     longestStreak: streak.longestStreak,
+    lastPlayedDate: streak.lastPlayedDate,
     recordPlay,
     justIncreased,
     clearJustIncreased,

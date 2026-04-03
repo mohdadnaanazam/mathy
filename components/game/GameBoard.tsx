@@ -18,6 +18,7 @@ import AchievementModal from './AchievementModal'
 import { useAchievement } from '@/hooks/useAchievement'
 import { useDailyStreak } from '@/hooks/useDailyStreak'
 import StreakBadge from './StreakBadge'
+import StreakModal from './StreakModal'
 
 const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
@@ -43,7 +44,8 @@ export default function GameBoard() {
   // ── Achievement system ─────────────────────────────────────────────
   const { reportGameComplete, showCelebration, dismissCelebration, achievementGames } =
     useAchievement()
-  const { currentStreak, justIncreased, clearJustIncreased, recordPlay } = useDailyStreak()
+  const { currentStreak, longestStreak, lastPlayedDate, justIncreased, clearJustIncreased, recordPlay } = useDailyStreak()
+  const [streakModalOpen, setStreakModalOpen] = useState(false)
 
   // Wrap reportGameComplete to also record daily streak
   const handleGameComplete = useCallback((gameLabel: string) => {
@@ -164,11 +166,9 @@ export default function GameBoard() {
           }}
         >
           {/* Streak badge */}
-          {currentStreak > 0 && (
-            <div className="flex justify-end mb-2">
-              <StreakBadge streak={currentStreak} justIncreased={justIncreased} />
-            </div>
-          )}
+          <div className="flex justify-end mb-2">
+            <StreakBadge streak={currentStreak} justIncreased={justIncreased} onClick={() => setStreakModalOpen(true)} />
+          </div>
           {effectiveGameType === 'memory' ? (
             <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
           ) : effectiveGameType === 'true_false' ? (
@@ -209,6 +209,15 @@ export default function GameBoard() {
           }}
         />
       )}
+
+      {/* Streak detail modal */}
+      <StreakModal
+        open={streakModalOpen}
+        onClose={() => setStreakModalOpen(false)}
+        currentStreak={currentStreak}
+        longestStreak={longestStreak}
+        lastPlayedDate={lastPlayedDate}
+      />
     </div>
   )
 }
