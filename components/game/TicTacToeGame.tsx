@@ -7,6 +7,7 @@ import { useGameStore } from '@/store/gameStore'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import { useScore } from '@/hooks/useScore'
 import ShareScoreButton from './ShareScoreButton'
+import PlayWithFriendButton from './PlayWithFriendButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
 import type { Difficulty } from '@/types'
 import { difficultyLabel } from '@/lib/gameProgression'
@@ -520,6 +521,11 @@ export default function TicTacToeGame({
             Restart
           </button>
         )}
+      </div>
+
+      {/* Play with Friend */}
+      <div className="flex justify-center mt-2">
+        <PlayWithFriendButton gameType="tictactoe" difficulty={difficulty} />
       </div>
     </div>
   )

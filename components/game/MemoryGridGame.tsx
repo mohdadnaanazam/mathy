@@ -21,6 +21,7 @@ import {
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
+import PlayWithFriendButton from './PlayWithFriendButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
@@ -572,6 +573,11 @@ export default function MemoryGridGame({
         <span className="rounded-full border border-zinc-700 bg-zinc-800/60 px-2.5 py-0.5 text-[9px] sm:text-[11px] font-mono uppercase tracking-wider text-slate-400">
           {difficulty} · {size}×{size}
         </span>
+      </div>
+
+      {/* Play with Friend */}
+      <div className="flex justify-center mt-2">
+        <PlayWithFriendButton gameType="memory" difficulty={difficulty} />
       </div>
     </div>
   )

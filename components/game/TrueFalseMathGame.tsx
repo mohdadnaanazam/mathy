@@ -12,6 +12,7 @@ import { useScore } from '@/hooks/useScore'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
+import PlayWithFriendButton from './PlayWithFriendButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
 import Timer from './Timer'
 import type { BackendGame } from '@/src/services/gameService'
@@ -487,6 +488,11 @@ export default function TrueFalseMathGame({
           </motion.p>
         )}
       </AnimatePresence>
+
+      {/* Play with Friend */}
+      <div className="flex justify-center mt-2">
+        <PlayWithFriendButton gameType="truefalse" difficulty={difficulty} />
+      </div>
     </div>
   )
 }

@@ -12,6 +12,7 @@ import { useScore } from '@/hooks/useScore'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import Timer from './Timer'
 import ShareScoreButton from './ShareScoreButton'
+import PlayWithFriendButton from './PlayWithFriendButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import type { BackendGame } from '@/src/services/gameService'
@@ -483,6 +484,11 @@ export default function MoreGame({
       <p className="text-[10px] text-slate-500 font-mono">
         {sessionPlayed} / {sessionMax} answered
       </p>
+
+      {/* Play with Friend */}
+      <div className="flex justify-center mt-2">
+        <PlayWithFriendButton gameType={gameType} difficulty={difficulty} />
+      </div>
     </div>
   )
 }

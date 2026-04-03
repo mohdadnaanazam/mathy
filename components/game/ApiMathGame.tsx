@@ -32,6 +32,7 @@ import { getNextGameConfig, operationLabel, difficultyLabel } from '@/lib/gamePr
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
+import PlayWithFriendButton from './PlayWithFriendButton'
 import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
 import { useFirstTimeUser } from '@/hooks/useFirstTimeUser'
 import ConfettiOverlay from './ConfettiOverlay'
@@ -867,6 +868,11 @@ export default function ApiMathGame({
           </motion.p>
         )}
       </AnimatePresence>
+
+      {/* Play with Friend */}
+      <div className="flex justify-center mt-2">
+        <PlayWithFriendButton gameType="math" difficulty={difficulty} />
+      </div>
     </div>
   )
 }

@@ -19,14 +19,38 @@ import { useAchievement } from '@/hooks/useAchievement'
 import { useDailyStreak } from '@/hooks/useDailyStreak'
 import StreakBadge from './StreakBadge'
 import StreakModal from './StreakModal'
+import { GameSkeleton } from '@/components/ui/Skeletons'
+import { GameErrorBoundary } from '@/components/ui/GameErrorBoundary'
 
-const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
-const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
-const TrueFalseMathGame = dynamic(() => import('./TrueFalseMathGame'), { ssr: false })
-const MoreGame = dynamic(() => import('./MoreGame'), { ssr: false })
-const SscCglGame = dynamic(() => import('./SscCglGame'), { ssr: false })
-const TicTacToeGame = dynamic(() => import('./TicTacToeGame'), { ssr: false })
-const SpeedSortGame = dynamic(() => import('./SpeedSortGame'), { ssr: false })
+// Dynamic imports with loading skeletons and SSR disabled for client-only games
+const MathGame = dynamic(() => import('./ApiMathGame'), { 
+  ssr: false,
+  loading: () => <GameSkeleton type="math" />
+})
+const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { 
+  ssr: false,
+  loading: () => <GameSkeleton type="memory" />
+})
+const TrueFalseMathGame = dynamic(() => import('./TrueFalseMathGame'), { 
+  ssr: false,
+  loading: () => <GameSkeleton type="truefalse" />
+})
+const MoreGame = dynamic(() => import('./MoreGame'), { 
+  ssr: false,
+  loading: () => <GameSkeleton type="default" />
+})
+const SscCglGame = dynamic(() => import('./SscCglGame'), { 
+  ssr: false,
+  loading: () => <GameSkeleton type="default" />
+})
+const TicTacToeGame = dynamic(() => import('./TicTacToeGame'), { 
+  ssr: false,
+  loading: () => <GameSkeleton type="tictactoe" />
+})
+const SpeedSortGame = dynamic(() => import('./SpeedSortGame'), { 
+  ssr: false,
+  loading: () => <GameSkeleton type="speedsort" />
+})
 
 export default function GameBoard() {
   const boardRef = useRef<HTMLDivElement>(null)
@@ -169,25 +193,27 @@ export default function GameBoard() {
           <div className="flex justify-end mb-2">
             <StreakBadge streak={currentStreak} justIncreased={justIncreased} onClick={() => setStreakModalOpen(true)} />
           </div>
-          {effectiveGameType === 'memory' ? (
-            <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
-          ) : effectiveGameType === 'true_false' ? (
-            <TrueFalseMathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
-          ) : effectiveGameType === 'ssc_cgl' ? (
-            <SscCglGame />
-          ) : effectiveGameType === 'tictactoe' ? (
-            <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
-          ) : effectiveGameType === 'more' ? (
-            searchParams.get('type') === 'speed_sort'
-              ? <SpeedSortGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
-              : <MoreGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
-          ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
-            <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
-              Select operations on the home screen, then press Play to start a custom game.
-            </div>
-          ) : (
-            <MathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
-          )}
+          <GameErrorBoundary>
+            {effectiveGameType === 'memory' ? (
+              <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
+            ) : effectiveGameType === 'true_false' ? (
+              <TrueFalseMathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
+            ) : effectiveGameType === 'ssc_cgl' ? (
+              <SscCglGame />
+            ) : effectiveGameType === 'tictactoe' ? (
+              <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
+            ) : effectiveGameType === 'more' ? (
+              searchParams.get('type') === 'speed_sort'
+                ? <SpeedSortGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
+                : <MoreGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
+            ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
+              <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
+                Select operations on the home screen, then press Play to start a custom game.
+              </div>
+            ) : (
+              <MathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
+            )}
+          </GameErrorBoundary>
         </div>
       </main>
 

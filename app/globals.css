@@ -76,7 +76,7 @@
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  /* Mathy accents – unified palette */
+  /* Mathy accents – unified palette (legacy aliases) */
   --accent-orange: #f97316;
   --accent-orange-hover: #ea580c;
   --accent-orange-muted: rgba(249, 115, 22, 0.15);
@@ -90,6 +90,80 @@
   --border-subtle: rgba(39, 39, 42, 0.8);
   --border-bright: rgba(82, 82, 91, 0.6);
   --bg-surface: #0c0c0f;
+
+  /* ═══ DESIGN TOKEN SYSTEM ═══════════════════════════════════════════════ */
+  /* Color Tokens - Accent */
+  --token-accent-orange: #f97316;
+  --token-accent-orange-hover: #ea580c;
+  --token-accent-orange-muted: rgba(249, 115, 22, 0.15);
+  --token-accent-cyan: #06b6d4;
+  --token-accent-pink: #ff6b81;
+  --token-accent-purple: #8b3dff;
+  --token-accent-success: #10b981;
+  --token-accent-success-muted: rgba(16, 185, 129, 0.15);
+
+  /* Color Tokens - Background */
+  --token-bg-surface: #0c0c0f;
+  --token-bg-card: rgba(24, 24, 27, 0.95);
+  --token-bg-card-elevated: rgba(30, 30, 35, 0.98);
+  --token-bg-primary: #18181b;
+
+  /* Color Tokens - Border */
+  --token-border-subtle: rgba(39, 39, 42, 0.8);
+  --token-border-bright: rgba(82, 82, 91, 0.6);
+  --token-border-default: oklch(1 0 0 / 10%);
+  --token-border-input: oklch(1 0 0 / 15%);
+
+  /* Color Tokens - Text */
+  --token-text-primary: oklch(0.985 0 0);
+  --token-text-secondary: oklch(0.708 0 0);
+  --token-text-muted: rgba(148, 163, 184, 0.85);
+
+  /* Spacing Tokens */
+  --token-space-0: 0px;
+  --token-space-1: 4px;
+  --token-space-2: 8px;
+  --token-space-3: 12px;
+  --token-space-4: 16px;
+  --token-space-5: 20px;
+  --token-space-6: 24px;
+  --token-space-8: 32px;
+  --token-space-10: 40px;
+  --token-space-12: 48px;
+  --token-space-16: 64px;
+  --token-space-20: 80px;
+  --token-space-24: 96px;
+
+  /* Typography Tokens */
+  --token-font-sans: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --token-font-mono: var(--font-geist-mono), 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --token-font-display: var(--font-urbanist), 'Urbanist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --token-text-xs: 0.75rem;
+  --token-text-sm: 0.875rem;
+  --token-text-base: 1rem;
+  --token-text-lg: 1.125rem;
+  --token-text-xl: 1.25rem;
+  --token-text-2xl: 1.5rem;
+  --token-text-3xl: 1.875rem;
+  --token-text-4xl: 2.25rem;
+  --token-text-5xl: 3rem;
+
+  /* Shadow Tokens */
+  --token-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --token-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --token-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --token-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  --token-shadow-card: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  --token-shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  --token-shadow-button: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --token-shadow-button-hover: 0 10px 28px rgba(0, 0, 0, 0.55);
+
+  /* Radius Tokens */
+  --token-radius-sm: 0.375rem;
+  --token-radius-md: 0.5rem;
+  --token-radius-lg: 0.625rem;
+  --token-radius-xl: 1rem;
+  --token-radius-full: 9999px;
 }
 
 @layer base {
@@ -161,6 +235,57 @@
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 200ms;
+  }
+
+  /* Touch target utilities - ensure minimum 44px touch targets on mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-target-sm {
+    min-height: 36px;
+    min-width: 36px;
+  }
+  
+  @media (min-width: 640px) {
+    .touch-target {
+      min-height: auto;
+      min-width: auto;
+    }
+    .touch-target-sm {
+      min-height: auto;
+      min-width: auto;
+    }
+  }
+
+  /* Layout shift prevention utilities */
+  .aspect-game-card {
+    aspect-ratio: 16 / 9;
+  }
+  
+  .skeleton-text {
+    height: 1em;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+  
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  /* Reserve space for dynamic content */
+  .min-h-game-area {
+    min-height: 400px;
+  }
+  
+  @media (min-width: 640px) {
+    .min-h-game-area {
+      min-height: 500px;
+    }
   }
 
   /* Phone-style typography helpers */

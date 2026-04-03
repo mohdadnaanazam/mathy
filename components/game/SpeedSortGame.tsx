@@ -19,6 +19,7 @@ import { useLeaderboardSubmit } from '@/hooks/useLeaderboardSubmit'
 import { useRefreshCountdown } from '@/hooks/useRefreshCountdown'
 import RefreshBanner from '@/components/ui/RefreshBanner'
 import ShareScoreButton from './ShareScoreButton'
+import PlayWithFriendButton from './PlayWithFriendButton'
 import Timer from './Timer'
 import type { Difficulty } from '@/types'
 import {
@@ -459,6 +460,11 @@ export default function SpeedSortGame({
       <p className="text-[10px] text-slate-500 font-mono">
         {sessionPlayed} / {sessionMax} answered
       </p>
+
+      {/* Play with Friend */}
+      <div className="flex justify-center mt-2">
+        <PlayWithFriendButton gameType="speed_sort" difficulty={difficulty} />
+      </div>
     </div>
   )
 }

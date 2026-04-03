@@ -1,11 +1,18 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import GameBoard from '@/components/game/GameBoard'
+import { generateGameMetadataSafe, mapModeToGameType, type Difficulty } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Play Game',
-  description:
-    'Solve AI-generated math equations, test your memory, or play true/false challenges. Pick your difficulty and start training your brain.',
+interface GamePageProps {
+  searchParams: Promise<{ mode?: string; difficulty?: string; type?: string }>
+}
+
+export async function generateMetadata({ searchParams }: GamePageProps): Promise<Metadata> {
+  const params = await searchParams
+  const gameType = mapModeToGameType(params.mode)
+  const difficulty = params.difficulty as Difficulty | undefined
+  
+  return generateGameMetadataSafe({ gameType, difficulty, moreType: params.type })
 }
 
 function GameFallback() {

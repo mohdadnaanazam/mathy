@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useScore } from '@/hooks/useScore'
 import { useUserUUID } from '@/hooks/useUserUUID'
 import type { Difficulty } from '@/types'
+import PlayWithFriendButton from './PlayWithFriendButton'
 
 import easyData from '@/src/data/ssc-cgl/easy.json'
 import mediumData from '@/src/data/ssc-cgl/medium.json'
@@ -397,6 +398,11 @@ export default function SscCglGame() {
           >
             Next →
           </button>
+        </div>
+
+        {/* Play with Friend */}
+        <div className="flex justify-center mt-2">
+          <PlayWithFriendButton gameType="ssccgl" difficulty={currentQ.difficulty} />
         </div>
       </motion.div>
     </AnimatePresence>
