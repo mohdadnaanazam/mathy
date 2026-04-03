@@ -6,18 +6,21 @@ import confetti from 'canvas-confetti'
 interface ConfettiOverlayProps {
   /** Called after the confetti animation finishes (~3 s) */
   onComplete?: () => void
+  /** Unique key to force re-fire confetti when changed */
+  fireKey?: number | string
 }
 
 /**
  * Fires a multi-burst confetti animation on mount, then calls onComplete.
  * Renders nothing visible — the confetti is drawn on its own full-screen canvas.
  */
-export default function ConfettiOverlay({ onComplete }: ConfettiOverlayProps) {
-  const fired = useRef(false)
+export default function ConfettiOverlay({ onComplete, fireKey }: ConfettiOverlayProps) {
+  const lastFireKey = useRef<number | string | undefined>(undefined)
 
   useEffect(() => {
-    if (fired.current) return
-    fired.current = true
+    // Only fire if this is a new mount or fireKey changed
+    if (lastFireKey.current === fireKey && fireKey !== undefined) return
+    lastFireKey.current = fireKey
 
     const duration = 3000
     const end = Date.now() + duration
@@ -56,7 +59,7 @@ export default function ConfettiOverlay({ onComplete }: ConfettiOverlayProps) {
     })
 
     requestAnimationFrame(frame)
-  }, [onComplete])
+  }, [onComplete, fireKey])
 
   return null
 }

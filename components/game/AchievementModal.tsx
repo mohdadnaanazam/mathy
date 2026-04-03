@@ -23,6 +23,7 @@ const SITE_URL = 'https://www.themathy.com'
 export default function AchievementModal({ games, onClose, onPlayNext }: AchievementModalProps) {
   const [showModal, setShowModal] = useState(false)
   const [showConfetti, setShowConfetti] = useState(true)
+  const [confettiKey] = useState(() => Date.now()) // Unique key for each modal instance
 
   // Delay modal appearance by 1.5s after confetti starts
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function AchievementModal({ games, onClose, onPlayNext }: Achieve
 
   return (
     <>
-      {showConfetti && <ConfettiOverlay />}
+      {showConfetti && <ConfettiOverlay fireKey={confettiKey} />}
 
       <AnimatePresence>
         {showModal && (
