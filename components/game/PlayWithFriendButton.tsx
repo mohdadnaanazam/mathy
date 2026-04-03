@@ -206,20 +206,20 @@ export default function PlayWithFriendButton({
                 <X size={16} strokeWidth={2.5} />
               </button>
 
-              <div className="px-5 py-6 sm:px-6 sm:py-8">
+              <div className="px-4 py-5">
                 {/* Header */}
-                <div className="text-center mb-5">
+                <div className="text-center mb-4">
                   <div
-                    className="mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-3"
+                    className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-2"
                     style={{
                       background: 'rgba(249,115,22,0.12)',
                       border: '2px solid rgba(249,115,22,0.25)',
                     }}
                   >
-                    <Users size={24} className="text-[var(--accent-orange)]" />
+                    <Users size={20} className="text-[var(--accent-orange)]" />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1">Play with a Friend</h3>
-                  <p className="text-xs text-slate-400">
+                  <h3 className="text-base font-bold text-white mb-0.5">Play with a Friend</h3>
+                  <p className="text-[11px] text-slate-400 leading-tight">
                     Share this link to challenge your friend to {getGameDisplayName(gameType)}
                     {difficulty && <span className="text-[var(--accent-orange)]"> ({difficulty})</span>}
                   </p>
@@ -228,10 +228,10 @@ export default function PlayWithFriendButton({
                 {/* QR Code */}
                 <div 
                   ref={qrRef}
-                  className="flex justify-center mb-4"
+                  className="flex justify-center mb-3"
                 >
                   <div 
-                    className="rounded-xl overflow-hidden p-3"
+                    className="rounded-xl overflow-hidden p-2"
                     style={{ 
                       background: '#18181b',
                       border: '1px solid rgba(63,63,70,0.6)',
@@ -240,37 +240,37 @@ export default function PlayWithFriendButton({
                     <img 
                       src={qrCodeUrl} 
                       alt="QR Code to share game"
-                      width={160}
-                      height={160}
+                      width={140}
+                      height={140}
                       className="rounded-lg"
                       style={{ imageRendering: 'pixelated' }}
                     />
                   </div>
                 </div>
                 
-                <p className="text-center text-[10px] text-slate-500 mb-4">
+                <p className="text-center text-[10px] text-slate-500 mb-3">
                   Scan QR code or share the link below
                 </p>
 
                 {/* URL Display */}
                 <div 
-                  className="flex items-center gap-2 rounded-xl px-3 py-2.5 mb-4"
+                  className="flex items-center gap-2 rounded-xl px-3 py-2 mb-3"
                   style={{
                     background: 'rgba(39,39,42,0.5)',
                     border: '1px solid rgba(63,63,70,0.6)',
                   }}
                 >
-                  <p className="flex-1 text-[11px] text-slate-300 font-mono truncate">
+                  <p className="flex-1 text-[10px] text-slate-300 font-mono truncate">
                     {gameUrl}
                   </p>
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-lg transition-colors hover:bg-zinc-700"
+                    className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-lg transition-colors hover:bg-zinc-700"
                     style={{ color: copied ? '#22c55e' : '#a1a1aa' }}
                     aria-label={copied ? 'Copied!' : 'Copy link'}
                   >
-                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
                   </button>
                 </div>
 
@@ -280,7 +280,7 @@ export default function PlayWithFriendButton({
                     type="button"
                     onClick={handleShare}
                     disabled={sharing}
-                    className="w-full flex items-center justify-center gap-2 rounded-full px-5 py-3 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                    className="w-full flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                     style={{
                       background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
                       color: '#18181b',
@@ -294,7 +294,7 @@ export default function PlayWithFriendButton({
                   <button
                     type="button"
                     onClick={handleDownloadQR}
-                    className="w-full flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-all hover:border-zinc-500"
+                    className="w-full flex items-center justify-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-wider transition-all hover:border-zinc-500"
                     style={{
                       background: 'transparent',
                       border: '1px solid rgba(63,63,70,0.8)',
