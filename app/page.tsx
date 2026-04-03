@@ -8,6 +8,8 @@ import GameCard from '@/components/home/GameCard'
 import DifficultyPills from '@/components/home/DifficultyPills'
 import StatusBanner from '@/components/home/StatusBanner'
 import FloatingPlayButton from '@/components/home/FloatingPlayButton'
+import { useDailyStreak } from '@/hooks/useDailyStreak'
+import StreakBadge from '@/components/game/StreakBadge'
 import TopBanner from '@/components/home/TopBanner'
 import ResetScoreButton from '@/components/home/ResetScoreButton'
 import RefreshBanner from '@/components/ui/RefreshBanner'
@@ -33,6 +35,7 @@ const CUSTOM_OP_CHOICES: { label: string; value: OperationMode }[] = [
 export default function LandingPage() {
   const s = useHomePageState()
   const { username, avatar, loading: userLoading } = useUserUUID()
+  const { currentStreak } = useDailyStreak()
 
   return (
     <main
@@ -67,6 +70,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            <StreakBadge streak={currentStreak} />
             {s.isLocked && (
               <span className="text-[9px] sm:text-[10px] font-mono text-amber-400">
                 Limit {s.used}/{s.maxAttempts} · resets {s.timeToReset}

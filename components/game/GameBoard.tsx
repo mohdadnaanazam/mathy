@@ -16,6 +16,8 @@ import GameLockScreen from './GameLockScreen'
 import SignupBanner from './SignupBanner'
 import AchievementModal from './AchievementModal'
 import { useAchievement } from '@/hooks/useAchievement'
+import { useDailyStreak } from '@/hooks/useDailyStreak'
+import StreakBadge from './StreakBadge'
 
 const MathGame = dynamic(() => import('./ApiMathGame'), { ssr: false })
 const MemoryGridGame = dynamic(() => import('./MemoryGridGame'), { ssr: false })
@@ -39,8 +41,15 @@ export default function GameBoard() {
   const [isReloading, setIsReloading] = useState(false)
 
   // ── Achievement system ─────────────────────────────────────────────
-  const { reportPerfectGame, showCelebration, dismissCelebration, achievementGames } =
+  const { reportGameComplete, showCelebration, dismissCelebration, achievementGames } =
     useAchievement()
+  const { currentStreak, justIncreased, clearJustIncreased, recordPlay } = useDailyStreak()
+
+  // Wrap reportGameComplete to also record daily streak
+  const handleGameComplete = useCallback((gameLabel: string) => {
+    reportGameComplete(gameLabel)
+    recordPlay()
+  }, [reportGameComplete, recordPlay])
 
   // ── Signup banner ──────────────────────────────────────────────────
   // TEMP DISABLED: Signup/Login flow (will be re-enabled later)
@@ -154,24 +163,30 @@ export default function GameBoard() {
             boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset',
           }}
         >
+          {/* Streak badge */}
+          {currentStreak > 0 && (
+            <div className="flex justify-end mb-2">
+              <StreakBadge streak={currentStreak} justIncreased={justIncreased} />
+            </div>
+          )}
           {effectiveGameType === 'memory' ? (
-            <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
+            <MemoryGridGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
           ) : effectiveGameType === 'true_false' ? (
-            <TrueFalseMathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
+            <TrueFalseMathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
           ) : effectiveGameType === 'ssc_cgl' ? (
             <SscCglGame />
           ) : effectiveGameType === 'tictactoe' ? (
-            <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
+            <TicTacToeGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
           ) : effectiveGameType === 'more' ? (
             searchParams.get('type') === 'speed_sort'
-              ? <SpeedSortGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
-              : <MoreGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
+              ? <SpeedSortGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
+              : <MoreGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
           ) : opParam === 'custom' && (!customOperations || customOperations.length === 0) ? (
             <div className="w-full text-center text-xs sm:text-sm text-slate-400 py-6">
               Select operations on the home screen, then press Play to start a custom game.
             </div>
           ) : (
-            <MathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={reportPerfectGame} />
+            <MathGame onFirstGameComplete={markFirstGamePlayed} onPerfectScore={handleGameComplete} />
           )}
         </div>
       </main>

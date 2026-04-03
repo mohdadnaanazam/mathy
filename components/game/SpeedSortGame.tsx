@@ -148,13 +148,11 @@ export default function SpeedSortGame({
     setNextDifficulty(next.difficulty)
   }, [sessionComplete])
 
-  // Perfect score check
+  // Report game completion for achievement
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
-      const currentDiff = difficultyRef.current as Difficulty
-      onPerfectScore?.(`Speed Sort ${difficultyLabel(currentDiff)}`)
-    }
+    const currentDiff = difficultyRef.current as Difficulty
+    onPerfectScore?.(`Speed Sort ${difficultyLabel(currentDiff)}`)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 

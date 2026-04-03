@@ -126,13 +126,11 @@ export default function MoreGame({
     setNextDifficulty(next.difficulty)
   }, [sessionComplete])
 
-  // Check for perfect score achievement
+  // Report game completion for achievement
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
-      const currentDiff = difficultyRef.current as Difficulty
-      onPerfectScore?.(`${moreGameLabel(gameTypeRef.current)} ${difficultyLabel(currentDiff)}`)
-    }
+    const currentDiff = difficultyRef.current as Difficulty
+    onPerfectScore?.(`${moreGameLabel(gameTypeRef.current)} ${difficultyLabel(currentDiff)}`)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 

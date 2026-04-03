@@ -281,13 +281,11 @@ export default function MemoryGridGame({
     })
   }, [sessionComplete])
 
-  // Check for perfect score achievement
+  // Report game completion for achievement
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
-      const currentDiff = difficultyRef.current as Difficulty
-      onPerfectScore?.(`Memory Grid ${difficultyLabel(currentDiff)}`)
-    }
+    const currentDiff = difficultyRef.current as Difficulty
+    onPerfectScore?.(`Memory Grid ${difficultyLabel(currentDiff)}`)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 

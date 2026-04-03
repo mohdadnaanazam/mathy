@@ -142,13 +142,11 @@ export default function TicTacToeGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 
-  // Check for perfect score achievement (all wins)
+  // Report game completion for achievement
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
-      const currentDiff = difficultyRef.current as Difficulty
-      onPerfectScore?.(`Tic Tac Toe ${difficultyLabel(currentDiff)}`)
-    }
+    const currentDiff = difficultyRef.current as Difficulty
+    onPerfectScore?.(`Tic Tac Toe ${difficultyLabel(currentDiff)}`)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 

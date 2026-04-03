@@ -198,15 +198,13 @@ export default function ApiMathGame({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 
-  // Check for perfect score achievement when session completes
+  // Report game completion for achievement
   useEffect(() => {
     if (!sessionComplete) return
-    if (sessionCorrectRef.current >= sessionMax && sessionMax > 0) {
-      const currentOp = operationRef.current
-      const currentDiff = difficultyRef.current as Difficulty
-      const label = `${operationLabel(currentOp)} ${difficultyLabel(currentDiff)}`
-      onPerfectScore?.(label)
-    }
+    const currentOp = operationRef.current
+    const currentDiff = difficultyRef.current as Difficulty
+    const label = `${operationLabel(currentOp)} ${difficultyLabel(currentDiff)}`
+    onPerfectScore?.(label)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionComplete])
 
