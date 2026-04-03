@@ -465,7 +465,9 @@ export default function MemoryGridGame({
             />
             <button
               type="button"
-              onClick={() => router.push('/')}
+              onClick={() => {
+                window.location.href = '/'
+              }}
               className="rounded-full border border-[var(--border-subtle)] bg-zinc-900 px-4 py-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-slate-200"
             >
               Go to home
