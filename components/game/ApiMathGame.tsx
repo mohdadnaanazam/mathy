@@ -52,6 +52,7 @@ function operationFromUrl(opParam: string | null): OperationMode | null {
 
 export default function ApiMathGame({
   onFirstGameComplete,
+  onPerfectScore,
 }: {
   onFirstGameComplete?: () => void
   onPerfectScore?: (gameLabel: string) => void
